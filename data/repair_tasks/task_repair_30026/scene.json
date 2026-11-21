@@ -1,0 +1,81 @@
+{
+  "scene_id": "base_task_repair_30026",
+  "seed": 31026,
+  "category": "VALID_VISIBLE",
+  "difficulty": "HARD",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 230.01678192079146,
+      "y": 330.1907975141784
+    },
+    "heading_deg": 63.80697683279365,
+    "fov_degrees": 48.56147696214125,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 402.90790222103016,
+      "y": 640.1779691408702
+    },
+    "endpoint_b": {
+      "x": 505.8160530631663,
+      "y": 667.1817463470951
+    },
+    "reflective_normal": {
+      "dx": 0.2538136030347454,
+      "dy": -0.967253149343294
+    }
+  },
+  "target": {
+    "center": {
+      "x": 685.9644597276426,
+      "y": 499.58861298905185
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "partition_wall",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 457.99062082421705,
+        "y": 414.88970525161517
+      },
+      "radius": null,
+      "width": 40.66660707306531,
+      "height": 67.75239390663798,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "VISIBLE",
+  "ground_truth_reason": "NONE",
+  "diagnostic_details": "Unobstructed optical sightline via mirror at (423.4, 645.6) with theta_i=theta_r=46.2 deg",
+  "reflection_point": {
+    "x": 423.42303527272315,
+    "y": 645.5612753002998
+  },
+  "virtual_target": {
+    "x": 580.4647532250539,
+    "y": 901.6353202943843
+  },
+  "optical_path": [
+    {
+      "x": 230.01678192079146,
+      "y": 330.1907975141784
+    },
+    {
+      "x": 423.42303527272315,
+      "y": 645.5612753002998
+    },
+    {
+      "x": 685.9644597276426,
+      "y": 499.58861298905185
+    }
+  ],
+  "incident_angle_deg": 46.22270532134004,
+  "reflected_angle_deg": 46.222705321340015,
+  "total_optical_distance": 670.3451522960171,
+  "is_direct_sight_blocked": true
+}

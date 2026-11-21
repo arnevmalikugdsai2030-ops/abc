@@ -12,7 +12,12 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field
 
 from mirrorlab.schema.common import ObstructionReason, Point2D, TaskType
-from mirrorlab.schema.scene import DifficultyLevel, InspectionScene, SceneCategory
+from mirrorlab.schema.scene import (
+    DifficultyLevel,
+    InspectionScene,
+    MirrorSpec,
+    SceneCategory,
+)
 
 
 class VisibilityReasonCode(str, Enum):
@@ -230,5 +235,100 @@ class ObstructionTaskBundle(BaseModel):
     scene: InspectionScene
     question: ObstructionQuestion
     ground_truth: ObstructionGroundTruth
+    blind_image_path: str
+    overlay_image_path: str
+
+
+class RepairCandidateEvaluation(BaseModel):
+    """
+    Detailed independent evaluation of a single candidate mirror configuration.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    candidate_id: str = Field(
+        ..., description="Candidate option identifier ('A', 'B', or 'C')"
+    )
+    mirror: MirrorSpec = Field(
+        ..., description="Mirror geometry specification for this candidate"
+    )
+    is_visible: bool = Field(
+        ..., description="Whether this candidate restores visibility"
+    )
+    reason_code: VisibilityReasonCode = Field(
+        ..., description="Standardized physical reason code"
+    )
+    diagnostic_details: str = Field(..., description="Oracle diagnostic details")
+    reflection_point: Point2D | None = None
+    incident_angle_deg: float | None = None
+    reflected_angle_deg: float | None = None
+
+
+class RepairQuestion(BaseModel):
+    """
+    Public task record for Task C: Mirror-Setting Repair.
+    STRICT INVARIANT: Contains zero answers, zero ray coordinates, zero proof coordinates.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    task_id: str = Field(..., description="Unique benchmark task identifier")
+    task_type: TaskType = Field(
+        default=TaskType.TASK_C_REPAIR, description="Benchmark task category"
+    )
+    question: str = Field(
+        default="Which candidate mirror configuration (A, B, or C) successfully restores the camera's view of the red X target scratch?",
+        description="The primary repair question",
+    )
+    prompt: str = Field(
+        ..., description="Complete multi-modal instructional prompt for the VLM"
+    )
+    image_filename: str = Field(
+        ..., description="Filename of the blind inspection diagram PNG"
+    )
+    options: list[str] = Field(
+        default=["A", "B", "C"], description="Candidate mirror choices"
+    )
+
+
+class RepairGroundTruth(BaseModel):
+    """
+    Private answer-key and proof record for Task C: Mirror-Setting Repair.
+    Contains independent evaluations for all three candidates (A, B, and C).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    task_id: str = Field(..., description="Matches RepairQuestion.task_id")
+    correct_candidate: str = Field(
+        ...,
+        description="The unique candidate option that restores visibility ('A', 'B', or 'C')",
+    )
+    detailed_explanation: str = Field(
+        ..., description="Deterministic step-by-step mathematical proof"
+    )
+    candidates: dict[str, RepairCandidateEvaluation] = Field(
+        ..., description="Evaluations of candidates A, B, and C"
+    )
+
+
+class RepairTaskBundle(BaseModel):
+    """
+    Complete bundle containing all 5 generated artifacts for Task C:
+    1. Scene JSON (InspectionScene)
+    2. Blind Diagram PNG (path)
+    3. Question JSON (RepairQuestion)
+    4. Ground-Truth Answer JSON (RepairGroundTruth)
+    5. Explanation Overlay PNG (path)
+    """
+
+    task_id: str
+    seed: int
+    difficulty: DifficultyLevel
+    theme: str
+    scene: InspectionScene
+    candidate_mirrors: dict[str, MirrorSpec]
+    question: RepairQuestion
+    ground_truth: RepairGroundTruth
     blind_image_path: str
     overlay_image_path: str

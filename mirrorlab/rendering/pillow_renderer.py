@@ -116,6 +116,147 @@ class PillowDiagramRenderer:
 
         return img
 
+    def render_repair(
+        self,
+        scene: InspectionScene,
+        candidate_mirrors: dict[str, MirrorSpec],
+        correct_candidate: str,
+        mode: RenderMode = RenderMode.BLIND,
+    ) -> Image.Image:
+        """
+        Render a Task C Mirror-Repair diagram featuring candidate mirror configurations A, B, and C.
+
+        Args:
+            scene: Base inspection scene.
+            candidate_mirrors: Dictionary mapping 'A', 'B', 'C' to candidate MirrorSpec objects.
+            correct_candidate: Unique option identifier ('A', 'B', or 'C') that restores visibility.
+            mode: RenderMode.BLIND (no answers) or RenderMode.OVERLAY (full proof).
+
+        Returns:
+            PIL Image in RGB mode.
+        """
+        tf = ViewportTransform.create(
+            canvas_width=scene.canvas_width,
+            canvas_height=scene.canvas_height,
+            image_width=self.image_width,
+            image_height=self.image_height,
+            margin=self.margin,
+        )
+
+        img = Image.new(
+            "RGB", (self.image_width, self.image_height), self.tokens.background
+        )
+        draw = ImageDraw.Draw(img)
+        overlay = Image.new("RGBA", (self.image_width, self.image_height), (0, 0, 0, 0))
+        draw_overlay = ImageDraw.Draw(overlay)
+
+        # 1. Grid & Framing
+        self._draw_grid_and_framing(draw, tf)
+
+        # 2. Camera FOV Cone
+        self._draw_camera_fov_wedge(draw_overlay, scene.camera, tf)
+
+        # 3. Fixed Obstacles
+        self._draw_obstacles(draw, scene.obstacles, tf)
+
+        # 4. Render All 3 Candidate Mirrors (A, B, C)
+        for cand_id in sorted(candidate_mirrors.keys()):
+            mirror = candidate_mirrors[cand_id]
+            is_winner = cand_id == correct_candidate
+
+            if mode == RenderMode.OVERLAY and not is_winner:
+                # Dim the losing mirrors slightly in overlay mode
+                self._draw_mirror(
+                    draw,
+                    mirror,
+                    tf,
+                    label=f"MIRROR {cand_id} [FAILS]",
+                    endpoint_labels=(f"{cand_id}1", f"{cand_id}2"),
+                    reflective_color=self.tokens.text_secondary,
+                )
+            else:
+                self._draw_mirror(
+                    draw,
+                    mirror,
+                    tf,
+                    label=f"MIRROR {cand_id}"
+                    + (
+                        " [CORRECT]"
+                        if (mode == RenderMode.OVERLAY and is_winner)
+                        else ""
+                    ),
+                    endpoint_labels=(f"{cand_id}1", f"{cand_id}2"),
+                )
+
+        # 5. Camera Body & Lens
+        self._draw_camera(draw, scene.camera, tf)
+
+        # 6. Target Scratch Red X
+        self._draw_target_defect(draw, scene.target, tf)
+
+        # 7. Answer Overlay (STRICTLY when mode == OVERLAY)
+        if mode == RenderMode.OVERLAY:
+            self._draw_answer_overlay(draw, draw_overlay, scene, tf)
+            self._draw_repair_badge(draw, correct_candidate, scene)
+
+        img.paste(overlay, (0, 0), overlay)
+
+        # 8. Header metadata
+        mode_badge = (
+            "[BLIND REPAIR TASK]"
+            if mode == RenderMode.BLIND
+            else "[GROUND TRUTH OVERLAY]"
+        )
+        title_text = f"MIRRORLAB REPAIR SCHEMATIC  {mode_badge}"
+        font_title = get_font(int(13 * self.scale_factor), bold=True)
+        draw.text(
+            (self.margin, self.margin - 35 * self.scale_factor),
+            title_text,
+            fill=self.tokens.text_primary,
+            font=font_title,
+        )
+        meta_text = f"Scene ID: {scene.scene_id}  |  Candidates: A, B, C  |  Theme: {self.theme_name.value}"
+        font_meta = get_font(int(10 * self.scale_factor))
+        draw.text(
+            (self.margin, self.margin - 18 * self.scale_factor),
+            meta_text,
+            fill=self.tokens.text_secondary,
+            font=font_meta,
+        )
+
+        return img
+
+    def _draw_repair_badge(
+        self, draw: ImageDraw.ImageDraw, winner: str, scene: InspectionScene
+    ) -> None:
+        """Render prominent repair outcome pill in top-right."""
+        font_badge = get_font(int(13 * self.scale_factor), bold=True)
+        font_sub = get_font(int(10 * self.scale_factor))
+
+        status_str = f"CORRECT: OPTION [{winner}] RESTORES VIEW"
+        sub_str = f"Angle θ={scene.incident_angle_deg:.1f}° | Options: A, B, C"
+
+        bw = 290 * self.scale_factor
+        bh = 38 * self.scale_factor
+        bx = self.image_width - self.margin - bw
+        by = self.margin + 8 * self.scale_factor
+
+        draw.rounded_rectangle(
+            [bx, by, bx + bw, by + bh], radius=6, fill=self.tokens.badge_visible_bg
+        )
+        draw.text(
+            (bx + 12 * self.scale_factor, by + 6 * self.scale_factor),
+            status_str,
+            fill=self.tokens.badge_visible_fg,
+            font=font_badge,
+        )
+        draw.text(
+            (bx + 12 * self.scale_factor, by + 22 * self.scale_factor),
+            sub_str,
+            fill=self.tokens.badge_visible_fg,
+            font=font_sub,
+        )
+
     def _draw_grid_and_framing(
         self, draw: ImageDraw.ImageDraw, tf: ViewportTransform
     ) -> None:
@@ -283,9 +424,16 @@ class PillowDiagramRenderer:
         )
 
     def _draw_mirror(
-        self, draw: ImageDraw.ImageDraw, mirror: MirrorSpec, tf: ViewportTransform
+        self,
+        draw: ImageDraw.ImageDraw,
+        mirror: MirrorSpec,
+        tf: ViewportTransform,
+        label: str = "MIRROR",
+        endpoint_labels: tuple[str, str] = ("A", "B"),
+        reflective_color: tuple[int, int, int] | None = None,
+        backing_color: tuple[int, int, int] | None = None,
     ) -> None:
-        """Render mirror with reflective face, non-reflective backing, and endpoints A/B."""
+        """Render mirror with reflective face, non-reflective backing, and endpoints."""
         p_a = np.array(tf.to_pixel(mirror.endpoint_a.x, mirror.endpoint_a.y))
         p_b = np.array(tf.to_pixel(mirror.endpoint_b.x, mirror.endpoint_b.y))
 
@@ -296,7 +444,6 @@ class PillowDiagramRenderer:
         m_unit = m_dir / m_len
 
         # Screen normal pointing away from reflective face (in screen space +Y is down)
-        # Cartesian normal: (dx, dy). Screen normal: (dx, -dy)
         cart_n = np.array([mirror.reflective_normal.dx, mirror.reflective_normal.dy])
         screen_n = np.array([cart_n[0], -cart_n[1]])
         norm_len = np.linalg.norm(screen_n)
@@ -306,13 +453,16 @@ class PillowDiagramRenderer:
         # Back face normal points in opposite direction (-screen_n)
         back_dir = -screen_n
 
+        fill_backing = backing_color or self.tokens.mirror_backing
+        fill_reflective = reflective_color or self.tokens.mirror_reflective
+
         # 1. Non-reflective backing stripe and hatch marks
         backing_thickness = 7.0 * self.scale_factor
         back_a = p_a + backing_thickness * back_dir
         back_b = p_b + backing_thickness * back_dir
         draw.polygon(
             [tuple(p_a), tuple(p_b), tuple(back_b), tuple(back_a)],
-            fill=self.tokens.mirror_backing,
+            fill=fill_backing,
             outline=self.tokens.mirror_backing_hatch,
         )
 
@@ -330,9 +480,7 @@ class PillowDiagramRenderer:
 
         # 2. Polished Reflective Front Face (Bold Cyan Line)
         mirror_w = max(3, int(4.5 * self.scale_factor))
-        draw.line(
-            [tuple(p_a), tuple(p_b)], fill=self.tokens.mirror_reflective, width=mirror_w
-        )
+        draw.line([tuple(p_a), tuple(p_b)], fill=fill_reflective, width=mirror_w)
 
         # 3. Endpoint Dots and Perpendicular Caps
         cap_r = 4.5 * self.scale_factor
@@ -345,25 +493,35 @@ class PillowDiagramRenderer:
             fill=self.tokens.mirror_endpoint,
         )
 
-        # 4. Technical Labels: "A" and "B"
-        font_ab = get_font(int(13 * self.scale_factor), bold=True)
+        # 4. Technical Labels: Endpoints
+        font_ab = get_font(int(12 * self.scale_factor), bold=True)
         lbl_offset_a = (
-            p_a - 18 * self.scale_factor * m_unit + 12 * self.scale_factor * back_dir
+            p_a - 20 * self.scale_factor * m_unit + 12 * self.scale_factor * back_dir
         )
         lbl_offset_b = (
-            p_b + 12 * self.scale_factor * m_unit + 12 * self.scale_factor * back_dir
+            p_b + 10 * self.scale_factor * m_unit + 12 * self.scale_factor * back_dir
         )
-        draw.text(tuple(lbl_offset_a), "A", fill=self.tokens.mirror_label, font=font_ab)
-        draw.text(tuple(lbl_offset_b), "B", fill=self.tokens.mirror_label, font=font_ab)
+        draw.text(
+            tuple(lbl_offset_a),
+            endpoint_labels[0],
+            fill=self.tokens.mirror_label,
+            font=font_ab,
+        )
+        draw.text(
+            tuple(lbl_offset_b),
+            endpoint_labels[1],
+            fill=self.tokens.mirror_label,
+            font=font_ab,
+        )
 
-        # Label: "MIRROR" near midpoint of back side
+        # Label: Mirror name near midpoint of back side
         mid_pt = (p_a + p_b) / 2.0 + (
             backing_thickness + 14 * self.scale_factor
         ) * back_dir
         font_mir = get_font(int(11 * self.scale_factor), bold=True)
         draw.text(
-            (mid_pt[0] - 22 * self.scale_factor, mid_pt[1] - 6 * self.scale_factor),
-            "MIRROR",
+            (mid_pt[0] - 26 * self.scale_factor, mid_pt[1] - 6 * self.scale_factor),
+            label,
             fill=self.tokens.mirror_label,
             font=font_mir,
         )

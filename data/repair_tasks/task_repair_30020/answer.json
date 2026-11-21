@@ -1,0 +1,85 @@
+{
+  "task_id": "task_repair_30020",
+  "correct_candidate": "C",
+  "detailed_explanation": "Mathematical Proof: Candidate [C] uniquely restores reflected visibility. Candidate [C]: VISIBLE at reflection point (524.9, 679.3) with theta_i=theta_r=44.5 deg. Candidate [A]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=2.348)). Candidate [B]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.819)).",
+  "candidates": {
+    "A": {
+      "candidate_id": "A",
+      "mirror": {
+        "endpoint_a": {
+          "x": 432.94451146969817,
+          "y": 726.794019812204
+        },
+        "endpoint_b": {
+          "x": 535.7614579555209,
+          "y": 678.5845846471196
+        },
+        "reflective_normal": {
+          "dx": -0.42453488795338323,
+          "dy": -0.9054115798411286
+        }
+      },
+      "is_visible": false,
+      "reason_code": "MIRROR_MISS",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=2.348)",
+      "reflection_point": {
+        "x": 674.3192534860622,
+        "y": 613.6167628185681
+      },
+      "incident_angle_deg": null,
+      "reflected_angle_deg": null
+    },
+    "B": {
+      "candidate_id": "B",
+      "mirror": {
+        "endpoint_a": {
+          "x": 318.3812963242458,
+          "y": 684.3240505432541
+        },
+        "endpoint_b": {
+          "x": 431.9057750943783,
+          "y": 681.5551439766227
+        },
+        "reflective_normal": {
+          "dx": -0.024383140665162076,
+          "dy": -0.9997026870281498
+        }
+      },
+      "is_visible": false,
+      "reason_code": "MIRROR_MISS",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.819)",
+      "reflection_point": {
+        "x": 524.8533665419516,
+        "y": 679.2881157629731
+      },
+      "incident_angle_deg": null,
+      "reflected_angle_deg": null
+    },
+    "C": {
+      "candidate_id": "C",
+      "mirror": {
+        "endpoint_a": {
+          "x": 427.59074532754323,
+          "y": 681.6603892451853
+        },
+        "endpoint_b": {
+          "x": 541.1152240976758,
+          "y": 678.891482678554
+        },
+        "reflective_normal": {
+          "dx": -0.024383140665162076,
+          "dy": -0.9997026870281498
+        }
+      },
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (524.9, 679.3) with theta_i=theta_r=44.5 deg",
+      "reflection_point": {
+        "x": 524.8533665419516,
+        "y": 679.2881157629731
+      },
+      "incident_angle_deg": 44.521281871328085,
+      "reflected_angle_deg": 44.52128187132811
+    }
+  }
+}

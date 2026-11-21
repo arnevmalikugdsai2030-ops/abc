@@ -1,0 +1,12 @@
+{
+  "task_id": "task_repair_30009",
+  "task_type": "TASK_C_REPAIR",
+  "question": "Which candidate mirror configuration (A, B, or C) successfully restores the camera's view of the red X target scratch?",
+  "prompt": "You are an industrial machine-vision inspector analyzing a 2D optical inspection diagram.\n\nProblem Statement:\nThe inspection apparatus is misaligned or broken: the camera cannot see the red 'X' scratch defect in the cavity.\nThe camera, target scratch, and obstacles (O1, etc.) remain fixed in place.\nEngineers have proposed three candidate mirror configurations: MIRROR A, MIRROR B, and MIRROR C.\n\nApparatus Legend:\n- CAMERA: Directed blue symbol with translucent FOV cone.\n- CANDIDATE MIRRORS (A, B, C): Three distinct finite flat mirror segments. Each mirror's reflective front face is marked in vibrant cyan; its non-reflective back side is marked with diagonal hatch lines.\n- TARGET DEFECT: Red 'X' scratch in the cavity.\n- OBSTACLES: Opaque barriers. Barrier O1 blocks direct line of sight between camera and scratch, so inspection is only possible via specular reflection.\n\nLaw of Reflection:\nA candidate mirror successfully restores inspection if and only if:\n1. The specular reflection ray from the camera to the target strikes within that candidate's finite mirror segment.\n2. The reflection point lies within the camera's field of view cone.\n3. The mirror's reflective face (cyan) faces towards the camera and target (not the hatched back side).\n4. Neither the incident ray (camera to mirror) nor the reflected ray (mirror to target) is blocked by an obstacle.\n\nQuestion:\nWhich candidate mirror configuration (A, B, or C) successfully restores the camera's view of the red X target scratch?\n\nAnalyze each candidate (A, B, and C) independently, and respond in JSON format with:\n{\n  \"selected_candidate\": \"A\" | \"B\" | \"C\",\n  \"explanation\": \"<your step-by-step reasoning explaining why the chosen candidate succeeds and why the other two fail>\"\n}\n",
+  "image_filename": "diagram_blind.png",
+  "options": [
+    "A",
+    "B",
+    "C"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "task_id": "task_repair_30007",
+  "correct_candidate": "B",
+  "detailed_explanation": "Mathematical Proof: Candidate [B] uniquely restores reflected visibility. Candidate [B]: VISIBLE at reflection point (418.9, 732.5) with theta_i=theta_r=32.8 deg. Candidate [A]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.242)). Candidate [C]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.530)).",
+  "candidates": {
+    "A": {
+      "candidate_id": "A",
+      "mirror": {
+        "endpoint_a": {
+          "x": 207.5425736672553,
+          "y": 774.3697960948772
+        },
+        "endpoint_b": {
+          "x": 377.69241778203593,
+          "y": 740.6470274669226
+        },
+        "reflective_normal": {
+          "dx": -0.194412935729856,
+          "dy": -0.9809197777702817
+        }
+      },
+      "is_visible": false,
+      "reason_code": "MIRROR_MISS",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.242)",
+      "reflection_point": {
+        "x": 418.90275290949023,
+        "y": 732.4793644060849
+      },
+      "incident_angle_deg": null,
+      "reflected_angle_deg": null
+    },
+    "B": {
+      "candidate_id": "B",
+      "mirror": {
+        "endpoint_a": {
+          "x": 349.5145282188359,
+          "y": 746.2317310857096
+        },
+        "endpoint_b": {
+          "x": 519.6643723336165,
+          "y": 712.508962457755
+        },
+        "reflective_normal": {
+          "dx": -0.194412935729856,
+          "dy": -0.9809197777702817
+        }
+      },
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (418.9, 732.5) with theta_i=theta_r=32.8 deg",
+      "reflection_point": {
+        "x": 418.90275290949023,
+        "y": 732.4793644060849
+      },
+      "incident_angle_deg": 32.79981107896605,
+      "reflected_angle_deg": 32.79981107896605
+    },
+    "C": {
+      "candidate_id": "C",
+      "mirror": {
+        "endpoint_a": {
+          "x": 366.18135652635345,
+          "y": 807.9666004235412
+        },
+        "endpoint_b": {
+          "x": 502.997544026099,
+          "y": 701.3386237276798
+        },
+        "reflective_normal": {
+          "dx": -0.6147139995852242,
+          "dy": -0.7887500863479743
+        }
+      },
+      "is_visible": false,
+      "reason_code": "MIRROR_MISS",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.530)",
+      "reflection_point": {
+        "x": 575.5647730326482,
+        "y": 644.7832047761908
+      },
+      "incident_angle_deg": null,
+      "reflected_angle_deg": null
+    }
+  }
+}
