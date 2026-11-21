@@ -230,10 +230,12 @@ class TestPairArtifactBundlePersistence:
         assert data["pair_type"] == "MIRROR_ANGLE_FLIP"
         assert data["expected_relationship"] == "FLIPPED_OUTCOME"
 
-    def test_deterministic_reproducibility(self, factory: CounterfactualFactory):
-        """Verifies that running the same seed produces identical pair records."""
-        b1 = factory.create_mirror_angle_flip_pair(seed=45555, pair_id="rep_01")
-        b2 = factory.create_mirror_angle_flip_pair(seed=45555, pair_id="rep_01")
+    def test_deterministic_reproducibility(self):
+        """Verifies that running the same seed produces identical pair records across instances."""
+        f1 = CounterfactualFactory(canvas_width=1000.0, canvas_height=1000.0, image_size=512)
+        f2 = CounterfactualFactory(canvas_width=1000.0, canvas_height=1000.0, image_size=512)
+        b1 = f1.create_mirror_angle_flip_pair(seed=45555, pair_id="rep_01")
+        b2 = f2.create_mirror_angle_flip_pair(seed=45555, pair_id="rep_01")
 
         assert b1.pair_record.new_values == b2.pair_record.new_values
         assert b1.scene_a_bundle.scene.model_dump() == b2.scene_a_bundle.scene.model_dump()

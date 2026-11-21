@@ -51,13 +51,13 @@
 | Camera Field-of-View | `tests/test_camera_fov.py` | 15 | 15 | 0 | 2026-11-22 |
 | Obstacle Occlusion & Oracle | `tests/test_obstacles.py` | 14 | 14 | 0 | 2026-11-22 |
 | Geometry Falsification Suite | `tests/test_geometry_falsification.py` | 14 | 14 | 0 | 2026-11-22 |
-| Seeded Scene Generator | `tests/test_scene_generator.py` | 12 | 12 | 0 | 2026-11-22 |
+| Seeded Scene Generator | `tests/test_scene_generator.py` | 16 | 16 | 0 | 2026-11-22 |
 | Diagram Rendering Engine | `tests/test_renderer.py` | 14 | 14 | 0 | 2026-11-22 |
 | Visibility Task Factory | `tests/test_task_factory.py` | 3 | 3 | 0 | 2026-11-22 |
 | Obstruction Task Factory | `tests/test_obstruction_task.py` | 5 | 5 | 0 | 2026-11-22 |
 | Mirror Repair Factory | `tests/test_repair_task.py` | 5 | 5 | 0 | 2026-11-22 |
 | Counterfactual Paired Task Factory | `tests/test_counterfactual_task.py` | 8 | 8 | 0 | 2026-11-22 |
-| **Total Suite** | **12 Test Files** | **136** | **136** | **0** | **2026-11-22** |
+| **Total Suite** | **12 Test Files** | **140** | **140** | **0** | **2026-11-22** |
 
 ### Detailed Test Execution Log:
 ```text

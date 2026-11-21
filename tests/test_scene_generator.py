@@ -25,9 +25,10 @@ class TestSceneGeneratorReproducibility:
     """Verify bit-for-bit deterministic reproducibility."""
 
     def test_identical_seed_produces_identical_scene(self):
-        gen = SceneGenerator()
-        scene1 = gen.generate_scene(seed=12345, category=SceneCategory.VALID_VISIBLE)
-        scene2 = gen.generate_scene(seed=12345, category=SceneCategory.VALID_VISIBLE)
+        gen1 = SceneGenerator()
+        gen2 = SceneGenerator()
+        scene1 = gen1.generate_scene(seed=12345, category=SceneCategory.VALID_VISIBLE)
+        scene2 = gen2.generate_scene(seed=12345, category=SceneCategory.VALID_VISIBLE)
 
         assert scene1.model_dump() == scene2.model_dump()
         assert scene1.camera.position.x == scene2.camera.position.x
@@ -100,7 +101,7 @@ class TestDifficultyTiers:
     """Verify difficulty presets generate corresponding geometry scales."""
 
     @pytest.mark.parametrize(
-        "diff", [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD]
+        "diff", [DifficultyLevel.EASY, DifficultyLevel.STANDARD, DifficultyLevel.MEDIUM, DifficultyLevel.HARD, DifficultyLevel.BOUNDARY]
     )
     def test_difficulty_tier_generation(self, diff):
         gen = SceneGenerator()
@@ -114,9 +115,20 @@ class TestDifficultyTiers:
         # Mirror length check matches tier
         m_len = scene.mirror.endpoint_a.distance_to(scene.mirror.endpoint_b)
         if diff == DifficultyLevel.EASY:
-            assert 190.0 <= m_len <= 270.0
+            assert 210.0 <= m_len <= 310.0
+            assert scene.is_boundary is False
         elif diff == DifficultyLevel.HARD:
-            assert 80.0 <= m_len <= 150.0
+            assert 70.0 <= m_len <= 140.0
+            assert scene.is_boundary is False
+        elif diff == DifficultyLevel.BOUNDARY:
+            assert scene.is_boundary is True
+
+    def test_anti_duplicate_geometry_enforcement(self):
+        """Verify generator tracks fingerprints and rejects duplicate geometry."""
+        gen = SceneGenerator()
+        scenes = gen.generate_batch(count=30, start_seed=12000, difficulty=DifficultyLevel.STANDARD)
+        assert len(scenes) == 30
+        assert len(gen.seen_fingerprints) == 30  # All 30 are geometrically unique
 
 
 class TestBatchGeneration:
@@ -139,3 +151,46 @@ class TestBatchGeneration:
         assert cat_counts[SceneCategory.VALID_VISIBLE] >= 3
         assert cat_counts[SceneCategory.MIRROR_MISS] >= 3
         assert cat_counts[SceneCategory.BLOCKED_INCIDENT] >= 3
+
+
+class TestDatasetStatisticsAndCoverageReporting:
+    """Verify statistical analysis and distribution report generation."""
+
+    def test_compute_dataset_statistics(self):
+        from mirrorlab.reporting.dataset_stats import compute_dataset_statistics, render_distribution_markdown
+
+        gen = SceneGenerator()
+        scenes = []
+        for d in [DifficultyLevel.EASY, DifficultyLevel.STANDARD, DifficultyLevel.HARD, DifficultyLevel.BOUNDARY]:
+            batch = gen.generate_batch(count=12, start_seed=20000 + hash(d.value) % 1000, difficulty=d)
+            scenes.extend(batch)
+
+        report = compute_dataset_statistics(scenes)
+
+        assert report.total_scenes == 48
+        assert report.duplicate_count == 0
+        assert report.unique_fingerprints == 48
+
+        # Verify difficulty breakdown
+        assert "EASY" in report.difficulty_counts
+        assert "STANDARD" in report.difficulty_counts
+        assert "HARD" in report.difficulty_counts
+        assert "BOUNDARY" in report.difficulty_counts
+
+        # Verify boundary separation
+        assert report.boundary_count == 12
+        assert report.headline_count == 36
+        assert report.boundary_pct == 25.0
+        assert report.headline_pct == 75.0
+
+        # Verify geometric metric stats exist and are positive
+        assert report.mirror_length_stats.mean_val > 0.0
+        assert report.fov_stats.mean_val > 0.0
+        assert report.obstacle_count_stats.mean_val >= 1.0
+
+        # Verify markdown rendering
+        md = render_distribution_markdown(report)
+        assert "# MIRRORLAB Dataset Distribution & Coverage Report" in md
+        assert "Headline Benchmark" in md
+        assert "Boundary Stress Test" in md
+

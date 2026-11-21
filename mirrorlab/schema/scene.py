@@ -22,8 +22,10 @@ class DifficultyLevel(str, Enum):
     """Scene complexity and geometric tightness."""
 
     EASY = "EASY"
+    STANDARD = "STANDARD"
     MEDIUM = "MEDIUM"
     HARD = "HARD"
+    BOUNDARY = "BOUNDARY"
 
 
 class SceneCategory(str, Enum):
@@ -160,3 +162,7 @@ class InspectionScene(BaseModel):
     reflected_angle_deg: float | None = None
     total_optical_distance: float | None = None
     is_direct_sight_blocked: bool = False
+    is_boundary: bool = Field(
+        default=False,
+        description="Whether this scene is an edge/boundary case kept separate from headline benchmark",
+    )
