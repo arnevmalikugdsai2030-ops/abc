@@ -1,0 +1,28 @@
+{
+  "split_counts": {
+    "dev": 40,
+    "val": 40,
+    "test": 120
+  },
+  "type_breakdown": {
+    "dev": {
+      "TASK_A_VISIBILITY": 4,
+      "TASK_B_OBSTRUCTION": 6,
+      "TASK_C_REPAIR": 6,
+      "TASK_D_COUNTERFACTUAL": 24
+    },
+    "val": {
+      "TASK_A_VISIBILITY": 4,
+      "TASK_B_OBSTRUCTION": 6,
+      "TASK_C_REPAIR": 6,
+      "TASK_D_COUNTERFACTUAL": 24
+    },
+    "test": {
+      "TASK_A_VISIBILITY": 12,
+      "TASK_B_OBSTRUCTION": 18,
+      "TASK_C_REPAIR": 18,
+      "TASK_D_COUNTERFACTUAL": 72
+    }
+  },
+  "isolation_verified": true
+}

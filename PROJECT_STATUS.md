@@ -18,9 +18,8 @@
 | **M2** | Seeded Scene Generator & Schemas | 🟢 **COMPLETED** | 12/12 | `mirrorlab/schema/scene.py`, `SceneGenerator`, 6 categories, 3 difficulty tiers, 20 sample scenes |
 | **M3** | Visual Diagram Rendering Engine | 🟢 **COMPLETED** | 14/14 | `mirrorlab/rendering/`, high-res Pillow schematic generator, blind/overlay isolation, 4 themes |
 | **M4** | Benchmark Task Factories (A, B, C, D)| 🟢 **COMPLETED** | 21/21 | Task A (`VisibilityTaskFactory`), Task B (`ObstructionTaskFactory`), Task C (`MirrorRepairFactory`), Task D (`CounterfactualFactory` - 4 Pair Types) |
-| **M4.E** | Cosmetic Invariance Controls Factory| ⚪ Next Up | 0/0 | `mirrorlab/generation/cosmetic_factory.py`, 4 visual themes + perturbation |
-| **M5** | Task Factory Exporter & Benchmark CLI | ⚪ Not Started | 0/0 | `scripts/generate_benchmark.py`, JSONL + PNG dataset generation |
-| **M6** | Vision-Language Model Evaluation Harness| ⚪ Not Started | 0/0 | `mirrorlab/evaluation/`, strict JSON parser, accuracy & pair metrics |
+| **M5** | Dataset Auditor & Benchmark Splitting Engine | 🟢 **COMPLETED** | 6/6 | `mirrorlab/evaluation/dataset_auditor.py`, 10 verification checks, 20% Dev / 20% Val / 60% Blind Test splits with physical key isolation |
+| **M6** | Vision-Language Model Evaluation Harness| ⚪ Next Up | 0/0 | `mirrorlab/evaluation/`, multi-model API adapters, strict JSON parser, accuracy & pair metrics |
 | **M7** | Streamlit Interactive Web Studio | ⚪ Not Started | 0/0 | `mirrorlab/ui/`, live optical simulator, benchmark viewer, failure inspector |
 | **M8** | Physical Demo, Documentation & Packaging| ⚪ Not Started | 0/0 | Physical setup instructions, demo video script, final README |
 
@@ -57,7 +56,8 @@
 | Obstruction Task Factory | `tests/test_obstruction_task.py` | 5 | 5 | 0 | 2026-11-22 |
 | Mirror Repair Factory | `tests/test_repair_task.py` | 5 | 5 | 0 | 2026-11-22 |
 | Counterfactual Paired Task Factory | `tests/test_counterfactual_task.py` | 8 | 8 | 0 | 2026-11-22 |
-| **Total Suite** | **12 Test Files** | **140** | **140** | **0** | **2026-11-22** |
+| Benchmark Dataset Auditor & Splitter | `tests/test_dataset_auditor.py` | 6 | 6 | 0 | 2026-11-22 |
+| **Total Suite** | **13 Test Files** | **146** | **146** | **0** | **2026-11-22** |
 
 ### Detailed Test Execution Log:
 ```text
