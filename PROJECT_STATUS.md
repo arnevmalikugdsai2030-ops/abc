@@ -14,7 +14,7 @@
 | Milestone | Description | Status | Tests Passing | Target Deliverable |
 |---|---|---|---|---|
 | **M0** | Workspace & Environment Setup | 🟢 **COMPLETED** | 6/6 | `pyproject.toml`, `.venv`, CI pipeline (`.github/workflows/ci.yml`), scaffold tests |
-| **M1** | Core 2D Geometry & Optics Engine | 🟢 **COMPLETED** | 69/69 | Vectors, finite mirror reflection, camera FOV, obstacle occlusion, Visibility Oracle |
+| **M1** | Core 2D Geometry & Optics Engine | 🟢 **COMPLETED** | 83/83 | Vectors, mirror reflection, camera FOV, obstacle occlusion, Visibility Oracle, and Falsification Suite |
 | **M2** | Pydantic Models & Ground-Truth System | ⚪ Next Up | 0/0 | `mirrorlab/schema/`, public/private schema separation |
 | **M3** | Visual Diagram Rendering Engine | ⚪ Not Started | 0/0 | `mirrorlab/rendering/`, high-res Pillow schematic generator |
 | **M4** | The 5 Benchmark Task Generators (A-E)| ⚪ Not Started | 0/0 | `mirrorlab/generation/`, Visibility, Obstruction, Repair, Counterfactuals, Cosmetic |
@@ -49,7 +49,8 @@
 | Finite Mirror Reflection | `tests/test_reflection.py` | 11 | 11 | 0 | 2026-11-22 |
 | Camera Field-of-View | `tests/test_camera_fov.py` | 15 | 15 | 0 | 2026-11-22 |
 | Obstacle Occlusion & Oracle | `tests/test_obstacles.py` | 14 | 14 | 0 | 2026-11-22 |
-| **Total Suite** | **5 Test Files** | **75** | **75** | **0** | **2026-11-22** |
+| Geometry Falsification Suite | `tests/test_geometry_falsification.py` | 14 | 14 | 0 | 2026-11-22 |
+| **Total Suite** | **6 Test Files** | **89** | **89** | **0** | **2026-11-22** |
 
 ### Detailed Test Execution Log:
 ```text
