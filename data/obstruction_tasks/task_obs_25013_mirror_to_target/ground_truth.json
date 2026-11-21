@@ -1,0 +1,29 @@
+{
+  "task_id": "task_obs_25013_mirror_to_target",
+  "is_blocked": true,
+  "blocking_obstacle_label": "O2",
+  "blocked_segment": "MIRROR_TO_TARGET",
+  "detailed_explanation": "Mathematical Proof: Path is BLOCKED on segment MIRROR_TO_TARGET by obstacle 'O2' at (601.5, 602.6) with penetration depth 50.7mm. Reflection point R is at (535.1, 670.5) with theta_i=theta_r=39.7 deg. Distractor obstacles maintain minimum clearance of 44.7mm.",
+  "proof": {
+    "reflection_point": {
+      "x": 535.0801280194778,
+      "y": 670.5186473157594
+    },
+    "virtual_target": {
+      "x": 727.7252850434774,
+      "y": 946.0263223358262
+    },
+    "incident_angle_deg": 39.666712951777164,
+    "reflected_angle_deg": 39.66671295177714,
+    "blocked_segment": "MIRROR_TO_TARGET",
+    "blocking_obstacle_label": "O2",
+    "blocking_obstacle_id": "blocker_leg2",
+    "intersection_point": {
+      "x": 601.5201360602549,
+      "y": 602.6030372254189
+    },
+    "penetration_depth_mm": 50.67940966908635,
+    "min_distractor_clearance_mm": 44.71327901372237,
+    "optical_path": []
+  }
+}

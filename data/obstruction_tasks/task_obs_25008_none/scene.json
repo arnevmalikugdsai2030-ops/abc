@@ -1,0 +1,93 @@
+{
+  "scene_id": "task_obs_25008_none",
+  "seed": 26008,
+  "category": "VALID_VISIBLE",
+  "difficulty": "HARD",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 398.87759044174226,
+      "y": 303.5181662275942
+    },
+    "heading_deg": 66.70990847229398,
+    "fov_degrees": 49.26486789642293,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 521.5918930444294,
+      "y": 645.3671760822349
+    },
+    "endpoint_b": {
+      "x": 612.6938631382665,
+      "y": 662.3128556916831
+    },
+    "reflective_normal": {
+      "dx": 0.18287115737124768,
+      "dy": -0.9831368876213019
+    }
+  },
+  "target": {
+    "center": {
+      "x": 817.5022250840334,
+      "y": 388.84944437929283
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "partition_wall",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 608.1899077628879,
+        "y": 346.1838053034435
+      },
+      "radius": null,
+      "width": 36.255037658665174,
+      "height": 91.5822421049206,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "distractor_1",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 792.2848795666976,
+        "y": 687.0184715818576
+      },
+      "radius": null,
+      "width": 45.35472543419166,
+      "height": 38.22040503423486,
+      "angle_degrees": 48.13467510751855
+    }
+  ],
+  "ground_truth_state": "VISIBLE",
+  "ground_truth_reason": "NONE",
+  "diagnostic_details": "Unobstructed optical sightline via mirror at (554.0, 651.4) with theta_i=theta_r=34.6 deg",
+  "reflection_point": {
+    "x": 553.9899576913473,
+    "y": 651.3934697277771
+  },
+  "virtual_target": {
+    "x": 705.4733391073303,
+    "y": 991.1299344580145
+  },
+  "optical_path": [
+    {
+      "x": 398.87759044174226,
+      "y": 303.5181662275942
+    },
+    {
+      "x": 553.9899576913473,
+      "y": 651.3934697277771
+    },
+    {
+      "x": 817.5022250840334,
+      "y": 388.84944437929283
+    }
+  ],
+  "incident_angle_deg": 34.5684151513923,
+  "reflected_angle_deg": 34.568415151392315,
+  "total_optical_distance": 752.8684459510689,
+  "is_direct_sight_blocked": true
+}

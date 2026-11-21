@@ -20,6 +20,11 @@ from mirrorlab.schema.scene import (
 )
 from mirrorlab.schema.task import (
     OBSTRUCTION_TO_REASON_CODE,
+    BlockedSegment,
+    ObstructionGroundTruth,
+    ObstructionProof,
+    ObstructionQuestion,
+    ObstructionTaskBundle,
     ProofGeometry,
     VisibilityGroundTruth,
     VisibilityQuestion,
@@ -29,12 +34,17 @@ from mirrorlab.schema.task import (
 
 __all__ = [
     "OBSTRUCTION_TO_REASON_CODE",
+    "BlockedSegment",
     "CameraSpec",
     "DifficultyLevel",
     "InspectionScene",
     "MirrorSpec",
     "ObstacleSpec",
+    "ObstructionGroundTruth",
+    "ObstructionProof",
+    "ObstructionQuestion",
     "ObstructionReason",
+    "ObstructionTaskBundle",
     "Point2D",
     "ProofGeometry",
     "SceneCategory",

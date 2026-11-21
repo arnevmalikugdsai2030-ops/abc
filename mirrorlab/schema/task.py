@@ -28,6 +28,14 @@ class VisibilityReasonCode(str, Enum):
     BLOCKED_MIRROR_TO_TARGET = "BLOCKED_MIRROR_TO_TARGET"
 
 
+class BlockedSegment(str, Enum):
+    """Path segment identified in obstruction reasoning tasks."""
+
+    NONE = "NONE"
+    CAMERA_TO_MIRROR = "CAMERA_TO_MIRROR"
+    MIRROR_TO_TARGET = "MIRROR_TO_TARGET"
+
+
 # Mapping from internal geometry engine obstruction reason to standard benchmark code
 OBSTRUCTION_TO_REASON_CODE: dict[ObstructionReason, VisibilityReasonCode] = {
     ObstructionReason.NONE: VisibilityReasonCode.CLEAR,
@@ -125,5 +133,102 @@ class VisibilityTaskBundle(BaseModel):
     scene: InspectionScene
     question: VisibilityQuestion
     ground_truth: VisibilityGroundTruth
+    blind_image_path: str
+    overlay_image_path: str
+
+
+class ObstructionQuestion(BaseModel):
+    """
+    Public task record for Task B: Obstruction Identification.
+    STRICT INVARIANT: Contains zero answers, zero ray coordinates, zero proof coordinates.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    task_id: str = Field(..., description="Unique benchmark task identifier")
+    task_type: TaskType = Field(
+        default=TaskType.TASK_B_OBSTRUCTION, description="Benchmark task category"
+    )
+    question: str = Field(
+        default="Is the camera's view of the red X blocked by an obstacle? If so, which obstacle blocks which segment of the path?",
+        description="The primary obstruction question",
+    )
+    prompt: str = Field(
+        ..., description="Complete multi-modal instructional prompt for the VLM"
+    )
+    image_filename: str = Field(
+        ..., description="Filename of the blind inspection diagram PNG"
+    )
+    obstacle_labels: list[str] = Field(
+        ...,
+        description="List of obstacle labels present in diagram (e.g. ['O1', 'O2', 'O3'])",
+    )
+    segment_options: list[str] = Field(
+        default=[s.value for s in BlockedSegment],
+        description="Available path segment choices",
+    )
+
+
+class ObstructionProof(BaseModel):
+    """Exact computational geometry proof coordinates for obstruction ground truth."""
+
+    model_config = ConfigDict(frozen=True)
+
+    reflection_point: Point2D
+    virtual_target: Point2D
+    incident_angle_deg: float
+    reflected_angle_deg: float
+    blocked_segment: BlockedSegment
+    blocking_obstacle_label: str | None = None
+    blocking_obstacle_id: str | None = None
+    intersection_point: Point2D | None = None
+    penetration_depth_mm: float | None = None
+    min_distractor_clearance_mm: float
+    optical_path: list[Point2D] = Field(default_factory=list)
+
+
+class ObstructionGroundTruth(BaseModel):
+    """
+    Private answer-key and proof record for Task B: Obstruction Identification.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    task_id: str = Field(..., description="Matches ObstructionQuestion.task_id")
+    is_blocked: bool = Field(
+        ..., description="True if any obstacle blocks the specular reflection path"
+    )
+    blocking_obstacle_label: str | None = Field(
+        None, description="Label of blocking obstacle (e.g. 'O2') or None if unblocked"
+    )
+    blocked_segment: BlockedSegment = Field(
+        ...,
+        description="Which path segment is blocked: CAMERA_TO_MIRROR, MIRROR_TO_TARGET, or NONE",
+    )
+    detailed_explanation: str = Field(
+        ..., description="Deterministic step-by-step mathematical proof"
+    )
+    proof: ObstructionProof = Field(
+        ..., description="Geometric coordinates and clearances"
+    )
+
+
+class ObstructionTaskBundle(BaseModel):
+    """
+    Complete bundle containing all 5 generated artifacts for Task B:
+    1. Scene JSON (InspectionScene)
+    2. Blind Diagram PNG (path)
+    3. Question JSON (ObstructionQuestion)
+    4. Ground-Truth Answer JSON (ObstructionGroundTruth)
+    5. Explanation Overlay PNG (path)
+    """
+
+    task_id: str
+    seed: int
+    difficulty: DifficultyLevel
+    theme: str
+    scene: InspectionScene
+    question: ObstructionQuestion
+    ground_truth: ObstructionGroundTruth
     blind_image_path: str
     overlay_image_path: str

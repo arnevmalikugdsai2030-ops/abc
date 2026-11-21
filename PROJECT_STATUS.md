@@ -17,7 +17,7 @@
 | **M1** | Core 2D Geometry & Optics Engine | 🟢 **COMPLETED** | 83/83 | Vectors, mirror reflection, camera FOV, obstacle occlusion, Visibility Oracle, and Falsification Suite |
 | **M2** | Seeded Scene Generator & Schemas | 🟢 **COMPLETED** | 12/12 | `mirrorlab/schema/scene.py`, `SceneGenerator`, 6 categories, 3 difficulty tiers, 20 sample scenes |
 | **M3** | Visual Diagram Rendering Engine | 🟢 **COMPLETED** | 14/14 | `mirrorlab/rendering/`, high-res Pillow schematic generator, blind/overlay isolation, 4 themes |
-| **M4** | The Visibility Task Factory (Task A)| 🟢 **COMPLETED** | 3/3 | `mirrorlab/generation/task_factory.py`, 5-artifact bundles, 6 standardized reason codes, balanced datasets |
+| **M4** | Benchmark Task Factories (A & B)| 🟢 **COMPLETED** | 8/8 | Task A (`VisibilityTaskFactory`, 5-artifact bundles), Task B (`ObstructionTaskFactory`, single-blocker precision, distractor clearance) |
 | **M5** | Task Factory Exporter & Benchmark CLI | ⚪ Next Up | 0/0 | `scripts/generate_benchmark.py`, JSONL + PNG dataset generation |
 | **M5** | Task Factory Exporter & Benchmark CLI | ⚪ Not Started | 0/0 | `scripts/generate_benchmark.py`, JSONL + PNG dataset generation |
 | **M6** | Vision-Language Model Evaluation Harness| ⚪ Not Started | 0/0 | `mirrorlab/evaluation/`, strict JSON parser, accuracy & pair metrics |
@@ -54,7 +54,8 @@
 | Seeded Scene Generator | `tests/test_scene_generator.py` | 12 | 12 | 0 | 2026-11-22 |
 | Diagram Rendering Engine | `tests/test_renderer.py` | 14 | 14 | 0 | 2026-11-22 |
 | Visibility Task Factory | `tests/test_task_factory.py` | 3 | 3 | 0 | 2026-11-22 |
-| **Total Suite** | **9 Test Files** | **118** | **118** | **0** | **2026-11-22** |
+| Obstruction Task Factory | `tests/test_obstruction_task.py` | 5 | 5 | 0 | 2026-11-22 |
+| **Total Suite** | **10 Test Files** | **123** | **123** | **0** | **2026-11-22** |
 
 ### Detailed Test Execution Log:
 ```text
