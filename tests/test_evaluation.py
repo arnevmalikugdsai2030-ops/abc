@@ -96,25 +96,29 @@ class TestStructuredParser:
 class TestModelAdapter:
     """Tests model adapter instantiation and mock generation."""
 
-    def test_mock_adapter_oracle_strategy(self):
+    def test_mock_adapter_oracle_strategy(self, tmp_path: Path):
+        img_p = tmp_path / "test.png"
+        img_p.write_bytes(b"\x89PNG\r\n\x1a\n")
         gt_map = {
             "task_001": {"can_see": True, "answer": "YES", "reason_code": "CLEAR"}
         }
         adapter = get_model_adapter("mock-oracle", ground_truth_map=gt_map)
         res = adapter.generate(
             prompt="Is it visible?",
-            image_path=Path("dummy.png"),
+            image_path=img_p,
             task_id="task_001",
             task_type="TASK_A_VISIBILITY",
         )
         assert res.is_mock is True
         assert "YES" in res.raw_text
 
-    def test_mock_adapter_all_yes_strategy(self):
+    def test_mock_adapter_all_yes_strategy(self, tmp_path: Path):
+        img_p = tmp_path / "test.png"
+        img_p.write_bytes(b"\x89PNG\r\n\x1a\n")
         adapter = get_model_adapter("mock-all-yes")
         res = adapter.generate(
             prompt="Is it visible?",
-            image_path=Path("dummy.png"),
+            image_path=img_p,
             task_id="task_002",
             task_type="TASK_A_VISIBILITY",
         )

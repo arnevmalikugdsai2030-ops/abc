@@ -1,15 +1,14 @@
 """
-Vision-Language Model (VLM) API Adapters for MIRRORLAB Benchmark Evaluation.
+Provider-Independent Vision Model Adapter for MIRRORLAB.
 
-Provides unified inference interfaces for:
-- Google Gemini (official google-genai SDK, e.g. gemini-2.5-flash, gemini-2.5-pro)
-- Anthropic Claude (claude-3-7-sonnet, claude-3-5-sonnet)
-- OpenAI GPT (gpt-4o, gpt-4o-mini)
-- Mock VLM Runner with multiple simulation strategies for offline CI/CD and testing.
-
-Strict Rule:
-Prompt builders and inference adapters have access ONLY to blind diagrams and neutral prompts.
-Ground truth is never injected into model evaluation prompts.
+Provides a unified, resilient interface to interact with Vision-Language Models:
+- Accepts an image path and a text prompt/question.
+- Communicates with configured vision providers (starting with Google Gemini).
+- Manages credentials loaded strictly from environment variables or .env.
+- Supports configurable hyperparameters (temperature, max tokens, timeout).
+- Implements exponential backoff retry logic for transient API faults.
+- Captures granular response metadata: latency, token counts, model version,
+  finish reasons, retry counts, and API errors.
 """
 
 from __future__ import annotations
@@ -24,23 +23,43 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field
+
+# Ensure environment variables are loaded
+load_dotenv()
+
+
+class ModelSettings(BaseModel):
+    """Configurable model hyperparameters and execution settings."""
+
+    temperature: float = Field(default=0.0, ge=0.0, le=2.0, description="Sampling temperature (0.0 for deterministic benchmark)")
+    max_output_tokens: int = Field(default=2048, ge=1, description="Maximum completion tokens")
+    timeout_seconds: float = Field(default=30.0, gt=0.0, description="HTTP/API call timeout in seconds")
+    max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts on transient failures")
+    initial_backoff_seconds: float = Field(default=1.0, gt=0.0, description="Initial backoff delay in seconds")
+    backoff_multiplier: float = Field(default=2.0, ge=1.0, description="Multiplier for exponential backoff")
+    system_instruction: str | None = Field(default=None, description="Optional system prompt")
 
 
 class ModelResponse(BaseModel):
-    """Encapsulates the raw response, usage metadata, and timing of a VLM call."""
+    """Standardized response container capturing raw text, tokens, timing, and errors."""
 
     raw_text: str
     model_name: str
+    model_version: str | None = None
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     total_tokens: int | None = None
     latency_sec: float = 0.0
+    retry_count: int = 0
+    finish_reason: str | None = None
     timestamp: str = Field(
         default_factory=lambda: datetime.now(UTC).isoformat()
     )
     error: str | None = None
     is_mock: bool = False
+    raw_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class MockStrategy(str, Enum):
@@ -54,37 +73,74 @@ class MockStrategy(str, Enum):
     FORMAT_ERROR = "format_error"  # Returns invalid/non-JSON text to test parser resilience
 
 
-class BaseVLMAdapter(ABC):
-    """Abstract base class for all vision-language model adapters."""
+class BaseVisionAdapter(ABC):
+    """
+    Common provider-independent abstract base class for all vision models.
+    Enables adding future providers (Claude, GPT, local VLMs) without altering the scoring engine.
+    """
 
-    def __init__(self, model_name: str, temperature: float = 0.0):
+    def __init__(
+        self,
+        model_name: str,
+        settings: ModelSettings | None = None,
+    ):
         self.model_name = model_name
-        self.temperature = temperature
+        self.settings = settings or ModelSettings()
+
+    @property
+    def temperature(self) -> float:
+        return self.settings.temperature
+
+    def validate_image(self, image_path: Path | str) -> Path:
+        """Validates that the image file exists and is a readable file."""
+        img_p = Path(image_path)
+        if not img_p.is_file():
+            raise FileNotFoundError(f"Diagram image not found: {img_p}")
+        return img_p
 
     @abstractmethod
-    def generate(
-        self, prompt: str, image_path: Path | str, **kwargs: Any
+    def ask(
+        self,
+        image_path: Path | str,
+        question: str,
+        **kwargs: Any,
     ) -> ModelResponse:
         """
-        Send prompt and blind diagram image to the model.
+        Accept an image path and text question, query the vision model, and return ModelResponse.
 
         Parameters
         ----------
-        prompt:
-            Task instruction and schema requirements.
         image_path:
-            Path to blind diagram PNG (never overlay).
+            Path to the diagram image (PNG, JPEG, etc.).
+        question:
+            Text prompt or question describing the inspection task.
 
         Returns
         -------
         ModelResponse:
-            Structured response containing verbatim text and metadata.
+            Standardized container with verbatim output, metadata, latency, and error state.
         """
 
+    def generate(
+        self,
+        prompt: str,
+        image_path: Path | str,
+        **kwargs: Any,
+    ) -> ModelResponse:
+        """
+        Backward-compatible alias for the benchmark evaluation runner.
+        Maps (prompt, image_path) -> ask(image_path, question=prompt).
+        """
+        return self.ask(image_path=image_path, question=prompt, **kwargs)
 
-class GeminiModelAdapter(BaseVLMAdapter):
+
+# Backward compatibility alias
+BaseVLMAdapter = BaseVisionAdapter
+
+
+class GeminiVisionAdapter(BaseVisionAdapter):
     """
-    Adapter for Google Gemini models using the modern google-genai SDK.
+    Vision model adapter for Google Gemini via the official google-genai SDK.
     Supports gemini-2.5-flash, gemini-2.5-pro, gemini-1.5-pro, etc.
     """
 
@@ -92,9 +148,16 @@ class GeminiModelAdapter(BaseVLMAdapter):
         self,
         model_name: str = "gemini-2.5-flash",
         api_key: str | None = None,
-        temperature: float = 0.0,
+        settings: ModelSettings | None = None,
+        temperature: float | None = None,
     ):
-        super().__init__(model_name=model_name, temperature=temperature)
+        if settings is None:
+            settings = ModelSettings()
+        if temperature is not None:
+            settings.temperature = temperature
+
+        super().__init__(model_name=model_name, settings=settings)
+        # Secrets loaded strictly from environment or explicit parameter
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
         self._client: Any = None
 
@@ -102,67 +165,63 @@ class GeminiModelAdapter(BaseVLMAdapter):
         if self._client is None:
             if not self.api_key:
                 raise ValueError(
-                    "GEMINI_API_KEY is not set. Provide api_key or set environment variable."
+                    "GEMINI_API_KEY is not set. Please set the GEMINI_API_KEY environment variable "
+                    "or pass api_key to the adapter. See .env.example."
                 )
             from google import genai
 
             self._client = genai.Client(api_key=self.api_key)
         return self._client
 
-    def generate(
-        self, prompt: str, image_path: Path | str, **kwargs: Any
-    ) -> ModelResponse:
-        img_p = Path(image_path)
-        if not img_p.is_file():
-            raise FileNotFoundError(f"Diagram image not found: {img_p}")
+    def _is_retryable_error(self, err: Exception) -> bool:
+        """Identifies transient network and server errors that warrant a retry."""
+        err_msg = str(err).lower()
+        retryable_keywords = [
+            "429", "rate limit", "quota", "resource exhausted",
+            "503", "unavailable", "500", "internal server error",
+            "timeout", "deadline exceeded", "connection reset", "econnreset"
+        ]
+        return any(kw in err_msg for kw in retryable_keywords)
 
-        client = self._get_client()
-        from google.genai import types
+    def ask(
+        self,
+        image_path: Path | str,
+        question: str,
+        **kwargs: Any,
+    ) -> ModelResponse:
+        img_p = self.validate_image(image_path)
 
         with open(img_p, "rb") as f:
             img_bytes = f.read()
 
-        image_part = types.Part.from_bytes(
-            data=img_bytes,
-            mime_type="image/png",
-        )
-
-        config = types.GenerateContentConfig(
-            temperature=self.temperature,
-        )
-
         t0 = time.perf_counter()
-        try:
-            response = client.models.generate_content(
-                model=self.model_name,
-                contents=[image_part, prompt],
-                config=config,
-            )
+        retries = 0
+        backoff = self.settings.initial_backoff_seconds
+
+        # Check credentials early
+        if not self.api_key:
             latency = time.perf_counter() - t0
-
-            raw_text = response.text or ""
-            prompt_tokens = None
-            completion_tokens = None
-            total_tokens = None
-            if hasattr(response, "usage_metadata") and response.usage_metadata:
-                prompt_tokens = getattr(
-                    response.usage_metadata, "prompt_token_count", None
-                )
-                completion_tokens = getattr(
-                    response.usage_metadata, "candidates_token_count", None
-                )
-                total_tokens = getattr(
-                    response.usage_metadata, "total_token_count", None
-                )
-
             return ModelResponse(
-                raw_text=raw_text,
+                raw_text="",
                 model_name=self.model_name,
-                prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
-                total_tokens=total_tokens,
                 latency_sec=latency,
+                error="GEMINI_API_KEY is not set. Provide api_key or set environment variable.",
                 is_mock=False,
+            )
+
+        try:
+            client = self._get_client()
+            from google.genai import types
+
+            image_part = types.Part.from_bytes(
+                data=img_bytes,
+                mime_type="image/png",
+            )
+
+            config = types.GenerateContentConfig(
+                temperature=self.settings.temperature,
+                max_output_tokens=self.settings.max_output_tokens,
+                system_instruction=self.settings.system_instruction,
             )
         except Exception as e:  # noqa: BLE001
             latency = time.perf_counter() - t0
@@ -170,12 +229,88 @@ class GeminiModelAdapter(BaseVLMAdapter):
                 raw_text="",
                 model_name=self.model_name,
                 latency_sec=latency,
-                error=str(e),
+                error=f"Client initialization error: {e}",
                 is_mock=False,
             )
 
+        # Retry loop with exponential backoff
+        last_error_msg: str | None = None
+        for attempt in range(self.settings.max_retries + 1):
+            try:
+                response = client.models.generate_content(
+                    model=self.model_name,
+                    contents=[image_part, question],
+                    config=config,
+                )
+                latency = time.perf_counter() - t0
 
-class AnthropicModelAdapter(BaseVLMAdapter):
+                raw_text = response.text or ""
+                prompt_tokens = None
+                completion_tokens = None
+                total_tokens = None
+                raw_meta: dict[str, Any] = {}
+
+                if hasattr(response, "usage_metadata") and response.usage_metadata:
+                    prompt_tokens = getattr(
+                        response.usage_metadata, "prompt_token_count", None
+                    )
+                    completion_tokens = getattr(
+                        response.usage_metadata, "candidates_token_count", None
+                    )
+                    total_tokens = getattr(
+                        response.usage_metadata, "total_token_count", None
+                    )
+                    raw_meta["prompt_tokens"] = prompt_tokens
+                    raw_meta["completion_tokens"] = completion_tokens
+                    raw_meta["total_tokens"] = total_tokens
+
+                finish_reason = None
+                if hasattr(response, "candidates") and response.candidates:
+                    first_cand = response.candidates[0]
+                    finish_reason = str(getattr(first_cand, "finish_reason", "STOP"))
+                    raw_meta["finish_reason"] = finish_reason
+
+                model_version = getattr(response, "model_version", None) or self.model_name
+
+                return ModelResponse(
+                    raw_text=raw_text,
+                    model_name=self.model_name,
+                    model_version=model_version,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    total_tokens=total_tokens,
+                    latency_sec=latency,
+                    retry_count=retries,
+                    finish_reason=finish_reason,
+                    is_mock=False,
+                    raw_metadata=raw_meta,
+                )
+
+            except Exception as e:  # noqa: BLE001
+                last_error_msg = str(e)
+                if attempt < self.settings.max_retries and self._is_retryable_error(e):
+                    retries += 1
+                    time.sleep(backoff)
+                    backoff *= self.settings.backoff_multiplier
+                    continue
+                break
+
+        latency = time.perf_counter() - t0
+        return ModelResponse(
+            raw_text="",
+            model_name=self.model_name,
+            latency_sec=latency,
+            retry_count=retries,
+            error=last_error_msg or "Unknown generation error",
+            is_mock=False,
+        )
+
+
+# Backward compatibility alias
+GeminiModelAdapter = GeminiVisionAdapter
+
+
+class AnthropicVisionAdapter(BaseVisionAdapter):
     """
     Adapter for Anthropic Claude models (e.g. claude-3-7-sonnet, claude-3-5-sonnet).
     """
@@ -184,9 +319,14 @@ class AnthropicModelAdapter(BaseVLMAdapter):
         self,
         model_name: str = "claude-3-7-sonnet-20250219",
         api_key: str | None = None,
-        temperature: float = 0.0,
+        settings: ModelSettings | None = None,
+        temperature: float | None = None,
     ):
-        super().__init__(model_name=model_name, temperature=temperature)
+        if settings is None:
+            settings = ModelSettings()
+        if temperature is not None:
+            settings.temperature = temperature
+        super().__init__(model_name=model_name, settings=settings)
         self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
         self._client: Any = None
 
@@ -200,18 +340,17 @@ class AnthropicModelAdapter(BaseVLMAdapter):
                 self._client = anthropic.Anthropic(api_key=self.api_key)
             except ImportError:
                 raise ImportError(
-                    "The anthropic package is required for AnthropicModelAdapter. Install with 'pip install anthropic'."
+                    "The anthropic package is required for AnthropicVisionAdapter. Install with 'pip install anthropic'."
                 )
         return self._client
 
-    def generate(
-        self, prompt: str, image_path: Path | str, **kwargs: Any
+    def ask(
+        self,
+        image_path: Path | str,
+        question: str,
+        **kwargs: Any,
     ) -> ModelResponse:
-        img_p = Path(image_path)
-        if not img_p.is_file():
-            raise FileNotFoundError(f"Diagram image not found: {img_p}")
-
-        client = self._get_client()
+        img_p = self.validate_image(image_path)
         with open(img_p, "rb") as f:
             b64_data = base64.b64encode(f.read()).decode("utf-8")
 
@@ -227,18 +366,19 @@ class AnthropicModelAdapter(BaseVLMAdapter):
                             "data": b64_data,
                         },
                     },
-                    {"type": "text", "text": prompt},
+                    {"type": "text", "text": question},
                 ],
             }
         ]
 
         t0 = time.perf_counter()
         try:
+            client = self._get_client()
             res = client.messages.create(
                 model=self.model_name,
                 messages=messages,
-                temperature=self.temperature,
-                max_tokens=2048,
+                temperature=self.settings.temperature,
+                max_tokens=self.settings.max_output_tokens,
             )
             latency = time.perf_counter() - t0
             raw_text = res.content[0].text if res.content else ""
@@ -265,7 +405,11 @@ class AnthropicModelAdapter(BaseVLMAdapter):
             )
 
 
-class OpenAIModelAdapter(BaseVLMAdapter):
+# Backward compatibility alias
+AnthropicModelAdapter = AnthropicVisionAdapter
+
+
+class OpenAIVisionAdapter(BaseVisionAdapter):
     """
     Adapter for OpenAI GPT models (e.g. gpt-4o, gpt-4o-mini).
     """
@@ -274,9 +418,14 @@ class OpenAIModelAdapter(BaseVLMAdapter):
         self,
         model_name: str = "gpt-4o",
         api_key: str | None = None,
-        temperature: float = 0.0,
+        settings: ModelSettings | None = None,
+        temperature: float | None = None,
     ):
-        super().__init__(model_name=model_name, temperature=temperature)
+        if settings is None:
+            settings = ModelSettings()
+        if temperature is not None:
+            settings.temperature = temperature
+        super().__init__(model_name=model_name, settings=settings)
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self._client: Any = None
 
@@ -290,18 +439,17 @@ class OpenAIModelAdapter(BaseVLMAdapter):
                 self._client = openai.OpenAI(api_key=self.api_key)
             except ImportError:
                 raise ImportError(
-                    "The openai package is required for OpenAIModelAdapter. Install with 'pip install openai'."
+                    "The openai package is required for OpenAIVisionAdapter. Install with 'pip install openai'."
                 )
         return self._client
 
-    def generate(
-        self, prompt: str, image_path: Path | str, **kwargs: Any
+    def ask(
+        self,
+        image_path: Path | str,
+        question: str,
+        **kwargs: Any,
     ) -> ModelResponse:
-        img_p = Path(image_path)
-        if not img_p.is_file():
-            raise FileNotFoundError(f"Diagram image not found: {img_p}")
-
-        client = self._get_client()
+        img_p = self.validate_image(image_path)
         with open(img_p, "rb") as f:
             b64_data = base64.b64encode(f.read()).decode("utf-8")
 
@@ -310,7 +458,7 @@ class OpenAIModelAdapter(BaseVLMAdapter):
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt},
+                    {"type": "text", "text": question},
                     {"type": "image_url", "image_url": {"url": data_url}},
                 ],
             }
@@ -318,11 +466,12 @@ class OpenAIModelAdapter(BaseVLMAdapter):
 
         t0 = time.perf_counter()
         try:
+            client = self._get_client()
             res = client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
-                temperature=self.temperature,
-                max_tokens=2048,
+                temperature=self.settings.temperature,
+                max_tokens=self.settings.max_output_tokens,
             )
             latency = time.perf_counter() - t0
             raw_text = res.choices[0].message.content or ""
@@ -346,9 +495,13 @@ class OpenAIModelAdapter(BaseVLMAdapter):
             )
 
 
-class MockVLMAdapter(BaseVLMAdapter):
+# Backward compatibility alias
+OpenAIModelAdapter = OpenAIVisionAdapter
+
+
+class MockVisionAdapter(BaseVisionAdapter):
     """
-    Offline Mock VLM Runner for testing pipelines and benchmark verification.
+    Offline Mock Vision Runner for testing pipelines and benchmark verification.
     Provides controllable simulation strategies without making external network calls.
     """
 
@@ -358,17 +511,22 @@ class MockVLMAdapter(BaseVLMAdapter):
         ground_truth_map: dict[str, dict[str, Any]] | None = None,
         seed: int = 42,
         model_name: str | None = None,
+        settings: ModelSettings | None = None,
     ):
         name = model_name or f"mock-{strategy.value}"
-        super().__init__(model_name=name, temperature=0.0)
+        super().__init__(model_name=name, settings=settings)
         self.strategy = strategy
         self.ground_truth_map = ground_truth_map or {}
         self.seed = seed
         self._counter = 0
 
-    def generate(
-        self, prompt: str, image_path: Path | str, **kwargs: Any
+    def ask(
+        self,
+        image_path: Path | str,
+        question: str,
+        **kwargs: Any,
     ) -> ModelResponse:
+        self.validate_image(image_path)
         t0 = time.perf_counter()
         task_id = kwargs.get("task_id", "")
         task_type = kwargs.get("task_type", "TASK_A_VISIBILITY")
@@ -405,15 +563,18 @@ class MockVLMAdapter(BaseVLMAdapter):
         return ModelResponse(
             raw_text=text,
             model_name=self.model_name,
+            model_version=f"{self.model_name}-v1",
             prompt_tokens=256,
             completion_tokens=64,
             total_tokens=320,
             latency_sec=latency,
+            retry_count=0,
+            finish_reason="STOP",
             is_mock=True,
+            raw_metadata={"strategy": self.strategy.value, "task_id": task_id},
         )
 
     def _generate_oracle(self, task_type: str, gt: dict[str, Any]) -> str:
-        """Emulate ground truth answers in compliant JSON format."""
         if task_type in ("TASK_A_VISIBILITY", "TASK_D_COUNTERFACTUAL"):
             can_see = gt.get("can_see", True)
             ans = gt.get("answer", "YES" if can_see else "NO")
@@ -533,15 +694,20 @@ class MockVLMAdapter(BaseVLMAdapter):
         return json.dumps(data, indent=2)
 
 
+# Backward compatibility alias
+MockVLMAdapter = MockVisionAdapter
+
+
 def get_model_adapter(
     model_name: str,
     api_key: str | None = None,
     temperature: float = 0.0,
     ground_truth_map: dict[str, dict[str, Any]] | None = None,
     mock_strategy: MockStrategy | str | None = None,
-) -> BaseVLMAdapter:
+    settings: ModelSettings | None = None,
+) -> BaseVisionAdapter:
     """
-    Factory function to instantiate the appropriate VLM adapter.
+    Factory function to instantiate a provider-independent vision model adapter.
 
     Examples:
     - get_model_adapter("gemini-2.5-flash")
@@ -551,6 +717,9 @@ def get_model_adapter(
     - get_model_adapter("mock-all-yes")
     """
     model_lower = model_name.lower()
+
+    if settings is None:
+        settings = ModelSettings(temperature=temperature)
 
     if model_lower.startswith("mock"):
         strat = MockStrategy.ORACLE
@@ -571,30 +740,38 @@ def get_model_adapter(
         elif "format" in model_lower or "error" in model_lower:
             strat = MockStrategy.FORMAT_ERROR
 
-        return MockVLMAdapter(
+        return MockVisionAdapter(
             strategy=strat,
             ground_truth_map=ground_truth_map,
             model_name=model_name,
+            settings=settings,
         )
 
     if "gemini" in model_lower:
-        return GeminiModelAdapter(
-            model_name=model_name, api_key=api_key, temperature=temperature
+        return GeminiVisionAdapter(
+            model_name=model_name,
+            api_key=api_key,
+            settings=settings,
         )
 
     if "claude" in model_lower or "anthropic" in model_lower:
-        return AnthropicModelAdapter(
-            model_name=model_name, api_key=api_key, temperature=temperature
+        return AnthropicVisionAdapter(
+            model_name=model_name,
+            api_key=api_key,
+            settings=settings,
         )
 
     if "gpt" in model_lower or "openai" in model_lower:
-        return OpenAIModelAdapter(
-            model_name=model_name, api_key=api_key, temperature=temperature
+        return OpenAIVisionAdapter(
+            model_name=model_name,
+            api_key=api_key,
+            settings=settings,
         )
 
     # Fallback to Mock
-    return MockVLMAdapter(
+    return MockVisionAdapter(
         strategy=MockStrategy.ORACLE,
         ground_truth_map=ground_truth_map,
         model_name=model_name,
+        settings=settings,
     )
