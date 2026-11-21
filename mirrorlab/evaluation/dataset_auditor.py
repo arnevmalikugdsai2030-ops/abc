@@ -20,7 +20,6 @@ physical isolation of public model inputs from private ground truth.
 from __future__ import annotations
 
 import json
-import math
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,17 +28,9 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
-from mirrorlab.geometry.oracle import VisibilityOracle, evaluate_visibility_oracle
-from mirrorlab.schema.common import ObstructionReason, Point2D, TaskType, VisibilityState
-from mirrorlab.schema.scene import DifficultyLevel, InspectionScene, MirrorSpec, ObstacleSpec, TargetSpec
-from mirrorlab.schema.task import (
-    CounterfactualPairRecord,
-    CounterfactualPairType,
-    ExpectedPairRelationship,
-    ObstructionGroundTruth,
-    RepairGroundTruth,
-    VisibilityGroundTruth,
-    VisibilityReasonCode,
+from mirrorlab.geometry.oracle import VisibilityOracle
+from mirrorlab.schema.scene import (
+    InspectionScene,
 )
 
 
@@ -160,7 +151,7 @@ class DatasetAuditor:
         try:
             img_blind = Image.open(blind_path).convert("RGB")
             img_overlay = Image.open(overlay_path).convert("RGB")
-        except Exception as e:
+        except (OSError, ValueError) as e:
             return False, f"Image open error: {e}"
 
         # 1. Dimensions must match
@@ -289,7 +280,6 @@ class DatasetAuditor:
             return [AuditCheckResult("Task B Directory", False, f"Missing directory {dir_path}", failures=[str(dir_path)])]
 
         task_dirs = [p for p in dir_path.iterdir() if p.is_dir()]
-        oracle_mismatches = []
         single_blocker_failures = []
         meta_items = []
 
@@ -330,7 +320,6 @@ class DatasetAuditor:
 
         task_dirs = [p for p in dir_path.iterdir() if p.is_dir()]
         winner_failures = []
-        distinctness_failures = []
 
         for tdir in task_dirs:
             with open(tdir / "answer.json", encoding="utf-8") as f:
@@ -370,7 +359,7 @@ class DatasetAuditor:
                 pdata = json.load(f)
 
             pair_id = pdata["pair_id"]
-            pair_type = pdata["pair_type"]
+            pdata["pair_type"]
             expected_rel = pdata["expected_relationship"]
             outcomes = pdata["ground_truth_outcomes"]
 
@@ -381,12 +370,10 @@ class DatasetAuditor:
             vis_a = out_a["is_visible"]
             vis_b = out_b["is_visible"]
 
-            if expected_rel == "FLIPPED_OUTCOME":
-                if vis_a == vis_b:
-                    relationship_failures.append(f"{pair_id}: Expected flip, but A={vis_a}, B={vis_b}")
-            elif expected_rel == "INVARIANT_OUTCOME":
-                if vis_a != vis_b:
-                    relationship_failures.append(f"{pair_id}: Expected invariant, but A={vis_a}, B={vis_b}")
+            if expected_rel == "FLIPPED_OUTCOME" and vis_a == vis_b:
+                relationship_failures.append(f"{pair_id}: Expected flip, but A={vis_a}, B={vis_b}")
+            elif expected_rel == "INVARIANT_OUTCOME" and vis_a != vis_b:
+                relationship_failures.append(f"{pair_id}: Expected invariant, but A={vis_a}, B={vis_b}")
 
             pair_meta.append({"task_id": pair_id, "seed": 1})
 
@@ -480,8 +467,8 @@ class DatasetSplitter:
             shuffled = list(items)
             self.rng.shuffle(shuffled)
             n = len(shuffled)
-            n_dev = int(round(n * self.dev_ratio))
-            n_val = int(round(n * self.val_ratio))
+            n_dev = round(n * self.dev_ratio)
+            n_val = round(n * self.val_ratio)
 
             dev_items = shuffled[:n_dev]
             val_items = shuffled[n_dev : n_dev + n_val]
@@ -524,72 +511,114 @@ class DatasetSplitter:
         if split in ("dev", "val"):
             manifest_q = self.splits_root / split / "tasks.jsonl"
             manifest_gt = self.splits_root / split / "ground_truth.jsonl"
+            manifest_pairs = self.splits_root / split / "pairs.jsonl"
             img_dir = self.splits_root / split / "images"
 
             with open(manifest_q, "a", encoding="utf-8") as f_q, open(manifest_gt, "a", encoding="utf-8") as f_gt:
                 for item in items:
                     if task_type == "TASK_D_COUNTERFACTUAL":
+                        pair_path = item / "pair.json"
+                        if pair_path.is_file():
+                            with open(pair_path, encoding="utf-8") as pf:
+                                p_data = json.load(pf)
+                            with open(manifest_pairs, "a", encoding="utf-8") as f_p:
+                                f_p.write(json.dumps(p_data) + "\n")
+
                         for sub in ["scene_a", "scene_b"]:
                             sdir = item / sub
+                            tid = None
                             if (sdir / "question.json").is_file():
                                 with open(sdir / "question.json", encoding="utf-8") as f:
                                     q = json.load(f)
+                                tid = q["task_id"]
+                                q["image_filename"] = f"{tid}.png"
+                                q["pair_id"] = item.name
                                 f_q.write(json.dumps(q) + "\n")
                             if (sdir / "ground_truth.json").is_file():
                                 with open(sdir / "ground_truth.json", encoding="utf-8") as f:
                                     gt = json.load(f)
                                 f_gt.write(json.dumps(gt) + "\n")
-                            if (sdir / "diagram_blind.png").is_file():
-                                shutil.copy2(sdir / "diagram_blind.png", img_dir / f"{item.name}_{sub}.png")
+                            if tid and (sdir / "diagram_blind.png").is_file():
+                                shutil.copy2(sdir / "diagram_blind.png", img_dir / f"{tid}.png")
                     else:
+                        tid = None
                         if (item / "question.json").is_file():
                             with open(item / "question.json", encoding="utf-8") as f:
                                 q = json.load(f)
+                            tid = q["task_id"]
+                            q["image_filename"] = f"{tid}.png"
                             f_q.write(json.dumps(q) + "\n")
                         if (item / "ground_truth.json").is_file():
                             with open(item / "ground_truth.json", encoding="utf-8") as f:
                                 gt = json.load(f)
                             f_gt.write(json.dumps(gt) + "\n")
-                        if (item / "diagram_blind.png").is_file():
-                            shutil.copy2(item / "diagram_blind.png", img_dir / f"{item.name}.png")
+                        if tid and (item / "diagram_blind.png").is_file():
+                            shutil.copy2(item / "diagram_blind.png", img_dir / f"{tid}.png")
 
         elif split == "test":
             # Strict isolation: Public vs Private
             pub_manifest = self.splits_root / "test" / "public" / "tasks.jsonl"
             priv_manifest = self.splits_root / "test" / "private" / "ground_truth.jsonl"
+            pub_pairs = self.splits_root / "test" / "public" / "pairs.jsonl"
+            priv_pairs = self.splits_root / "test" / "private" / "pairs.jsonl"
             pub_img_dir = self.splits_root / "test" / "public" / "images"
             priv_overlay_dir = self.splits_root / "test" / "private" / "overlays"
 
             with open(pub_manifest, "a", encoding="utf-8") as f_pub, open(priv_manifest, "a", encoding="utf-8") as f_priv:
                 for item in items:
                     if task_type == "TASK_D_COUNTERFACTUAL":
+                        pair_path = item / "pair.json"
+                        if pair_path.is_file():
+                            with open(pair_path, encoding="utf-8") as pf:
+                                p_data = json.load(pf)
+                            # Public pair info: no ground truth outcomes
+                            pub_p = {
+                                "pair_id": p_data["pair_id"],
+                                "pair_type": p_data["pair_type"],
+                                "parent_scene_id": p_data["parent_scene_id"],
+                                "child_scene_ids": p_data["child_scene_ids"],
+                                "expected_relationship": p_data["expected_relationship"],
+                            }
+                            with open(pub_pairs, "a", encoding="utf-8") as f_pub_p:
+                                f_pub_p.write(json.dumps(pub_p) + "\n")
+                            # Private pair info: full ground truth
+                            with open(priv_pairs, "a", encoding="utf-8") as f_priv_p:
+                                f_priv_p.write(json.dumps(p_data) + "\n")
+
                         for sub in ["scene_a", "scene_b"]:
                             sdir = item / sub
+                            tid = None
                             if (sdir / "question.json").is_file():
                                 with open(sdir / "question.json", encoding="utf-8") as f:
                                     q = json.load(f)
+                                tid = q["task_id"]
+                                q["image_filename"] = f"{tid}.png"
+                                q["pair_id"] = item.name
                                 f_pub.write(json.dumps(q) + "\n")
                             if (sdir / "ground_truth.json").is_file():
                                 with open(sdir / "ground_truth.json", encoding="utf-8") as f:
                                     gt = json.load(f)
                                 f_priv.write(json.dumps(gt) + "\n")
-                            if (sdir / "diagram_blind.png").is_file():
-                                shutil.copy2(sdir / "diagram_blind.png", pub_img_dir / f"{item.name}_{sub}.png")
-                            if (sdir / "diagram_overlay.png").is_file():
-                                shutil.copy2(sdir / "diagram_overlay.png", priv_overlay_dir / f"{item.name}_{sub}_overlay.png")
+                            if tid and (sdir / "diagram_blind.png").is_file():
+                                shutil.copy2(sdir / "diagram_blind.png", pub_img_dir / f"{tid}.png")
+                            if tid and (sdir / "diagram_overlay.png").is_file():
+                                shutil.copy2(sdir / "diagram_overlay.png", priv_overlay_dir / f"{tid}_overlay.png")
                     else:
+                        tid = None
                         if (item / "question.json").is_file():
                             with open(item / "question.json", encoding="utf-8") as f:
                                 q = json.load(f)
+                            tid = q["task_id"]
+                            q["image_filename"] = f"{tid}.png"
                             f_pub.write(json.dumps(q) + "\n")
                         if (item / "ground_truth.json").is_file():
                             with open(item / "ground_truth.json", encoding="utf-8") as f:
                                 gt = json.load(f)
                             f_priv.write(json.dumps(gt) + "\n")
-                        if (item / "diagram_blind.png").is_file():
-                            shutil.copy2(item / "diagram_blind.png", pub_img_dir / f"{item.name}.png")
-                        if (item / "diagram_overlay.png").is_file():
-                            shutil.copy2(item / "diagram_overlay.png", priv_overlay_dir / f"{item.name}_overlay.png")
+                        if tid and (item / "diagram_blind.png").is_file():
+                            shutil.copy2(item / "diagram_blind.png", pub_img_dir / f"{tid}.png")
+                        if tid and (item / "diagram_overlay.png").is_file():
+                            shutil.copy2(item / "diagram_overlay.png", priv_overlay_dir / f"{tid}_overlay.png")
 
 
 def render_audit_report_markdown(report: ComprehensiveAuditReport) -> str:
