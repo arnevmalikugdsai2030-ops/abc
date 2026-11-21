@@ -1,6 +1,7 @@
 # MIRRORLAB: The Missing Scratch
 
 [![Innodata Frontier AI Hackathon 2026](https://img.shields.io/badge/Hackathon-Track_2:_Visual_Task_Factory-blue.svg)](https://innodata.com)
+[![CI Status](https://github.com/arnevmalikugdsai2030-ops/abc/actions/workflows/ci.yml/badge.svg)](https://github.com/arnevmalikugdsai2030-ops/abc/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-brightgreen.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 

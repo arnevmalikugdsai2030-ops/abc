@@ -13,7 +13,7 @@
 
 | Milestone | Description | Status | Tests Passing | Target Deliverable |
 |---|---|---|---|---|
-| **M0** | Workspace & Environment Setup | 🟢 **COMPLETED** | 5/5 | `pyproject.toml`, `.venv` (Python 3.12), modular architecture, scaffold tests |
+| **M0** | Workspace & Environment Setup | 🟢 **COMPLETED** | 6/6 | `pyproject.toml`, `.venv`, CI pipeline (`.github/workflows/ci.yml`), scaffold tests |
 | **M1** | Core 2D Geometry & Optics Engine | ⚪ Next Up | 0/0 | `mirrorlab/geometry/`, virtual camera, ray-obstacle solver |
 | **M2** | Pydantic Models & Ground-Truth System | ⚪ Not Started | 0/0 | `mirrorlab/schema/`, public/private schema separation |
 | **M3** | Visual Diagram Rendering Engine | ⚪ Not Started | 0/0 | `mirrorlab/rendering/`, high-res Pillow schematic generator |
@@ -44,7 +44,7 @@
 
 | Test Suite | Files Tested | Tests Run | Passed | Failed | Date Executed |
 |---|---|---|---|---|---|
-| Scaffold & Architecture | `tests/test_scaffold.py` | 5 | 5 | 0 | 2026-11-22 |
+| Scaffold & Architecture | `tests/test_scaffold.py` | 6 | 6 | 0 | 2026-11-22 |
 
 ### Detailed Test Execution Log:
 ```text

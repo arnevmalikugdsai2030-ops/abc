@@ -1,14 +1,15 @@
 """
 Initial Architecture & Environment Scaffold Smoke Tests.
 """
+
 import pytest
+
 from mirrorlab import __version__
 from mirrorlab.schema import (
-    Point2D,
-    Vector2D,
-    TaskType,
-    VisibilityState,
     ObstructionReason,
+    Point2D,
+    TaskType,
+    Vector2D,
 )
 
 
@@ -59,3 +60,13 @@ def test_enum_completeness():
     assert ObstructionReason.BLOCKED_INCIDENT.value == "BLOCKED_INCIDENT"
     assert ObstructionReason.BLOCKED_REFLECTED.value == "BLOCKED_REFLECTED"
     assert ObstructionReason.BACK_OF_MIRROR.value == "BACK_OF_MIRROR"
+
+
+def test_main_cli_entrypoint(capsys):
+    """Verify package CLI entrypoint returns exit code 0 and prints banner."""
+    from mirrorlab.__main__ import main
+
+    exit_code = main()
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert "MIRRORLAB Visual Task Factory" in captured.out

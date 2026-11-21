@@ -67,6 +67,7 @@ Ensure all tests exit with status code 0.
 ```python
 from pydantic import BaseModel, Field
 
+
 class Point2D(BaseModel):
     x: float = Field(..., description="X-coordinate in millimeters")
     y: float = Field(..., description="Y-coordinate in millimeters")

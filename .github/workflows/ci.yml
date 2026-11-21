@@ -1,0 +1,76 @@
+name: MIRRORLAB CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-verify:
+    name: Lint, Import Check & Test Suite
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Upgrade pip and install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Security Guard - Detect committed secrets & .env files
+        run: |
+          echo "Scanning for forbidden environment files..."
+          if [ -f .env ]; then
+            echo "::error file=.env::Accidental .env file detected in workspace!"
+            exit 1
+          fi
+          
+          # Check git index for tracked secret files
+          if git ls-files | grep -E '(^\.env$|\.env\.local$|\.key$|\.pem$)'; then
+            echo "::error::Forbidden secret or credentials file tracked in Git repository!"
+            exit 1
+          fi
+          echo "No committed secrets or .env files found. Security check passed."
+
+      - name: Code Quality & Lint Checks (Ruff)
+        run: |
+          echo "Running ruff linter..."
+          ruff check .
+          echo "Running ruff format verification..."
+          ruff format --check .
+
+      - name: Package Import Verification
+        run: |
+          python -c "
+          import numpy as np
+          import shapely
+          import PIL
+          import pydantic
+          import pandas as pd
+          import plotly
+          import mirrorlab
+          from mirrorlab.schema import Point2D, Vector2D, TaskType, ObstructionReason
+          print('All core dependencies and mirrorlab package imported successfully!')
+          print('mirrorlab version:', mirrorlab.__version__)
+          "
+
+      - name: Run Pytest Test Suite
+        run: |
+          pytest -v --cov=mirrorlab tests/

@@ -1,13 +1,16 @@
 """
 Common Pydantic schemas, enumerations, and value objects for MIRRORLAB.
 """
-from enum import Enum
+
 import math
-from pydantic import BaseModel, Field, ConfigDict
+from enum import Enum
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TaskType(str, Enum):
     """The 5 mandatory benchmark task categories."""
+
     TASK_A_VISIBILITY = "TASK_A_VISIBILITY"
     TASK_B_OBSTRUCTION = "TASK_B_OBSTRUCTION"
     TASK_C_REPAIR = "TASK_C_REPAIR"
@@ -17,23 +20,32 @@ class TaskType(str, Enum):
 
 class VisibilityState(str, Enum):
     """Reflected sightline state."""
+
     VISIBLE = "VISIBLE"
     NOT_VISIBLE = "NOT_VISIBLE"
 
 
 class ObstructionReason(str, Enum):
     """Diagnostic reason codes for reflected inspection failure."""
-    NONE = "NONE"                          # Fully visible
-    OUT_OF_FOV = "OUT_OF_FOV"              # Ray outside camera field of view cone
-    MISSED_MIRROR = "MISSED_MIRROR"        # Reflection misses finite mirror line segment
-    BLOCKED_INCIDENT = "BLOCKED_INCIDENT"  # Ray from Camera to Mirror blocked by obstacle
-    BLOCKED_REFLECTED = "BLOCKED_REFLECTED"# Ray from Mirror to Scratch blocked by obstacle
-    BACK_OF_MIRROR = "BACK_OF_MIRROR"      # Ray strikes non-reflective side of mirror
-    DIRECT_SIGHT_CLEAR = "DIRECT_SIGHT"    # Direct line-of-sight unblocked (invalid scene for mirror test)
+
+    NONE = "NONE"  # Fully visible
+    OUT_OF_FOV = "OUT_OF_FOV"  # Ray outside camera field of view cone
+    MISSED_MIRROR = "MISSED_MIRROR"  # Reflection misses finite mirror line segment
+    BLOCKED_INCIDENT = (
+        "BLOCKED_INCIDENT"  # Ray from Camera to Mirror blocked by obstacle
+    )
+    BLOCKED_REFLECTED = (
+        "BLOCKED_REFLECTED"  # Ray from Mirror to Scratch blocked by obstacle
+    )
+    BACK_OF_MIRROR = "BACK_OF_MIRROR"  # Ray strikes non-reflective side of mirror
+    DIRECT_SIGHT_CLEAR = (
+        "DIRECT_SIGHT"  # Direct line-of-sight unblocked (invalid scene for mirror test)
+    )
 
 
 class Point2D(BaseModel):
     """Immutable 2D Cartesian point in millimeters."""
+
     model_config = ConfigDict(frozen=True)
 
     x: float = Field(..., description="X coordinate in millimeters")
@@ -46,6 +58,7 @@ class Point2D(BaseModel):
 
 class Vector2D(BaseModel):
     """Immutable 2D vector."""
+
     model_config = ConfigDict(frozen=True)
 
     dx: float = Field(..., description="Delta X component")
