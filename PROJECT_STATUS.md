@@ -15,8 +15,8 @@
 |---|---|---|---|---|
 | **M0** | Workspace & Environment Setup | 🟢 **COMPLETED** | 6/6 | `pyproject.toml`, `.venv`, CI pipeline (`.github/workflows/ci.yml`), scaffold tests |
 | **M1** | Core 2D Geometry & Optics Engine | 🟢 **COMPLETED** | 83/83 | Vectors, mirror reflection, camera FOV, obstacle occlusion, Visibility Oracle, and Falsification Suite |
-| **M2** | Pydantic Models & Ground-Truth System | ⚪ Next Up | 0/0 | `mirrorlab/schema/`, public/private schema separation |
-| **M3** | Visual Diagram Rendering Engine | ⚪ Not Started | 0/0 | `mirrorlab/rendering/`, high-res Pillow schematic generator |
+| **M2** | Seeded Scene Generator & Schemas | 🟢 **COMPLETED** | 12/12 | `mirrorlab/schema/scene.py`, `SceneGenerator`, 6 categories, 3 difficulty tiers, 20 sample scenes |
+| **M3** | Visual Diagram Rendering Engine | ⚪ Next Up | 0/0 | `mirrorlab/rendering/`, high-res Pillow schematic generator |
 | **M4** | The 5 Benchmark Task Generators (A-E)| ⚪ Not Started | 0/0 | `mirrorlab/generation/`, Visibility, Obstruction, Repair, Counterfactuals, Cosmetic |
 | **M5** | Task Factory Exporter & Benchmark CLI | ⚪ Not Started | 0/0 | `scripts/generate_benchmark.py`, JSONL + PNG dataset generation |
 | **M6** | Vision-Language Model Evaluation Harness| ⚪ Not Started | 0/0 | `mirrorlab/evaluation/`, strict JSON parser, accuracy & pair metrics |
@@ -50,7 +50,8 @@
 | Camera Field-of-View | `tests/test_camera_fov.py` | 15 | 15 | 0 | 2026-11-22 |
 | Obstacle Occlusion & Oracle | `tests/test_obstacles.py` | 14 | 14 | 0 | 2026-11-22 |
 | Geometry Falsification Suite | `tests/test_geometry_falsification.py` | 14 | 14 | 0 | 2026-11-22 |
-| **Total Suite** | **6 Test Files** | **89** | **89** | **0** | **2026-11-22** |
+| Seeded Scene Generator | `tests/test_scene_generator.py` | 12 | 12 | 0 | 2026-11-22 |
+| **Total Suite** | **7 Test Files** | **101** | **101** | **0** | **2026-11-22** |
 
 ### Detailed Test Execution Log:
 ```text
