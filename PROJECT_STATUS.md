@@ -64,3 +64,5 @@ tests/test_scaffold.py::test_enum_completeness PASSED                    [100%]
 - **Decision 2 (2026-11-22):** Strict Separation of Blind Visual Tasks and Ground Truth Proofs. Evaluated vision models only receive clean inspection schematics and natural language prompts. Calculated rays, virtual cameras, and intersection coordinates are strictly isolated in separate private evaluation files.
 - **Decision 3 (2026-11-22):** Tooling Selection. Python 3.12 managed via `uv` for lightning-fast package management and pre-built C-extension binary wheels.
 - **Decision 4 (2026-11-22):** Modular Package Hierarchy. Separated concerns cleanly into `geometry` (pure math), `schema` (Pydantic contracts), `rendering` (Pillow graphics), `generation` (procedural scenes), `evaluation` (VLM benchmarks), `reporting` (analytics), and `ui` (Streamlit).
+- **Decision 5 (2026-11-22):** Public Repository Connected. Initialized Git on `main` branch, verified zero secrets, connected remote `https://github.com/arnevmalikugdsai2030-ops/abc`, and pushed initial commit `e3d2a81`.
+
