@@ -1,0 +1,93 @@
+{
+  "scene_id": "pair_obs_insert_007_b",
+  "seed": 42007,
+  "category": "BLOCKED_REFLECTED",
+  "difficulty": "MEDIUM",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 259.7338037907826,
+      "y": 444.3277646099924
+    },
+    "heading_deg": 52.664105637761196,
+    "fov_degrees": 66.82352168221759,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 449.5421050848115,
+      "y": 662.4534558959139
+    },
+    "endpoint_b": {
+      "x": 596.1220044808654,
+      "y": 660.2941533509821
+    },
+    "reflective_normal": {
+      "dx": -0.01472963412916915,
+      "dy": -0.9998915130545017
+    }
+  },
+  "target": {
+    "center": {
+      "x": 658.2406370990145,
+      "y": 448.09856502339255
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "partition_wall",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 458.9872204448985,
+        "y": 446.2131648166925
+      },
+      "radius": null,
+      "width": 43.29851087267994,
+      "height": 75.48614987282703,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O2",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 552.2574106932174,
+        "y": 566.5125616985354
+      },
+      "radius": 24.0,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "BLOCKED_REFLECTED",
+  "diagnostic_details": "Reflected ray R->T blocked by obstacle 'O2' at (536.3, 584.4)",
+  "reflection_point": {
+    "x": 466.61320211212745,
+    "y": 662.2019776004058
+  },
+  "virtual_target": {
+    "x": 664.4641309124997,
+    "y": 870.5678939341633
+  },
+  "optical_path": [
+    {
+      "x": 259.7338037907826,
+      "y": 444.3277646099924
+    },
+    {
+      "x": 466.61320211212745,
+      "y": 662.2019776004058
+    },
+    {
+      "x": 658.2406370990145,
+      "y": 448.09856502339255
+    }
+  ],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": false
+}

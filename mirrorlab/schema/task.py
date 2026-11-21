@@ -8,6 +8,7 @@ private mathematical ground-truth answer keys.
 from __future__ import annotations
 
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -332,3 +333,73 @@ class RepairTaskBundle(BaseModel):
     ground_truth: RepairGroundTruth
     blind_image_path: str
     overlay_image_path: str
+
+
+class CounterfactualPairType(str, Enum):
+    """Types of counterfactual and invariant paired scenes."""
+
+    MIRROR_ANGLE_FLIP = "MIRROR_ANGLE_FLIP"
+    COSMETIC_CONTROL = "COSMETIC_CONTROL"
+    OBSTACLE_INSERTION = "OBSTACLE_INSERTION"
+    IRRELEVANT_OBSTACLE = "IRRELEVANT_OBSTACLE"
+
+
+class ExpectedPairRelationship(str, Enum):
+    """Expected relationship between ground truth outcomes of child scenes in a pair."""
+
+    FLIPPED_OUTCOME = "FLIPPED_OUTCOME"
+    INVARIANT_OUTCOME = "INVARIANT_OUTCOME"
+
+
+class CounterfactualSceneOutcome(BaseModel):
+    """Ground truth summary of an individual scene within a counterfactual pair."""
+
+    model_config = ConfigDict(frozen=True)
+
+    scene_id: str
+    is_visible: bool
+    reason_code: VisibilityReasonCode
+    diagnostic_details: str
+    image_filename: str
+
+
+class CounterfactualPairRecord(BaseModel):
+    """
+    Master metadata record for a counterfactual pair.
+    Stores parent reference, child scene IDs, parameter deltas, and verified relationship.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    pair_id: str = Field(..., description="Unique counterfactual pair identifier")
+    pair_type: CounterfactualPairType = Field(..., description="Specific type of counterfactual pair")
+    parent_scene_id: str = Field(..., description="Base reference scene identifier")
+    child_scene_ids: list[str] = Field(..., description="List of [scene_a_id, scene_b_id]")
+    changed_parameter: str = Field(..., description="Name of the parameter modified between scenes")
+    original_values: dict[str, Any] = Field(..., description="Original parameter values in Scene A")
+    new_values: dict[str, Any] = Field(..., description="Modified parameter values in Scene B")
+    ground_truth_outcomes: dict[str, CounterfactualSceneOutcome] = Field(
+        ..., description="Ground truth outcome records for each child scene"
+    )
+    expected_relationship: ExpectedPairRelationship = Field(
+        ..., description="Expected relationship: FLIPPED_OUTCOME or INVARIANT_OUTCOME"
+    )
+    relationship_verified: bool = Field(
+        default=True, description="Whether the oracle verified the expected relationship"
+    )
+    difference_summary: str = Field(
+        ..., description="Human-readable summary of what changed and its physical optical effect"
+    )
+
+
+class CounterfactualPairBundle(BaseModel):
+    """
+    Complete bundle for a counterfactual pair containing all artifacts for both scenes.
+    """
+
+    pair_id: str
+    pair_type: CounterfactualPairType
+    pair_record: CounterfactualPairRecord
+    scene_a_bundle: VisibilityTaskBundle
+    scene_b_bundle: VisibilityTaskBundle
+

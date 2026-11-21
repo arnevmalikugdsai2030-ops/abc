@@ -1,0 +1,35 @@
+{
+  "pair_id": "pair_cosmetic_009",
+  "pair_type": "COSMETIC_CONTROL",
+  "parent_scene_id": "scene_parent_41009",
+  "child_scene_ids": [
+    "pair_cosmetic_009_a",
+    "pair_cosmetic_009_b"
+  ],
+  "changed_parameter": "rendering.theme",
+  "original_values": {
+    "theme": "LIGHT_OFFWHITE"
+  },
+  "new_values": {
+    "theme": "BLUEPRINT"
+  },
+  "ground_truth_outcomes": {
+    "pair_cosmetic_009_a": {
+      "scene_id": "pair_cosmetic_009_a",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (475.9, 676.7) with theta_i=theta_r=32.6 deg",
+      "image_filename": "diagram_blind.png"
+    },
+    "pair_cosmetic_009_b": {
+      "scene_id": "pair_cosmetic_009_b",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (475.9, 676.7) with theta_i=theta_r=32.6 deg",
+      "image_filename": "diagram_blind.png"
+    }
+  },
+  "expected_relationship": "INVARIANT_OUTCOME",
+  "relationship_verified": true,
+  "difference_summary": "Identical geometry rendered under two different visual palettes: LIGHT_OFFWHITE vs BLUEPRINT. Ground truth outcome remains invariant."
+}

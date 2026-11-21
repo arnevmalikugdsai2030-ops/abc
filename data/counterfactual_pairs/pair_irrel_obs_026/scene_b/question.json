@@ -1,0 +1,19 @@
+{
+  "task_id": "pair_irrel_obs_026_b",
+  "task_type": "TASK_A_VISIBILITY",
+  "question": "Can the camera see the center of the red X through the mirror?",
+  "prompt": "You are an industrial machine-vision inspector analyzing a 2D optical inspection diagram.\n\nApparatus Legend:\n- CAMERA: Represented by the blue camera symbol with a directional lens pointing along its optical axis. The translucent cone represents the camera's field of view (FOV).\n- MIRROR: Finite flat mirror segment between endpoints A and B. The reflective front face is marked with a vibrant cyan line. The non-reflective back face is marked with diagonal hatch lines.\n- TARGET DEFECT: A red 'X' scratch defect in the cavity.\n- OBSTACLES: Opaque polygonal barriers labeled O1, O2, etc. Direct line-of-sight between camera and scratch is blocked by barrier O1, so inspection is only possible via specular reflection in the mirror.\n\nLaw of Reflection:\nLight travels in straight lines. Specular reflection occurs at the mirror surface where angle of incidence equals angle of reflection (theta_i = theta_r) relative to the mirror surface normal.\n\nQuestion:\nCan the camera see the center of the red X through the mirror?\n\nAnalyze:\n1. Does the specular reflection ray from the camera to the target strike within the finite mirror segment between endpoints A and B?\n2. Is the reflection point on the mirror within the camera's field of view cone?\n3. Does the mirror's reflective face (cyan) face towards the camera and target (not the hatched back side)?\n4. Is the optical path blocked by any opaque obstacle (O1, O2, O3) along either the incident leg (camera to mirror) or the reflected leg (mirror to target)?\n\nRespond in JSON format with:\n{\n  \"can_see\": true or false,\n  \"answer\": \"YES\" or \"NO\",\n  \"reason\": \"CLEAR\" | \"MIRROR_MISS\" | \"OUTSIDE_FOV\" | \"WRONG_SIDE\" | \"BLOCKED_CAMERA_TO_MIRROR\" | \"BLOCKED_MIRROR_TO_TARGET\",\n  \"explanation\": \"<your step-by-step reasoning>\"\n}\n",
+  "image_filename": "diagram_blind.png",
+  "binary_options": [
+    "YES",
+    "NO"
+  ],
+  "reason_options": [
+    "CLEAR",
+    "MIRROR_MISS",
+    "OUTSIDE_FOV",
+    "WRONG_SIDE",
+    "BLOCKED_CAMERA_TO_MIRROR",
+    "BLOCKED_MIRROR_TO_TARGET"
+  ]
+}

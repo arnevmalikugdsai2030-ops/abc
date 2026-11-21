@@ -1,0 +1,35 @@
+{
+  "pair_id": "pair_cosmetic_020",
+  "pair_type": "COSMETIC_CONTROL",
+  "parent_scene_id": "scene_parent_41020",
+  "child_scene_ids": [
+    "pair_cosmetic_020_a",
+    "pair_cosmetic_020_b"
+  ],
+  "changed_parameter": "rendering.theme",
+  "original_values": {
+    "theme": "DARK_NAVY"
+  },
+  "new_values": {
+    "theme": "LIGHT_OFFWHITE"
+  },
+  "ground_truth_outcomes": {
+    "pair_cosmetic_020_a": {
+      "scene_id": "pair_cosmetic_020_a",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (626.5, 734.0) with theta_i=theta_r=35.0 deg",
+      "image_filename": "diagram_blind.png"
+    },
+    "pair_cosmetic_020_b": {
+      "scene_id": "pair_cosmetic_020_b",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (626.5, 734.0) with theta_i=theta_r=35.0 deg",
+      "image_filename": "diagram_blind.png"
+    }
+  },
+  "expected_relationship": "INVARIANT_OUTCOME",
+  "relationship_verified": true,
+  "difference_summary": "Identical geometry rendered under two different visual palettes: DARK_NAVY vs LIGHT_OFFWHITE. Ground truth outcome remains invariant."
+}

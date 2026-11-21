@@ -1,0 +1,35 @@
+{
+  "pair_id": "pair_cosmetic_003",
+  "pair_type": "COSMETIC_CONTROL",
+  "parent_scene_id": "scene_parent_41003",
+  "child_scene_ids": [
+    "pair_cosmetic_003_a",
+    "pair_cosmetic_003_b"
+  ],
+  "changed_parameter": "rendering.theme",
+  "original_values": {
+    "theme": "MONOCHROME_CAD"
+  },
+  "new_values": {
+    "theme": "DARK_NAVY"
+  },
+  "ground_truth_outcomes": {
+    "pair_cosmetic_003_a": {
+      "scene_id": "pair_cosmetic_003_a",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (456.1, 732.1) with theta_i=theta_r=36.0 deg",
+      "image_filename": "diagram_blind.png"
+    },
+    "pair_cosmetic_003_b": {
+      "scene_id": "pair_cosmetic_003_b",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (456.1, 732.1) with theta_i=theta_r=36.0 deg",
+      "image_filename": "diagram_blind.png"
+    }
+  },
+  "expected_relationship": "INVARIANT_OUTCOME",
+  "relationship_verified": true,
+  "difference_summary": "Identical geometry rendered under two different visual palettes: MONOCHROME_CAD vs DARK_NAVY. Ground truth outcome remains invariant."
+}

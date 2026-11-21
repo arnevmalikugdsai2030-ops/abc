@@ -21,7 +21,7 @@ from mirrorlab.generation.scene_generator import SceneGenerator
 from mirrorlab.rendering.pillow_renderer import PillowDiagramRenderer
 from mirrorlab.rendering.themes import RenderMode, RenderTheme
 from mirrorlab.schema.common import VisibilityState
-from mirrorlab.schema.scene import DifficultyLevel, SceneCategory
+from mirrorlab.schema.scene import DifficultyLevel, InspectionScene, SceneCategory
 from mirrorlab.schema.task import (
     OBSTRUCTION_TO_REASON_CODE,
     ProofGeometry,
@@ -79,27 +79,18 @@ class VisibilityTaskFactory:
             canvas_width=canvas_width, canvas_height=canvas_height
         )
 
-    def create_task(
+    def create_bundle_from_scene(
         self,
-        seed: int,
-        category: SceneCategory = SceneCategory.VALID_VISIBLE,
-        difficulty: DifficultyLevel = DifficultyLevel.MEDIUM,
+        scene: InspectionScene,
         theme: RenderTheme = RenderTheme.DARK_NAVY,
         output_dir: Path | None = None,
         task_id: str | None = None,
+        target_dir: Path | None = None,
     ) -> VisibilityTaskBundle:
         """
-        Generate a single verified task with all 5 required artifacts.
+        Create a full 5-artifact bundle from an already instantiated and oracle-evaluated scene.
         """
-        tid = task_id or f"task_vis_{seed}_{category.value.lower()}"
-
-        # 1. Generate Scene Geometry verified by Oracle
-        scene = self.scene_generator.generate_scene(
-            seed=seed,
-            category=category,
-            difficulty=difficulty,
-            scene_id=tid,
-        )
+        tid = task_id or scene.scene_id
 
         # 2. Build Ground-Truth Answer Key
         can_see = scene.ground_truth_state == VisibilityState.VISIBLE
@@ -151,43 +142,77 @@ class VisibilityTaskFactory:
         # 5. Persist to Output Directory if provided
         blind_path_str = ""
         overlay_path_str = ""
-        if output_dir is not None:
-            task_dir = Path(output_dir) / tid
-            task_dir.mkdir(parents=True, exist_ok=True)
+        effective_task_dir = None
+        if target_dir is not None:
+            effective_task_dir = Path(target_dir)
+        elif output_dir is not None:
+            effective_task_dir = Path(output_dir) / tid
+
+        if effective_task_dir is not None:
+            effective_task_dir.mkdir(parents=True, exist_ok=True)
 
             # 1. scene.json
-            with open(task_dir / "scene.json", "w", encoding="utf-8") as f:
+            with open(effective_task_dir / "scene.json", "w", encoding="utf-8") as f:
                 json.dump(scene.model_dump(mode="json"), f, indent=2)
 
             # 2. diagram_blind.png
-            blind_file = task_dir / "diagram_blind.png"
+            blind_file = effective_task_dir / "diagram_blind.png"
             img_blind.save(blind_file, format="PNG")
             blind_path_str = str(blind_file.resolve())
 
             # 3. question.json
-            with open(task_dir / "question.json", "w", encoding="utf-8") as f:
+            with open(effective_task_dir / "question.json", "w", encoding="utf-8") as f:
                 json.dump(question.model_dump(mode="json"), f, indent=2)
 
             # 4. ground_truth.json
-            with open(task_dir / "ground_truth.json", "w", encoding="utf-8") as f:
+            with open(effective_task_dir / "ground_truth.json", "w", encoding="utf-8") as f:
                 json.dump(ground_truth.model_dump(mode="json"), f, indent=2)
 
             # 5. diagram_overlay.png
-            overlay_file = task_dir / "diagram_overlay.png"
+            overlay_file = effective_task_dir / "diagram_overlay.png"
             img_overlay.save(overlay_file, format="PNG")
             overlay_path_str = str(overlay_file.resolve())
 
         return VisibilityTaskBundle(
             task_id=tid,
-            seed=seed,
-            category=category,
-            difficulty=difficulty,
+            seed=scene.seed,
+            category=scene.category,
+            difficulty=scene.difficulty,
             theme=theme.value,
             scene=scene,
             question=question,
             ground_truth=ground_truth,
             blind_image_path=blind_path_str,
             overlay_image_path=overlay_path_str,
+        )
+
+    def create_task(
+        self,
+        seed: int,
+        category: SceneCategory = SceneCategory.VALID_VISIBLE,
+        difficulty: DifficultyLevel = DifficultyLevel.MEDIUM,
+        theme: RenderTheme = RenderTheme.DARK_NAVY,
+        output_dir: Path | None = None,
+        task_id: str | None = None,
+    ) -> VisibilityTaskBundle:
+        """
+        Generate a single verified task with all 5 required artifacts.
+        """
+        tid = task_id or f"task_vis_{seed}_{category.value.lower()}"
+
+        # 1. Generate Scene Geometry verified by Oracle
+        scene = self.scene_generator.generate_scene(
+            seed=seed,
+            category=category,
+            difficulty=difficulty,
+            scene_id=tid,
+        )
+
+        return self.create_bundle_from_scene(
+            scene=scene,
+            theme=theme,
+            output_dir=output_dir,
+            task_id=tid,
         )
 
     def create_balanced_dataset(

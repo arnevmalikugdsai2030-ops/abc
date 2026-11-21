@@ -1,0 +1,35 @@
+{
+  "pair_id": "pair_cosmetic_022",
+  "pair_type": "COSMETIC_CONTROL",
+  "parent_scene_id": "scene_parent_41022",
+  "child_scene_ids": [
+    "pair_cosmetic_022_a",
+    "pair_cosmetic_022_b"
+  ],
+  "changed_parameter": "rendering.theme",
+  "original_values": {
+    "theme": "BLUEPRINT"
+  },
+  "new_values": {
+    "theme": "MONOCHROME_CAD"
+  },
+  "ground_truth_outcomes": {
+    "pair_cosmetic_022_a": {
+      "scene_id": "pair_cosmetic_022_a",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (528.6, 667.3) with theta_i=theta_r=41.5 deg",
+      "image_filename": "diagram_blind.png"
+    },
+    "pair_cosmetic_022_b": {
+      "scene_id": "pair_cosmetic_022_b",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (528.6, 667.3) with theta_i=theta_r=41.5 deg",
+      "image_filename": "diagram_blind.png"
+    }
+  },
+  "expected_relationship": "INVARIANT_OUTCOME",
+  "relationship_verified": true,
+  "difference_summary": "Identical geometry rendered under two different visual palettes: BLUEPRINT vs MONOCHROME_CAD. Ground truth outcome remains invariant."
+}

@@ -1,0 +1,34 @@
+{
+  "task_id": "pair_cosmetic_009_b",
+  "can_see": true,
+  "answer": "YES",
+  "reason_code": "CLEAR",
+  "detailed_explanation": "Mathematical Proof: Unobstructed optical sightline via mirror at (475.9, 676.7) with theta_i=theta_r=32.6 deg. Ground truth state is VISIBLE with reason CLEAR.",
+  "proof_geometry": {
+    "reflection_point": {
+      "x": 475.9101349792372,
+      "y": 676.6694923043374
+    },
+    "virtual_target": {
+      "x": 590.7514500338644,
+      "y": 925.3445665690518
+    },
+    "incident_angle_deg": 32.618212037341245,
+    "reflected_angle_deg": 32.61821203734123,
+    "total_optical_distance": 670.4177970302418,
+    "optical_path": [
+      {
+        "x": 309.66977876794556,
+        "y": 316.69596790703196
+      },
+      {
+        "x": 475.9101349792372,
+        "y": 676.6694923043374
+      },
+      {
+        "x": 653.6138864953809,
+        "y": 468.22478284610725
+      }
+    ]
+  }
+}

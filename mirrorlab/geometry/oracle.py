@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 
@@ -267,3 +268,29 @@ def evaluate_visibility_oracle(
         incident_angle_deg=inc_deg,
         reflected_angle_deg=refl_deg,
     )
+
+
+class VisibilityOracle:
+    """Object-oriented wrapper for evaluating complete InspectionScene objects."""
+
+    @staticmethod
+    def evaluate(scene: Any) -> VisibilityOracleResult:
+        """Evaluate an InspectionScene using the deterministic geometry oracle."""
+        obs = [o.to_geometry_obstacle() for o in scene.obstacles]
+        return evaluate_visibility_oracle(
+            camera_pos=[scene.camera.position.x, scene.camera.position.y],
+            camera_forward=scene.camera.heading_deg,
+            camera_fov_degrees=scene.camera.fov_degrees,
+            target_pos=[scene.target.center.x, scene.target.center.y],
+            mirror_a=[scene.mirror.endpoint_a.x, scene.mirror.endpoint_a.y],
+            mirror_b=[scene.mirror.endpoint_b.x, scene.mirror.endpoint_b.y],
+            obstacles=obs,
+            reflective_normal=[
+                scene.mirror.reflective_normal.dx,
+                scene.mirror.reflective_normal.dy,
+            ],
+        )
+
+    def __call__(self, scene: Any) -> VisibilityOracleResult:
+        return self.evaluate(scene)
+

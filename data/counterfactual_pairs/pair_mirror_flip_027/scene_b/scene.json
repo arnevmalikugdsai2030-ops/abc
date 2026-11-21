@@ -1,0 +1,81 @@
+{
+  "scene_id": "pair_mirror_flip_027_b",
+  "seed": 40027,
+  "category": "MIRROR_MISS",
+  "difficulty": "MEDIUM",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 654.3901018992472,
+      "y": 508.8654683080186
+    },
+    "heading_deg": 125.09028302669132,
+    "fov_degrees": 64.27257069325499,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 488.04756185531915,
+      "y": 729.6374800451673
+    },
+    "endpoint_b": {
+      "x": 665.4952766860797,
+      "y": 743.3681030802421
+    },
+    "reflective_normal": {
+      "dx": 0.07714780221746406,
+      "dy": -0.9970196671144532
+    }
+  },
+  "target": {
+    "center": {
+      "x": 352.3099136191846,
+      "y": 511.4011312837341
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "partition_wall",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 503.3500077592159,
+        "y": 510.1332997958764
+      },
+      "radius": null,
+      "width": 31.178289141403223,
+      "height": 78.6106378605001,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "MISSED_MIRROR",
+  "diagnostic_details": "Ray misses finite mirror (t_mirror=-0.059)",
+  "reflection_point": {
+    "x": 477.567117097107,
+    "y": 728.8265198344247
+  },
+  "virtual_target": {
+    "x": 320.35312291595176,
+    "y": 924.394734642292
+  },
+  "optical_path": [
+    {
+      "x": 654.3901018992472,
+      "y": 508.8654683080186
+    },
+    {
+      "x": 477.567117097107,
+      "y": 728.8265198344247
+    },
+    {
+      "x": 352.3099136191846,
+      "y": 511.4011312837341
+    }
+  ],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": false
+}

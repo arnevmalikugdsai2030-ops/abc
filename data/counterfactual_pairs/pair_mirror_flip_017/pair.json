@@ -1,0 +1,37 @@
+{
+  "pair_id": "pair_mirror_flip_017",
+  "pair_type": "MIRROR_ANGLE_FLIP",
+  "parent_scene_id": "scene_parent_40017",
+  "child_scene_ids": [
+    "pair_mirror_flip_017_a",
+    "pair_mirror_flip_017_b"
+  ],
+  "changed_parameter": "mirror.angle_deg",
+  "original_values": {
+    "mirror_angle_deg": 4.2,
+    "mirror_length_mm": 140.6
+  },
+  "new_values": {
+    "mirror_angle_deg": 10.2,
+    "delta_angle_deg": 6.0
+  },
+  "ground_truth_outcomes": {
+    "pair_mirror_flip_017_a": {
+      "scene_id": "pair_mirror_flip_017_a",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (427.2, 692.4) with theta_i=theta_r=26.1 deg",
+      "image_filename": "diagram_blind.png"
+    },
+    "pair_mirror_flip_017_b": {
+      "scene_id": "pair_mirror_flip_017_b",
+      "is_visible": false,
+      "reason_code": "MIRROR_MISS",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=-0.011)",
+      "image_filename": "diagram_blind.png"
+    }
+  },
+  "expected_relationship": "FLIPPED_OUTCOME",
+  "relationship_verified": true,
+  "difference_summary": "Mirror tilted by +6.0\u00b0 (from 4.2\u00b0 to 10.2\u00b0). Optical reflection point shifted, flipping visibility from CLEAR to MISSED_MIRROR."
+}
