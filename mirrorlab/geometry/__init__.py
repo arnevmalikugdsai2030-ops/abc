@@ -2,6 +2,11 @@
 MIRRORLAB Deterministic Computational Geometry Engine.
 """
 
+from mirrorlab.geometry.reflection import (
+    MirrorReflectionResult,
+    ReflectionFailureReason,
+    calculate_mirror_reflection,
+)
 from mirrorlab.geometry.vector import (
     EPSILON,
     DegenerateLineError,
@@ -25,7 +30,10 @@ __all__ = [
     "EPSILON",
     "DegenerateLineError",
     "GeometryError",
+    "MirrorReflectionResult",
+    "ReflectionFailureReason",
     "ZeroVectorError",
+    "calculate_mirror_reflection",
     "cross_product_2d",
     "dot_product",
     "line_tangent_and_normal",
