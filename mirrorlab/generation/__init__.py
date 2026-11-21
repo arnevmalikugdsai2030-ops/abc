@@ -1,5 +1,5 @@
 """
-Synthetic Task & Scene Generation Factory for MIRRORLAB.
+Procedural Scene and Visual Task Factory for MIRRORLAB.
 """
 
 from mirrorlab.generation.scene_generator import (
@@ -8,10 +8,12 @@ from mirrorlab.generation.scene_generator import (
     GenerationError,
     SceneGenerator,
 )
+from mirrorlab.generation.task_factory import VisibilityTaskFactory
 
 __all__ = [
     "DIFFICULTY_PRESETS",
     "DifficultyParams",
     "GenerationError",
     "SceneGenerator",
+    "VisibilityTaskFactory",
 ]

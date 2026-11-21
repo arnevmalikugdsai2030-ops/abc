@@ -1,16 +1,22 @@
 """
 Benchmark Dataset Generation CLI Script for MIRRORLAB.
 
-Generates constraint-verified machine-vision inspection scenes and benchmarks.
+Generates complete, multimodal machine-vision inspection task benchmarks:
+- Scene JSON
+- Blind diagram PNG
+- Question JSON
+- Ground-truth answer JSON
+- Explanation overlay PNG
+- Aggregate tasks.jsonl & ground_truth.jsonl
 """
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
-from mirrorlab.generation.scene_generator import SceneGenerator
-from mirrorlab.schema.scene import DifficultyLevel, SceneCategory
+from mirrorlab.generation.task_factory import VisibilityTaskFactory
+from mirrorlab.rendering.themes import RenderTheme
+from mirrorlab.schema.scene import DifficultyLevel
 
 
 def main() -> int:
@@ -18,18 +24,18 @@ def main() -> int:
         description="Generate synthetic MIRRORLAB visual task benchmark."
     )
     parser.add_argument(
-        "--count", type=int, default=20, help="Number of benchmark scenes to generate"
+        "--count", type=int, default=20, help="Number of benchmark tasks to generate"
     )
     parser.add_argument(
         "--seed",
         type=int,
-        default=5000,
+        default=10000,
         help="Starting random seed for reproducibility",
     )
     parser.add_argument(
         "--out-dir",
         type=str,
-        default="data/sample_scenes",
+        default="data/benchmark_tasks",
         help="Output directory for generated dataset",
     )
     parser.add_argument(
@@ -39,49 +45,70 @@ def main() -> int:
         choices=["easy", "medium", "hard", "all"],
         help="Difficulty preset tier",
     )
+    parser.add_argument(
+        "--theme",
+        type=str,
+        default="cycle",
+        choices=["dark_navy", "light_offwhite", "blueprint", "monochrome_cad", "cycle"],
+        help="Rendering theme palette",
+    )
     args = parser.parse_args()
 
     out_path = Path(args.out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
-    print("=" * 70)
-    print(f"MIRRORLAB Seeded Scene Generator: seed={args.seed}, count={args.count}")
-    print(f"Target Directory: {out_path.resolve()}")
-    print("=" * 70)
+    print("=" * 75)
+    print("MIRRORLAB VISIBILITY TASK FACTORY (BENCHMARK GENERATOR)")
+    print(f"Count: {args.count} | Seed: {args.seed} | Target: {out_path.resolve()}")
+    print("=" * 75)
 
-    gen = SceneGenerator()
     difficulties = (
         [DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD]
         if args.difficulty == "all"
         else [DifficultyLevel(args.difficulty.upper())]
     )
-    cats = list(SceneCategory)
 
-    scenes_generated = 0
-    for idx in range(args.count):
-        seed = args.seed + idx
-        diff = difficulties[idx % len(difficulties)]
-        cat = cats[idx % len(cats)]
+    theme_map = {
+        "dark_navy": [RenderTheme.DARK_NAVY],
+        "light_offwhite": [RenderTheme.LIGHT_OFFWHITE],
+        "blueprint": [RenderTheme.BLUEPRINT],
+        "monochrome_cad": [RenderTheme.MONOCHROME_CAD],
+        "cycle": [
+            RenderTheme.DARK_NAVY,
+            RenderTheme.LIGHT_OFFWHITE,
+            RenderTheme.BLUEPRINT,
+            RenderTheme.MONOCHROME_CAD,
+        ],
+    }
+    themes = theme_map[args.theme]
 
-        scene = gen.generate_scene(
-            seed=seed,
-            category=cat,
-            difficulty=diff,
-            scene_id=f"scene_{seed:04d}_{cat.value.lower()}",
-        )
+    factory = VisibilityTaskFactory(image_size=1024)
+    tasks = factory.create_balanced_dataset(
+        count=args.count,
+        start_seed=args.seed,
+        output_dir=out_path,
+        difficulties=difficulties,
+        themes=themes,
+    )
 
-        file_path = out_path / f"{scene.scene_id}.json"
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(scene.model_dump(mode="json"), f, indent=2)
+    visible_count = sum(1 for t in tasks if t.ground_truth.can_see)
+    not_visible_count = len(tasks) - visible_count
 
+    print("-" * 75)
+    for idx, t in enumerate(tasks):
+        gt = t.ground_truth
         print(
-            f"[{idx + 1:02d}/{args.count}] ID: {scene.scene_id:<30} | "
-            f"Cat: {cat.value:<18} | Diff: {diff.value:<6} | State: {scene.ground_truth_state.value}"
+            f"[{idx + 1:02d}/{len(tasks)}] ID: {t.task_id:<32} | "
+            f"Theme: {t.theme:<15} | Ans: {gt.answer:<3} | Reason: {gt.reason_code.value}"
         )
-        scenes_generated += 1
 
-    print("=" * 70)
-    print(f"Successfully generated {scenes_generated} scenes to {out_path}")
+    print("=" * 75)
+    print(
+        f"Generated {len(tasks)} tasks: {visible_count} VISIBLE (50%), "
+        f"{not_visible_count} NOT VISIBLE (50%)"
+    )
+    print(f"Public questions -> {out_path / 'tasks.jsonl'}")
+    print(f"Private ground truth -> {out_path / 'ground_truth.jsonl'}")
     return 0
 
 

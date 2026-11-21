@@ -1,0 +1,80 @@
+{
+  "scene_id": "task_vis_10019_blocked_reflected",
+  "seed": 10019,
+  "category": "BLOCKED_REFLECTED",
+  "difficulty": "MEDIUM",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 279.6413846413939,
+      "y": 387.5252471047831
+    },
+    "heading_deg": 37.79005957014768,
+    "fov_degrees": 58.487600048783385,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 416.8519938564895,
+      "y": 692.0832854700883
+    },
+    "endpoint_b": {
+      "x": 593.6607631035802,
+      "y": 657.0777754495199
+    },
+    "reflective_normal": {
+      "dx": -0.19421529673948382,
+      "dy": -0.980958928045611
+    }
+  },
+  "target": {
+    "center": {
+      "x": 687.2406030371965,
+      "y": 309.0930244193811
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "partition_wall",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 483.4409938392952,
+        "y": 348.30913576208206
+      },
+      "radius": null,
+      "width": 43.61067709459985,
+      "height": 71.62399480629563,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "blocker_reflected",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 616.8327997185505,
+        "y": 488.5808356197143
+      },
+      "radius": 22.59693348653469,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "BLOCKED_REFLECTED",
+  "diagnostic_details": "Reflected ray R->T blocked by obstacle 'blocker_reflected' at (608.6, 509.6)",
+  "reflection_point": {
+    "x": 547.1220187193875,
+    "y": 666.2917555582148
+  },
+  "virtual_target": {
+    "x": 812.7751994508136,
+    "y": 943.1537044888978
+  },
+  "optical_path": [],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": true
+}

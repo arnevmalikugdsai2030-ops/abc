@@ -1,0 +1,68 @@
+{
+  "scene_id": "task_vis_10013_outside_fov",
+  "seed": 10013,
+  "category": "OUTSIDE_FOV",
+  "difficulty": "MEDIUM",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 670.2093605530297,
+      "y": 500.9661950719044
+    },
+    "heading_deg": 70.35919386529538,
+    "fov_degrees": 56.4545476809399,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 430.2781179859315,
+      "y": 716.8477887252884
+    },
+    "endpoint_b": {
+      "x": 596.9009509531954,
+      "y": 716.1155468620188
+    },
+    "reflective_normal": {
+      "dx": -0.004394564535940101,
+      "dy": -0.9999903438546491
+    }
+  },
+  "target": {
+    "center": {
+      "x": 312.5892431005892,
+      "y": 498.0651267073433
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "partition_wall",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 491.39930182680945,
+        "y": 499.51566088962386
+      },
+      "radius": null,
+      "width": 38.04790092596082,
+      "height": 94.94925942350383,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "OUT_OF_FOV",
+  "diagnostic_details": "Mirror point (494.2, 716.6) is outside FOV: angle=58.9 deg > half_fov=28.2 deg",
+  "reflection_point": {
+    "x": 494.19531226729,
+    "y": 716.566897777739
+  },
+  "virtual_target": {
+    "x": 314.51667924944627,
+    "y": 936.6563731188355
+  },
+  "optical_path": [],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": true
+}
