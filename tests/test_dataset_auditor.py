@@ -12,13 +12,13 @@ Tests:
 
 import json
 from pathlib import Path
-from PIL import Image
+
 import pytest
+from PIL import Image
 
 from mirrorlab.evaluation.dataset_auditor import (
     DatasetAuditor,
     DatasetSplitter,
-    render_audit_report_markdown,
 )
 
 
@@ -111,7 +111,7 @@ class TestDatasetSplitterIsolation:
             test_ratio=0.60,
             seed=123,
         )
-        summary = splitter.create_splits()
+        splitter.create_splits()
 
         splits_dir = tmp_path / "splits"
         assert (splits_dir / "manifest.json").is_file()

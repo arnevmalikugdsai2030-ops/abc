@@ -18,7 +18,6 @@ import pytest
 
 from mirrorlab.generation.counterfactual_factory import CounterfactualFactory
 from mirrorlab.rendering.themes import RenderTheme
-from mirrorlab.schema.common import ObstructionReason, VisibilityState
 from mirrorlab.schema.scene import DifficultyLevel
 from mirrorlab.schema.task import (
     CounterfactualPairType,
@@ -50,12 +49,12 @@ class TestCounterfactualPairType1MirrorAngleFlip:
         assert record.changed_parameter == "mirror.angle_deg"
 
         # Scene A must be CLEAR / VISIBLE
-        out_a = record.ground_truth_outcomes[f"test_flip_01_a"]
+        out_a = record.ground_truth_outcomes["test_flip_01_a"]
         assert out_a.is_visible is True
         assert out_a.reason_code == VisibilityReasonCode.CLEAR
 
         # Scene B must be NOT VISIBLE
-        out_b = record.ground_truth_outcomes[f"test_flip_01_b"]
+        out_b = record.ground_truth_outcomes["test_flip_01_b"]
         assert out_b.is_visible is False
         assert out_b.reason_code in (VisibilityReasonCode.MIRROR_MISS, VisibilityReasonCode.OUTSIDE_FOV)
 
@@ -197,7 +196,7 @@ class TestPairArtifactBundlePersistence:
 
     def test_pair_bundle_directory_artifacts(self, factory: CounterfactualFactory, tmp_path: Path):
         pair_dir = tmp_path / "pairs"
-        bundle = factory.create_mirror_angle_flip_pair(
+        factory.create_mirror_angle_flip_pair(
             seed=40002,
             pair_id="pair_persist_01",
             output_dir=pair_dir,

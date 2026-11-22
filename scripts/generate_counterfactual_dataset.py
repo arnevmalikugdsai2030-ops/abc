@@ -8,7 +8,6 @@ Generate 30 valid counterfactual and invariant pairs for each supported type:
 Total: 120 pairs (240 scenes), completely verified by the VisibilityOracle.
 """
 
-import sys
 import time
 from pathlib import Path
 
@@ -19,10 +18,10 @@ def main():
     out_dir = Path("data/counterfactual_pairs")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"==================================================")
-    print(f"Generating 120 Counterfactual Pairs (30 per type)")
+    print("==================================================")
+    print("Generating 120 Counterfactual Pairs (30 per type)")
     print(f"Target Output Directory: {out_dir.resolve()}")
-    print(f"==================================================")
+    print("==================================================")
 
     factory = CounterfactualFactory(
         canvas_width=1000.0,
@@ -39,7 +38,7 @@ def main():
     elapsed = time.time() - t0
 
     print(f"\nSuccessfully generated {len(bundles)} counterfactual pairs in {elapsed:.2f}s!")
-    print(f"Manifests generated:")
+    print("Manifests generated:")
     print(f"  - {out_dir / 'pairs.jsonl'}")
     print(f"  - {out_dir / 'tasks.jsonl'}")
     print(f"  - {out_dir / 'ground_truth.jsonl'}")

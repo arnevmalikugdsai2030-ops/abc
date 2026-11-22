@@ -157,7 +157,10 @@ class TestDatasetStatisticsAndCoverageReporting:
     """Verify statistical analysis and distribution report generation."""
 
     def test_compute_dataset_statistics(self):
-        from mirrorlab.reporting.dataset_stats import compute_dataset_statistics, render_distribution_markdown
+        from mirrorlab.reporting.dataset_stats import (
+            compute_dataset_statistics,
+            render_distribution_markdown,
+        )
 
         gen = SceneGenerator()
         scenes = []

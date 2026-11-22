@@ -13,15 +13,12 @@ Analyzes collections of InspectionScene objects to verify:
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Sequence
 
 import numpy as np
 
 from mirrorlab.generation.scene_generator import compute_geometry_fingerprint
-from mirrorlab.geometry.obstacles import CircleObstacle, RectangleObstacle
-from mirrorlab.geometry.vector import vector_magnitude
 from mirrorlab.schema.common import VisibilityState
 from mirrorlab.schema.scene import DifficultyLevel, InspectionScene, SceneCategory
 
@@ -71,7 +68,7 @@ def _calc_stats(values: Sequence[float]) -> MetricStats:
         return MetricStats(count=0, min_val=0.0, mean_val=0.0, median_val=0.0, max_val=0.0, std_val=0.0)
     arr = np.array(values, dtype=np.float64)
     return MetricStats(
-        count=int(len(arr)),
+        count=len(arr),
         min_val=float(np.min(arr)),
         mean_val=float(np.mean(arr)),
         median_val=float(np.median(arr)),

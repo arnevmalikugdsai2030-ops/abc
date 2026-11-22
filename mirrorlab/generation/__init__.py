@@ -14,7 +14,6 @@ from mirrorlab.generation.scene_generator import (
 from mirrorlab.generation.task_factory import VisibilityTaskFactory
 
 __all__ = [
-    "CounterfactualFactory",
     "DIFFICULTY_PRESETS",
     "CounterfactualFactory",
     "DifficultyParams",

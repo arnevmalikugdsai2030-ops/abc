@@ -3,12 +3,13 @@ Generate a diverse multi-tier benchmark dataset and compute dataset coverage sta
 """
 
 from pathlib import Path
+
 from mirrorlab.generation.scene_generator import SceneGenerator
-from mirrorlab.schema.scene import DifficultyLevel, SceneCategory
 from mirrorlab.reporting.dataset_stats import (
     compute_dataset_statistics,
     render_distribution_markdown,
 )
+from mirrorlab.schema.scene import DifficultyLevel
 
 
 def main():
@@ -60,27 +61,27 @@ def main():
     print("DATASET DISTRIBUTION REPORT")
     print("=" * 65)
 
-    print(f"\n1. DATASET PARTITION SEPARATION:")
+    print("\n1. DATASET PARTITION SEPARATION:")
     print(f"   - Headline Benchmark:   {report.headline_count:3d} scenes ({report.headline_pct:5.1f}%)")
     print(f"   - Boundary Stress Test: {report.boundary_count:3d} scenes ({report.boundary_pct:5.1f}%)")
     print(f"   - Zero Duplicate Check: {report.duplicate_count} duplicates ({report.unique_fingerprints} unique fingerprints)")
 
-    print(f"\n2. DIFFICULTY TIER DISTRIBUTION:")
+    print("\n2. DIFFICULTY TIER DISTRIBUTION:")
     for diff, count in report.difficulty_counts.items():
         pct = report.difficulty_percentages[diff]
         print(f"   - {diff:<10}: {count:3d} scenes ({pct:5.1f}%)")
 
-    print(f"\n3. PHYSICAL CATEGORY BREAKDOWN:")
+    print("\n3. PHYSICAL CATEGORY BREAKDOWN:")
     for cat, count in report.category_counts.items():
         pct = report.category_percentages[cat]
         print(f"   - {cat:<20}: {count:3d} scenes ({pct:5.1f}%)")
 
-    print(f"\n4. GROUND-TRUTH VISIBILITY OUTCOME:")
+    print("\n4. GROUND-TRUTH VISIBILITY OUTCOME:")
     for state, count in report.state_counts.items():
         pct = report.state_percentages[state]
         print(f"   - {state:<12}: {count:3d} scenes ({pct:5.1f}%)")
 
-    print(f"\n5. GEOMETRIC METRICS DISTRIBUTION:")
+    print("\n5. GEOMETRIC METRICS DISTRIBUTION:")
     print(f"   {'Metric':<25} | {'Min':>8} | {'Mean':>8} | {'Median':>8} | {'Max':>8} | {'StdDev':>8}")
     print("   " + "-" * 73)
     metrics = [
