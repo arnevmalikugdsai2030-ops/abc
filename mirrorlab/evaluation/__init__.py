@@ -27,6 +27,11 @@ from mirrorlab.evaluation.model_adapter import (
     OpenAIVisionAdapter,
     get_model_adapter,
 )
+from mirrorlab.evaluation.response_parser import (
+    ErrorCategory,
+    ParsedEvaluationRecord,
+    ResponseParser,
+)
 from mirrorlab.evaluation.structured_parser import ParsedAnswer, StructuredParser
 
 __all__ = [
@@ -40,6 +45,7 @@ __all__ = [
     "ComprehensiveAuditReport",
     "DatasetAuditor",
     "DatasetSplitter",
+    "ErrorCategory",
     "EvaluationMetrics",
     "GeminiModelAdapter",
     "GeminiVisionAdapter",
@@ -51,6 +57,8 @@ __all__ = [
     "OpenAIModelAdapter",
     "OpenAIVisionAdapter",
     "ParsedAnswer",
+    "ParsedEvaluationRecord",
+    "ResponseParser",
     "RunConfig",
     "StructuredParser",
     "get_model_adapter",
