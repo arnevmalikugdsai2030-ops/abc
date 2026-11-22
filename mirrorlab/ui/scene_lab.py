@@ -434,10 +434,11 @@ def render_scene_laboratory() -> None:
                         cf_bundle = cf_factory.create_obstacle_insertion_pair(seed=seed_val, pair_id=pair_id, difficulty=difficulty)
 
                     st.session_state["scene_lab_cf_pair"] = cf_bundle
-                    st.session_state["scene_lab_scene"] = cf_bundle.scene_a
+                    st.session_state["scene_lab_scene"] = cf_bundle.scene_a_bundle.scene
                     st.session_state["scene_lab_cf_active"] = "Scene A"
                     st.session_state["scene_lab_task_type"] = task_type
-                    st.success(f"Generated Counterfactual Pair: {cf_bundle.subtype.value}")
+                    pair_label = cf_bundle.pair_type.value if hasattr(cf_bundle.pair_type, "value") else str(cf_bundle.pair_type)
+                    st.success(f"Generated Counterfactual Pair: {pair_label}")
 
             except (RuntimeError, ValueError, OSError) as exc:
                 st.error(f"Scene generation error: {exc}. Try another seed or difficulty.")
@@ -493,7 +494,7 @@ def render_scene_laboratory() -> None:
             </div>
             <div style="font-family:monospace; font-size:12px; color:{COLOR_CYAN_PRIMARY}; text-align:right;">
                 <div>Scene ID: <strong>{current_scene.scene_id}</strong> | Seed: <strong>{current_scene.seed}</strong></div>
-                <div style="color:{COLOR_TEXT_SECONDARY};">Canvas: {current_scene.canvas_width:.0f}×{current_scene.canvas_height:.0f}mm | Clearance: {oracle_res.clearance_margin_mm:.1f}mm</div>
+                <div style="color:{COLOR_TEXT_SECONDARY};">Canvas: {current_scene.canvas_width:.0f}×{current_scene.canvas_height:.0f}mm | Path: {(oracle_res.total_optical_distance or 0.0):.1f}mm</div>
             </div>
         </div>
         """,
@@ -563,12 +564,12 @@ def render_scene_laboratory() -> None:
             with cf_col_a:
                 if st.button("Inspect Scene A", type="primary" if st.session_state.get("scene_lab_cf_active") == "Scene A" else "secondary", use_container_width=True):
                     st.session_state["scene_lab_cf_active"] = "Scene A"
-                    st.session_state["scene_lab_scene"] = cf_pair.scene_a
+                    st.session_state["scene_lab_scene"] = cf_pair.scene_a_bundle.scene
                     st.rerun()
             with cf_col_b:
                 if st.button("Inspect Scene B", type="primary" if st.session_state.get("scene_lab_cf_active") == "Scene B" else "secondary", use_container_width=True):
                     st.session_state["scene_lab_cf_active"] = "Scene B"
-                    st.session_state["scene_lab_scene"] = cf_pair.scene_b
+                    st.session_state["scene_lab_scene"] = cf_pair.scene_b_bundle.scene
                     st.rerun()
 
         # Viewport Rendering

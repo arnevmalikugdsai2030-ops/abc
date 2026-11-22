@@ -78,9 +78,9 @@ FONT_MONOSPACE = (
 # ---------------------------------------------------------------------------
 # Plotly Engineering CAD Theme Configuration
 # ---------------------------------------------------------------------------
-def get_plotly_layout_dict() -> dict[str, Any]:
+def get_plotly_layout_dict(height: int | None = None, width: int | None = None, **kwargs: Any) -> dict[str, Any]:
     """Returns standardized Plotly layout dictionary for deep navy CAD viewport."""
-    return {
+    layout: dict[str, Any] = {
         "paper_bgcolor": COLOR_BG_BASE,
         "plot_bgcolor": COLOR_BG_BASE,
         "font": {
@@ -121,6 +121,12 @@ def get_plotly_layout_dict() -> dict[str, Any]:
             "x": 0.0,
         },
     }
+    if height is not None:
+        layout["height"] = height
+    if width is not None:
+        layout["width"] = width
+    layout.update(kwargs)
+    return layout
 
 
 # ---------------------------------------------------------------------------

@@ -210,6 +210,24 @@ def load_all_run_aggregates(logs_root: Path | str = "eval_logs") -> list[dict[st
 # ---------------------------------------------------------------------------
 # Main Analytics Dashboard Component
 # ---------------------------------------------------------------------------
+def _to_markdown_str(data: Any) -> str:
+    """Format DataFrame or Series into clean Markdown table without external tabulate dependency."""
+    if hasattr(data, "to_frame"):
+        data = data.to_frame()
+    if hasattr(data, "columns") and hasattr(data, "iterrows"):
+        headers = [str(data.index.name or "Category")] + [str(c) for c in data.columns]
+        rows = []
+        for idx, row in data.iterrows():
+            row_vals = [str(idx)] + [f"{v:.3f}" if isinstance(v, float) else str(v) for v in row]
+            rows.append(row_vals)
+        col_w = [max(len(h), max((len(r[i]) for r in rows), default=0)) for i, h in enumerate(headers)]
+        header_str = "| " + " | ".join(h.ljust(col_w[i]) for i, h in enumerate(headers)) + " |"
+        sep_str = "| " + " | ".join("-" * col_w[i] for i in range(len(headers))) + " |"
+        body_strs = ["| " + " | ".join(r[i].ljust(col_w[i]) for i in range(len(headers))) + " |" for r in rows]
+        return "\n".join([header_str, sep_str] + body_strs)
+    return str(data)
+
+
 def render_analytics_dashboard() -> None:
     """
     Renders the publication-grade MIRRORLAB Computational Geometry Analytics Dashboard.
@@ -577,13 +595,13 @@ Overall Accuracy: {overall_acc:.2f}% ({correct_n}/{total_n})
 Wilson 95% CI: [{w_low:.1f}%, {w_high:.1f}%]
 
 ## Task Breakdown
-{df.groupby('task_type')['is_correct'].agg(['count', 'sum', 'mean']).to_markdown()}
+{_to_markdown_str(df.groupby('task_type')['is_correct'].agg(['count', 'sum', 'mean']))}
 
 ## Difficulty Breakdown
-{df.groupby('difficulty_tier')['is_correct'].agg(['count', 'sum', 'mean']).to_markdown()}
+{_to_markdown_str(df.groupby('difficulty_tier')['is_correct'].agg(['count', 'sum', 'mean']))}
 
 ## Failure Diagnostics
-{df[df['is_correct']==False]['ground_truth_reason'].value_counts().to_markdown() if not df[df['is_correct']==False].empty else 'Zero failures'}
+{_to_markdown_str(df[df['is_correct']==False]['ground_truth_reason'].value_counts()) if not df[df['is_correct']==False].empty else 'Zero failures'}
 """
     with exp_col3:
         st.download_button(
