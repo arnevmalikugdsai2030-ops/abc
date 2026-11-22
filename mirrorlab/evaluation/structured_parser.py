@@ -166,7 +166,7 @@ class StructuredParser:
 
         if task_type in ("TASK_A_VISIBILITY", "TASK_D_COUNTERFACTUAL"):
             raw_ans = norm_keys.get("answer") or norm_keys.get("prediction")
-            can_see = norm_keys.get("can_see")
+            can_see = norm_keys.get("can_see") if "can_see" in norm_keys else norm_keys.get("visible")
 
             # Determine primary YES/NO prediction
             norm_ans: str | None = None
@@ -196,7 +196,7 @@ class StructuredParser:
                 task_id=task_id,
                 task_type=task_type,
                 is_valid_format=is_valid,
-                format_error=None if is_valid else "Missing 'answer' or 'can_see' in dictionary.",
+                format_error=None if is_valid else "Missing 'answer', 'visible', or 'can_see' in dictionary.",
                 extraction_pass=extraction_pass,
                 prediction=norm_ans,
                 can_see=can_see,
@@ -206,7 +206,7 @@ class StructuredParser:
             )
 
         elif task_type == "TASK_B_OBSTRUCTION":
-            raw_blocked = norm_keys.get("is_blocked")
+            raw_blocked = norm_keys.get("is_blocked") if "is_blocked" in norm_keys else norm_keys.get("blocked")
             raw_ans = norm_keys.get("answer")
 
             is_blocked: bool | None = None
@@ -227,11 +227,21 @@ class StructuredParser:
                     is_blocked = False
                     norm_ans = "NO"
 
-            raw_blocker = str(norm_keys.get("blocker_label") or norm_keys.get("blocker") or "").upper().strip()
+            raw_blocker = str(
+                norm_keys.get("blocker_label")
+                or norm_keys.get("blocker")
+                or norm_keys.get("obstacle_id")
+                or ""
+            ).upper().strip()
             blocker_match = re.search(r"\b(O[1-3]|NONE)\b", raw_blocker)
             norm_blocker = blocker_match.group(1) if blocker_match else None
 
-            raw_segment = str(norm_keys.get("blocked_segment") or norm_keys.get("segment") or "").upper().strip()
+            raw_segment = str(
+                norm_keys.get("blocked_segment")
+                or norm_keys.get("segment")
+                or norm_keys.get("blocked_leg")
+                or ""
+            ).upper().strip()
             if "CAMERA" in raw_segment or "INCIDENT" in raw_segment or "FIRST" in raw_segment:
                 norm_seg = "CAMERA_TO_MIRROR"
             elif "TARGET" in raw_segment or "REFLECTED" in raw_segment or "SECOND" in raw_segment:
@@ -252,7 +262,7 @@ class StructuredParser:
                 task_id=task_id,
                 task_type=task_type,
                 is_valid_format=is_valid,
-                format_error=None if is_valid else "Missing 'is_blocked' or 'answer' in dictionary.",
+                format_error=None if is_valid else "Missing 'is_blocked', 'blocked', or 'answer' in dictionary.",
                 extraction_pass=extraction_pass,
                 prediction=norm_ans,
                 is_blocked=is_blocked,
@@ -263,7 +273,12 @@ class StructuredParser:
             )
 
         elif task_type == "TASK_C_REPAIR":
-            cand = norm_keys.get("selected_candidate") or norm_keys.get("candidate") or norm_keys.get("answer")
+            cand = (
+                norm_keys.get("selected_candidate")
+                or norm_keys.get("candidate")
+                or norm_keys.get("setting")
+                or norm_keys.get("answer")
+            )
             norm_cand: str | None = None
             if isinstance(cand, str):
                 cand_match = re.search(r"\b([ABC])\b", cand.upper())
@@ -275,7 +290,7 @@ class StructuredParser:
                 task_id=task_id,
                 task_type=task_type,
                 is_valid_format=is_valid,
-                format_error=None if is_valid else "Missing valid candidate (A, B, or C) in dictionary.",
+                format_error=None if is_valid else "Missing valid candidate or setting (A, B, or C) in dictionary.",
                 extraction_pass=extraction_pass,
                 prediction=norm_cand,
                 selected_candidate=norm_cand,
