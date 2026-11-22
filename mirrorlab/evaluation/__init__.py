@@ -32,6 +32,14 @@ from mirrorlab.evaluation.response_parser import (
     ParsedEvaluationRecord,
     ResponseParser,
 )
+from mirrorlab.evaluation.scoring_engine import (
+    LatencyMetrics,
+    MetricFraction,
+    ObstructionMetrics,
+    SampleEvaluationResult,
+    ScoringEngine,
+    ScoringReport,
+)
 from mirrorlab.evaluation.structured_parser import ParsedAnswer, StructuredParser
 
 __all__ = [
@@ -49,17 +57,23 @@ __all__ = [
     "EvaluationMetrics",
     "GeminiModelAdapter",
     "GeminiVisionAdapter",
+    "LatencyMetrics",
+    "MetricFraction",
     "MockStrategy",
     "MockVLMAdapter",
     "MockVisionAdapter",
     "ModelResponse",
     "ModelSettings",
+    "ObstructionMetrics",
     "OpenAIModelAdapter",
     "OpenAIVisionAdapter",
     "ParsedAnswer",
     "ParsedEvaluationRecord",
     "ResponseParser",
     "RunConfig",
+    "SampleEvaluationResult",
+    "ScoringEngine",
+    "ScoringReport",
     "StructuredParser",
     "get_model_adapter",
     "render_audit_report_markdown",

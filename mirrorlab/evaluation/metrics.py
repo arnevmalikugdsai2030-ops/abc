@@ -267,3 +267,14 @@ class BenchmarkMetricsCalculator:
             confusion_by_reason_code=confusion,
             per_difficulty_accuracy=diff_rates,
         )
+
+    @classmethod
+    def compute_scoring_report(
+        cls,
+        eval_records: list[dict[str, Any]],
+        pairs_records: list[dict[str, Any]] | None = None,
+    ):
+        """Compute the full comprehensive ScoringReport with exact denominators."""
+        from mirrorlab.evaluation.scoring_engine import ScoringEngine
+
+        return ScoringEngine.evaluate(eval_records=eval_records, pairs_records=pairs_records)
