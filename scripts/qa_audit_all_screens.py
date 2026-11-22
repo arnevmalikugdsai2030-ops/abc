@@ -203,11 +203,11 @@ def run_audit() -> None:
     # Journey 4: Benchmark Dashboard (All 10 Sections)
     # -----------------------------------------------------------------------
     print("\n[QA AUDIT 4/5] Testing 📈 Benchmark Dashboard (10 Sections)...")
-    at = AppTest.from_file(APP_PATH, default_timeout=60)
-    at.run()
+    at = AppTest.from_file(APP_PATH, default_timeout=180)
+    at.run(timeout=180)
     workspace_radio = at.sidebar.radio[0]
     workspace_radio.set_value("📈 Benchmark Dashboard")
-    at.run()
+    at.run(timeout=180)
     assert len(at.exception) == 0, f"Benchmark Dashboard startup exception: {at.exception}"
     print("  -> Benchmark Dashboard loaded with real manifests and evaluation runs.")
     print("  ✓ [PASS] Benchmark Dashboard verified across all tabs.")

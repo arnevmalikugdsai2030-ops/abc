@@ -349,7 +349,9 @@ class OODTaskGenerator:
                     if oracle_res.is_visible
                     else SceneCategory.BLOCKED_REFLECTED
                 )
-                if oracle_res.reason == ObstructionReason.MISSED_MIRROR:
+                if oracle_res.reason == ObstructionReason.BLOCKED_INCIDENT:
+                    category_enum = SceneCategory.BLOCKED_INCIDENT
+                elif oracle_res.reason == ObstructionReason.MISSED_MIRROR:
                     category_enum = SceneCategory.MIRROR_MISS
                 elif oracle_res.reason == ObstructionReason.BACK_OF_MIRROR:
                     category_enum = SceneCategory.WRONG_SIDE

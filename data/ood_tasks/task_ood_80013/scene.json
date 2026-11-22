@@ -1,7 +1,7 @@
 {
   "scene_id": "task_ood_80013",
   "seed": 80013,
-  "category": "BLOCKED_REFLECTED",
+  "category": "BLOCKED_INCIDENT",
   "difficulty": "BOUNDARY",
   "canvas_width": 800.0,
   "canvas_height": 1200.0,

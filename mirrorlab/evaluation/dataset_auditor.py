@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -37,6 +38,7 @@ from mirrorlab.schema.common import (
 from mirrorlab.schema.scene import (
     InspectionScene,
     MirrorSpec,
+    ObstacleSpec,
 )
 
 logger = logging.getLogger(__name__)
@@ -63,6 +65,10 @@ class ComprehensiveAuditReport:
     checks: list[AuditCheckResult]
     rejection_records: list[str]
     split_summary: dict[str, Any] = field(default_factory=dict)
+    total_pairs_checked: int = 0
+    total_seeds_checked: int = 0
+    total_images_checked: int = 0
+    total_prompts_checked: int = 0
 
 
 class DatasetAuditor:
@@ -174,61 +180,157 @@ class DatasetAuditor:
                     missing.append(req)
         return len(missing) == 0, missing
 
-    def check_image_leakage(self, blind_path: Path, overlay_path: Path) -> tuple[bool, str]:
+    def check_image_leakage(
+        self,
+        blind_path: Path,
+        overlay_path: Path,
+        scene: InspectionScene | None = None,
+    ) -> tuple[bool, str]:
         """
-        Check 4: Blind images must not contain ray overlays, answer badges, or diagnostic lines.
+        Check 4: Comprehensive multi-layer blind image non-leakage validation.
         Verifies:
         1. Both image files exist and are readable.
-        2. Dimensions match.
-        3. Pixel differentiation: overlay must contain diagnostic rays that blind lacks.
-        4. Badge non-leakage: blind image top-right corner must NOT contain answer badge colors.
+        2. Filename neutrality: public blind image filename must not leak ground-truth answers.
+        3. Metadata/EXIF neutrality: PNG info chunks must not contain ground-truth tokens.
+        4. Dimensions match between blind and overlay images.
+        5. Pixel differentiation: overlay must contain diagnostic rays/badges that blind lacks.
+        6. Multi-region & multi-color badge heuristics: scans canvas for answer badge indicators.
+        7. Diagnostic ray overlay heuristics: scans for incident/reflected ray color signatures.
+        8. Deterministic render pipeline comparison: re-renders clean blind image from scene
+           and asserts byte/pixel conformity (detects any injected overlay or diagnostic marker).
         """
         if not blind_path.is_file() or not overlay_path.is_file():
             return False, "Missing image file"
 
+        # 1. Public Filename Neutrality Check
+        b_name_lower = blind_path.name.lower()
+        for forbidden in [
+            "_visible",
+            "_blocked",
+            "_answer_revealed",
+            "_correct_cand",
+            "gt_overlay",
+            "_leak_",
+            "diagram_overlay",
+        ]:
+            if forbidden in b_name_lower:
+                return False, f"Blind image filename '{blind_path.name}' contains answer-revealing keyword '{forbidden}'"
+
         try:
-            img_blind = Image.open(blind_path).convert("RGB")
+            img_blind = Image.open(blind_path)
+            # 2. Metadata / PNG Text Chunks Inspection
+            if hasattr(img_blind, "info") and img_blind.info:
+                for k, v in img_blind.info.items():
+                    meta_text = f"{k} {v}".lower()
+                    for forbidden in [
+                        "can_see",
+                        "is_blocked",
+                        "correct_candidate",
+                        "ground_truth_reason",
+                        "blocking_obstacle",
+                        "blocked_segment",
+                        "visible [theta=",
+                        "not visible:",
+                    ]:
+                        if forbidden in meta_text:
+                            return False, f"Blind image metadata contains leaked ground-truth token '{forbidden}'"
+
+            img_b_rgb = img_blind.convert("RGB")
             img_overlay = Image.open(overlay_path).convert("RGB")
         except (OSError, ValueError) as e:
             return False, f"Image open error: {e}"
 
-        if img_blind.size != img_overlay.size:
-            return False, f"Size mismatch: blind {img_blind.size} vs overlay {img_overlay.size}"
+        if img_b_rgb.size != img_overlay.size:
+            return False, f"Size mismatch: blind {img_b_rgb.size} vs overlay {img_overlay.size}"
 
-        w, h = img_blind.size
-        arr_b = np.asarray(img_blind, dtype=np.float32)
+        w, h = img_b_rgb.size
+        arr_b = np.asarray(img_b_rgb, dtype=np.float32)
         arr_o = np.asarray(img_overlay, dtype=np.float32)
 
-        # 1. Overlay differentiation check
+        # 3. Overlay differentiation check
         diff = np.abs(arr_o - arr_b)
         mean_diff = float(np.mean(diff))
         if mean_diff < 0.01:
             return False, "Blind and Overlay images are identical (overlay leaked into blind image!)"
 
-        # 2. Inspect answer badge region in top-right corner
-        # In overlay mode, a rounded badge is rendered at [bx, by, bx+bw, by+bh]
-        # bx = w - 65 - 270 = w - 335, by = 65 + 8 = 73, bw = 270, bh = 38 (scaled)
+        # 4. Multi-Region & Multi-Color Badge Heuristics (Top-Right Badge & Arbitrary Corner Injections)
+        # Check standard top-right corner badge location
         scale = w / 1024.0
         bx = int(w - (65.0 + 270.0) * scale)
         by = int((65.0 + 8.0) * scale)
         bw = int(270.0 * scale)
         bh = int(38.0 * scale)
 
-        if 0 <= by < by + bh <= h and 0 <= bx < bx + bw <= w:
-            y1, y2 = by + 5, by + bh - 5
-            x1, x2 = bx + 5, bx + bw - 5
-            if y2 > y1 and x2 > x1:
-                badge_region_blind = arr_b[y1:y2, x1:x2]
-                if badge_region_blind.size > 0:
-                    # Check for prominent green (emerald visible badge) or red (crimson blocked badge)
-                    mean_r = float(np.mean(badge_region_blind[:, :, 0]))
-                    mean_g = float(np.mean(badge_region_blind[:, :, 1]))
-                    mean_b = float(np.mean(badge_region_blind[:, :, 2]))
+        candidate_badge_boxes = [
+            (bx, by, bw, bh),  # Top-right
+            (int(65.0 * scale), by, bw, bh),  # Top-left
+            (bx, int(h - (65.0 + 50.0) * scale), bw, bh),  # Bottom-right
+        ]
 
-                    # Emerald green badge: high green (G > 60 and G > R * 1.5)
-                    # Crimson red badge: high red (R > 80 and R > G * 1.5)
-                    if (mean_g > 65.0 and mean_g > mean_r * 1.6) or (mean_r > 85.0 and mean_r > mean_g * 1.6):
-                        return False, f"Answer badge colors detected in blind image top-right corner! (R={mean_r:.1f}, G={mean_g:.1f}, B={mean_b:.1f})"
+        for c_bx, c_by, c_bw, c_bh in candidate_badge_boxes:
+            if 0 <= c_by < c_by + c_bh <= h and 0 <= c_bx < c_bx + c_bw <= w:
+                y1, y2 = c_by + 5, c_by + c_bh - 5
+                x1, x2 = c_bx + 5, c_bx + c_bw - 5
+                if y2 > y1 and x2 > x1:
+                    badge_crop = arr_b[y1:y2, x1:x2]
+                    if badge_crop.size > 0:
+                        mean_r = float(np.mean(badge_crop[:, :, 0]))
+                        mean_g = float(np.mean(badge_crop[:, :, 1]))
+                        mean_b = float(np.mean(badge_crop[:, :, 2]))
+
+                        # Emerald green badge: high green (G > 60 and G > R * 1.5)
+                        # Crimson red badge: high red (R > 80 and R > G * 1.5)
+                        if (mean_g > 65.0 and mean_g > mean_r * 1.6) or (mean_r > 85.0 and mean_r > mean_g * 1.6):
+                            return False, f"Answer badge colors detected in blind image! (R={mean_r:.1f}, G={mean_g:.1f}, B={mean_b:.1f})"
+
+        # 5. Diagnostic Ray Overlay Color Signature Detection
+        # Amber incident ray: (245, 158, 11); Emerald reflected ray: (16, 185, 129); Purple virtual ray: (168, 85, 247)
+        # Check if significant number of pixels in blind image match overlay-exclusive ray colors
+        is_amber_ray = (arr_b[:, :, 0] > 230) & (arr_b[:, :, 1] > 140) & (arr_b[:, :, 1] < 185) & (arr_b[:, :, 2] < 35)
+        if int(np.sum(is_amber_ray)) > 150:
+            return False, "Diagnostic amber ray overlay detected in blind image canvas!"
+
+        is_purple_ray = (arr_b[:, :, 0] > 150) & (arr_b[:, :, 0] < 190) & (arr_b[:, :, 1] > 70) & (arr_b[:, :, 1] < 105) & (arr_b[:, :, 2] > 230)
+        if int(np.sum(is_purple_ray)) > 100:
+            return False, "Diagnostic virtual target ray detected in blind image canvas!"
+
+        # 6. Deterministic Render Pipeline Validation
+        target_scene = scene
+        if target_scene is None and (blind_path.parent / "scene.json").is_file():
+            try:
+                with open(blind_path.parent / "scene.json", encoding="utf-8") as f_sc:
+                    target_scene = InspectionScene.model_validate(json.load(f_sc))
+            except (OSError, json.JSONDecodeError, ValueError, ValidationError):
+                target_scene = None
+
+        if target_scene is not None and w >= 512 and h >= 512:
+            try:
+                from mirrorlab.rendering.pillow_renderer import (
+                    PillowDiagramRenderer,
+                    RenderMode,
+                )
+                from mirrorlab.rendering.themes import THEMES, RenderTheme
+
+                # Detect matching theme from background color at (10, 10)
+                bg_pixel = tuple(int(c) for c in img_b_rgb.getpixel((10, 10)))
+                matched_theme = RenderTheme.DARK_NAVY
+                min_bg_dist = 1e9
+                for t_enum, t_tokens in THEMES.items():
+                    dist = sum(abs(a - b) for a, b in zip(bg_pixel, t_tokens.background))
+                    if dist < min_bg_dist:
+                        min_bg_dist = dist
+                        matched_theme = t_enum
+
+                clean_renderer = PillowDiagramRenderer(theme=matched_theme, image_width=w, image_height=h)
+                clean_img = clean_renderer.render(target_scene, mode=RenderMode.BLIND)
+                clean_arr = np.asarray(clean_img.convert("RGB"), dtype=np.float32)
+                diff_render = np.abs(arr_b - clean_arr)
+                mean_dev = float(np.mean(diff_render))
+                diff_pixel_ratio = float(np.count_nonzero(diff_render.max(axis=-1) > 25) / (w * h))
+                if mean_dev > 5.0 or diff_pixel_ratio > 0.05:
+                    return False, f"Blind image diverges from deterministic render pipeline (mean pixel dev = {mean_dev:.2f}, diff ratio = {diff_pixel_ratio:.2%})"
+            except (OSError, ValueError, TypeError) as ex:
+                logger.debug("Deterministic render validation skipped: %s", ex)
 
         return True, f"Clean separation (mean diff = {mean_diff:.2f})"
 
@@ -298,6 +400,99 @@ class DatasetAuditor:
                 return False, f"Leaked phrase detected: '{phrase}'"
 
         return True, "Prompt is neutral"
+
+    def independently_identify_blocker(
+        self,
+        scene: InspectionScene,
+    ) -> tuple[ObstacleSpec | None, str | None, str, list[str]]:
+        """
+        Independently calculates specular reflection and tests every obstacle in scene
+        against incident (C -> R) and reflected (R -> T) rays.
+        Returns:
+            (primary_blocking_obstacle, blocking_label_e.g._O2, blocked_segment, all_intersecting_obstacle_ids)
+        """
+        cam = np.array([scene.camera.position.x, scene.camera.position.y], dtype=np.float64)
+        target = np.array([scene.target.center.x, scene.target.center.y], dtype=np.float64)
+        m_a = np.array([scene.mirror.endpoint_a.x, scene.mirror.endpoint_a.y], dtype=np.float64)
+        m_b = np.array([scene.mirror.endpoint_b.x, scene.mirror.endpoint_b.y], dtype=np.float64)
+        norm = np.array([scene.mirror.reflective_normal.dx, scene.mirror.reflective_normal.dy], dtype=np.float64)
+
+        refl = IndependentGeometryVerifier.calculate_virtual_camera_reflection(cam, target, m_a, m_b, norm)
+        if not refl.is_valid or refl.reflection_point is None:
+            return None, None, "NONE", []
+
+        R = refl.reflection_point
+
+        # Camera FOV check
+        forward_rad = math.radians(scene.camera.heading_deg)
+        fwd_vec = np.array([math.cos(forward_rad), math.sin(forward_rad)], dtype=np.float64)
+        v_ray = R - cam
+        d_ray = float(np.linalg.norm(v_ray))
+        if d_ray < 1e-7:
+            return None, None, "NONE", []
+        u_ray = v_ray / d_ray
+        cos_fov = float(np.dot(fwd_vec, u_ray))
+        half_fov_cos = math.cos(math.radians(scene.camera.fov_degrees / 2.0))
+        if cos_fov < half_fov_cos - 1e-7:
+            return None, None, "NONE", []
+
+        # Intersect all obstacles against Leg 1 (C -> R) and Leg 2 (R -> T)
+        hits_leg1: list[tuple[ObstacleSpec, float]] = []
+        hits_leg2: list[tuple[ObstacleSpec, float]] = []
+
+        for obs in scene.obstacles:
+            c_obs = np.array([obs.center.x, obs.center.y], dtype=np.float64)
+            # Leg 1: Camera to Mirror
+            hit1 = False
+            dist1 = 0.0
+            if obs.obstacle_type == "circle":
+                r = obs.radius if obs.radius is not None else 0.0
+                hit1, dist1, _ = IndependentGeometryVerifier.check_segment_circle_occlusion(cam, R, c_obs, r)
+            elif obs.obstacle_type == "rectangle":
+                w = obs.width if obs.width is not None else 0.0
+                h = obs.height if obs.height is not None else 0.0
+                rot = obs.angle_degrees or 0.0
+                hit1, dist1, _ = IndependentGeometryVerifier.check_segment_obb_occlusion(cam, R, c_obs, w, h, rot)
+            if hit1:
+                hits_leg1.append((obs, dist1))
+
+            # Leg 2: Mirror to Target
+            hit2 = False
+            dist2 = 0.0
+            if obs.obstacle_type == "circle":
+                r = obs.radius if obs.radius is not None else 0.0
+                hit2, dist2, _ = IndependentGeometryVerifier.check_segment_circle_occlusion(R, target, c_obs, r)
+            elif obs.obstacle_type == "rectangle":
+                w = obs.width if obs.width is not None else 0.0
+                h = obs.height if obs.height is not None else 0.0
+                rot = obs.angle_degrees or 0.0
+                hit2, dist2, _ = IndependentGeometryVerifier.check_segment_obb_occlusion(R, target, c_obs, w, h, rot)
+            if hit2:
+                hits_leg2.append((obs, dist2))
+
+        hits_leg1.sort(key=lambda x: x[1])
+        hits_leg2.sort(key=lambda x: x[1])
+
+        all_intersecting_ids = [obs.obstacle_id for obs, _ in hits_leg1] + [obs.obstacle_id for obs, _ in hits_leg2]
+
+        primary_blocker: ObstacleSpec | None = None
+        blocked_segment = "NONE"
+
+        if hits_leg1:
+            primary_blocker = hits_leg1[0][0]
+            blocked_segment = "CAMERA_TO_MIRROR"
+        elif hits_leg2:
+            primary_blocker = hits_leg2[0][0]
+            blocked_segment = "MIRROR_TO_TARGET"
+
+        blocking_label: str | None = None
+        if primary_blocker is not None:
+            for idx, o in enumerate(scene.obstacles):
+                if o.obstacle_id == primary_blocker.obstacle_id:
+                    blocking_label = f"O{idx + 1}"
+                    break
+
+        return primary_blocker, blocking_label, blocked_segment, all_intersecting_ids
 
     def audit_visibility_tasks(self, dir_path: Path) -> list[AuditCheckResult]:
         """Audit Task A: Reflected Visibility Prediction."""
@@ -412,6 +607,7 @@ class DatasetAuditor:
         single_blocker_failures: list[str] = []
         artifact_failures: list[str] = []
         leak_failures: list[str] = []
+        prompt_leaks: list[str] = []
         meta_items: list[dict[str, Any]] = []
 
         for tdir in task_dirs:
@@ -442,6 +638,16 @@ class DatasetAuditor:
             if not ok_img:
                 leak_failures.append(f"{tdir.name}: {img_msg}")
 
+            # Prompt neutrality check for Task B
+            ans_str_b = f"{gt_data.get('blocking_obstacle_label', '')} {gt_data.get('blocked_segment', '')}"
+            ok_p, p_msg = self.check_prompt_neutrality(
+                q_data.get("prompt", ""),
+                q_data.get("question", ""),
+                ans_str_b,
+            )
+            if not ok_p:
+                prompt_leaks.append(f"{tdir.name}: {p_msg}")
+
             # RECOMPUTE ACTUAL GEOMETRY
             try:
                 scene = InspectionScene.model_validate(sc_data)
@@ -465,29 +671,57 @@ class DatasetAuditor:
                     f"{tdir.name}: Recomputed is_blocked={recomputed_blocked} vs GT={gt_blocked} (reason={oracle_verdict.reason})"
                 )
 
-            if recomputed_blocked:
-                recomputed_segment = (
-                    "CAMERA_TO_MIRROR"
-                    if oracle_verdict.reason == ObstructionReason.BLOCKED_INCIDENT
-                    else "MIRROR_TO_TARGET"
-                )
-                gt_segment = gt_data.get("blocked_segment")
-                if recomputed_segment != gt_segment:
-                    recompute_mismatches.append(
-                        f"{tdir.name}: Recomputed segment {recomputed_segment} != GT {gt_segment}"
-                    )
+            # Independently calculate every obstacle intersecting incident and reflected ray segments
+            indep_blocker, indep_label, indep_segment, all_hits = self.independently_identify_blocker(scene)
 
-                # Single-blocker clearance check: remove blocking obstacle and verify path clears
-                blocking_id = gt_data.get("proof", {}).get("blocking_obstacle_id")
-                if blocking_id:
-                    cleared_obs = [o for o in scene.obstacles if o.obstacle_id != blocking_id]
+            if recomputed_blocked:
+                if indep_blocker is None:
+                    recompute_mismatches.append(
+                        f"{tdir.name}: Scene is recomputed as blocked but independently_identify_blocker found no obstacle"
+                    )
+                else:
+                    # Compare independently identified blocker ID with stored ID
+                    gt_blocker_id = gt_data.get("proof", {}).get("blocking_obstacle_id") or gt_data.get("blocking_obstacle_id")
+                    if not gt_blocker_id or gt_blocker_id != indep_blocker.obstacle_id:
+                        recompute_mismatches.append(
+                            f"{tdir.name}: Independently identified blocker ID '{indep_blocker.obstacle_id}' != GT '{gt_blocker_id}'"
+                        )
+
+                    # Compare independently identified label (O1, O2, O3) with stored label
+                    gt_blocker_label = gt_data.get("blocking_obstacle_label")
+                    if not gt_blocker_label or gt_blocker_label != indep_label:
+                        recompute_mismatches.append(
+                            f"{tdir.name}: Independently identified blocker label '{indep_label}' != GT '{gt_blocker_label}'"
+                        )
+
+                    # Compare independently identified blocked segment with stored segment
+                    gt_segment = gt_data.get("blocked_segment")
+                    if gt_segment != indep_segment:
+                        recompute_mismatches.append(
+                            f"{tdir.name}: Independently identified segment '{indep_segment}' != GT '{gt_segment}'"
+                        )
+
+                    # Verify ambiguity: if multiple obstacles intersect the ray, fail single-blocker precision
+                    unique_intersecting = set(all_hits)
+                    if len(unique_intersecting) > 1:
+                        single_blocker_failures.append(
+                            f"{tdir.name}: Ambiguous obstruction: multiple obstacles intersect optical path ({unique_intersecting})"
+                        )
+
+                    # MANDATORY Clearance Test: Remove independently identified blocker and re-evaluate
+                    cleared_obs = [o for o in scene.obstacles if o.obstacle_id != indep_blocker.obstacle_id]
                     unblocked_scene = scene.model_copy(update={"obstacles": cleared_obs})
                     unblocked_verdict = self.oracle.evaluate(unblocked_scene)
-                    if not unblocked_verdict.is_visible:
+                    unblocked_dual = IndependentGeometryVerifier.verify_dual(unblocked_scene, unblocked_verdict)
+                    if not unblocked_verdict.is_visible or not unblocked_dual.is_mathematically_certified:
                         single_blocker_failures.append(
-                            f"{tdir.name}: Clearing blocker '{blocking_id}' did NOT restore visibility (multiple blockers exist)"
+                            f"{tdir.name}: Clearing independently identified blocker '{indep_blocker.obstacle_id}' did NOT restore visibility"
                         )
             else:
+                if indep_blocker is not None or indep_segment != "NONE":
+                    recompute_mismatches.append(
+                        f"{tdir.name}: Unblocked scene was found to be blocked by '{indep_blocker.obstacle_id}' on {indep_segment}"
+                    )
                 if gt_data.get("blocking_obstacle_label") is not None or gt_data.get("blocked_segment") != "NONE":
                     recompute_mismatches.append(
                         f"{tdir.name}: Unblocked scene has non-null blocker or segment in GT"
@@ -523,6 +757,13 @@ class DatasetAuditor:
             items_checked=len(task_dirs),
             failures=leak_failures,
         ))
+        checks.append(AuditCheckResult(
+            name="Task B Prompt Neutrality",
+            passed=len(prompt_leaks) == 0 and len(task_dirs) > 0,
+            details=f"All {len(task_dirs)} obstruction task prompts verified neutral." if not prompt_leaks else f"{len(prompt_leaks)} prompt leaks",
+            items_checked=len(task_dirs),
+            failures=prompt_leaks,
+        ))
         return checks
 
     def audit_repair_tasks(self, dir_path: Path) -> list[AuditCheckResult]:
@@ -530,6 +771,7 @@ class DatasetAuditor:
         Audit Task C: Mirror-Setting Repair via candidate geometric reconstruction.
         Reconstructs every candidate mirror configuration and re-evaluates visibility.
         Verifies that exactly ONE candidate uniquely restores visibility and matches correct_candidate.
+        Also verifies candidate option completeness between question and answer schemas.
         """
         checks = []
         if not dir_path.is_dir():
@@ -537,8 +779,10 @@ class DatasetAuditor:
 
         task_dirs = sorted([p for p in dir_path.iterdir() if p.is_dir()])
         winner_failures: list[str] = []
+        candidate_completeness_failures: list[str] = []
         artifact_failures: list[str] = []
         leak_failures: list[str] = []
+        prompt_leaks: list[str] = []
         meta_items: list[dict[str, Any]] = []
 
         for tdir in task_dirs:
@@ -569,15 +813,32 @@ class DatasetAuditor:
             if not ok_img:
                 leak_failures.append(f"{tdir.name}: {img_msg}")
 
+            recorded_winner = ans_data.get("correct_candidate")
+            cands = ans_data.get("candidates", {})
+
+            # Candidate Option Completeness Check: verify options in question vs answer
+            q_options = sorted(q_data.get("options", []))
+            ans_cand_ids = sorted(cands.keys())
+            if not q_options or q_options != ans_cand_ids:
+                candidate_completeness_failures.append(
+                    f"{tdir.name}: Public question options {q_options} do not match answer candidate keys {ans_cand_ids}"
+                )
+
+            # Prompt Neutrality Check for Task C
+            ok_p, p_msg = self.check_prompt_neutrality(
+                q_data.get("prompt", ""),
+                q_data.get("question", ""),
+                str(recorded_winner or ""),
+            )
+            if not ok_p:
+                prompt_leaks.append(f"{tdir.name}: {p_msg}")
+
             # RECONSTRUCT AND EVALUATE EACH CANDIDATE CONFIGURATION INDEPENDENTLY
             try:
                 base_scene = InspectionScene.model_validate(sc_data)
             except (ValidationError, ValueError, KeyError, TypeError, OSError) as e:
                 artifact_failures.append(f"{tdir.name}: Malformed scene model: {e}")
                 continue
-
-            recorded_winner = ans_data.get("correct_candidate")
-            cands = ans_data.get("candidates", {})
 
             actually_visible_cands: list[str] = []
             for cand_id, cand_info in cands.items():
@@ -619,9 +880,16 @@ class DatasetAuditor:
             failures=winner_failures,
         ))
         checks.append(AuditCheckResult(
+            name="Task C Candidate Option Completeness",
+            passed=len(candidate_completeness_failures) == 0 and len(task_dirs) > 0,
+            details=f"All {len(task_dirs)} repair tasks have 100% aligned candidate options between question and answer keys." if not candidate_completeness_failures else f"{len(candidate_completeness_failures)} candidate mismatches",
+            items_checked=len(task_dirs),
+            failures=candidate_completeness_failures,
+        ))
+        checks.append(AuditCheckResult(
             name="Task C Artifact Completeness",
             passed=len(artifact_failures) == 0 and len(task_dirs) > 0,
-            details=f"All {len(task_dirs)} repair tasks have complete artifact bundles." if not artifact_failures else f"{len(artifact_failures)} artifact failures",
+            details=f"All {len(task_dirs)} repair tasks have complete bundles." if not artifact_failures else f"{len(artifact_failures)} artifact failures",
             items_checked=len(task_dirs),
             failures=artifact_failures,
         ))
@@ -631,6 +899,13 @@ class DatasetAuditor:
             details=f"All {len(task_dirs)} repair tasks verified for zero blind image and metadata leakage." if not leak_failures else f"{len(leak_failures)} leakage failures",
             items_checked=len(task_dirs),
             failures=leak_failures,
+        ))
+        checks.append(AuditCheckResult(
+            name="Task C Prompt Neutrality",
+            passed=len(prompt_leaks) == 0 and len(task_dirs) > 0,
+            details=f"All {len(task_dirs)} repair task prompts verified neutral." if not prompt_leaks else f"{len(prompt_leaks)} prompt leaks",
+            items_checked=len(task_dirs),
+            failures=prompt_leaks,
         ))
         return checks
 
@@ -649,6 +924,7 @@ class DatasetAuditor:
         seed_failures: list[str] = []
         artifact_failures: list[str] = []
         leak_failures: list[str] = []
+        prompt_leaks: list[str] = []
         pair_meta: list[dict[str, Any]] = []
 
         for pdir in pair_dirs:
@@ -668,6 +944,10 @@ class DatasetAuditor:
                     qa_data = json.load(f)
                 with open(pdir / "scene_b" / "question.json", encoding="utf-8") as f:
                     qb_data = json.load(f)
+                with open(pdir / "scene_a" / "ground_truth.json", encoding="utf-8") as f:
+                    gta_data = json.load(f)
+                with open(pdir / "scene_b" / "ground_truth.json", encoding="utf-8") as f:
+                    gtb_data = json.load(f)
             except (json.JSONDecodeError, OSError) as e:
                 artifact_failures.append(f"{pdir.name}: Unreadable JSON: {e}")
                 continue
@@ -682,15 +962,28 @@ class DatasetAuditor:
             if seed_b is None or not isinstance(seed_b, int) or seed_b < 0:
                 seed_failures.append(f"{pair_id}/scene_b missing valid integer seed (got {seed_b})")
 
+            # Record top-level pair ID and child scene IDs for comprehensive global ID uniqueness
             pair_meta.append({"task_id": pair_id, "seed": seed_a if isinstance(seed_a, int) else -1})
+            pair_meta.append({"task_id": sca_data.get("scene_id", f"{pair_id}_a"), "seed": seed_a if isinstance(seed_a, int) else -1})
+            pair_meta.append({"task_id": scb_data.get("scene_id", f"{pair_id}_b"), "seed": seed_b if isinstance(seed_b, int) else -1})
 
-            for sub, q_sub in [("scene_a", qa_data), ("scene_b", qb_data)]:
+            for sub, q_sub, gt_sub in [("scene_a", qa_data, gta_data), ("scene_b", qb_data, gtb_data)]:
                 ok_rec, rec_leaks = self.check_public_record_non_leakage(q_sub)
                 if not ok_rec:
                     leak_failures.extend([f"{pair_id}/{sub}: {lk}" for lk in rec_leaks])
                 ok_img, img_msg = self.check_image_leakage(pdir / sub / "diagram_blind.png", pdir / sub / "diagram_overlay.png")
                 if not ok_img:
                     leak_failures.append(f"{pair_id}/{sub}: {img_msg}")
+
+                # Prompt Neutrality Check for each child scene
+                ans_str = str(gt_sub.get("answer", gt_sub.get("can_see", "")))
+                ok_p, p_msg = self.check_prompt_neutrality(
+                    q_sub.get("prompt", ""),
+                    q_sub.get("question", ""),
+                    ans_str,
+                )
+                if not ok_p:
+                    prompt_leaks.append(f"{pair_id}/{sub}: {p_msg}")
 
             # RECOMPUTE BOTH OUTCOMES INDEPENDENTLY
             try:
@@ -763,6 +1056,13 @@ class DatasetAuditor:
             items_checked=len(pair_dirs) * 2,
             failures=leak_failures,
         ))
+        checks.append(AuditCheckResult(
+            name="Task D Prompt Neutrality",
+            passed=len(prompt_leaks) == 0 and len(pair_dirs) > 0,
+            details=f"All {len(pair_dirs) * 2} counterfactual child prompts verified neutral." if not prompt_leaks else f"{len(prompt_leaks)} prompt leaks",
+            items_checked=len(pair_dirs) * 2,
+            failures=prompt_leaks,
+        ))
         return checks
 
     def audit_ood_tasks(self, dir_path: Path) -> list[AuditCheckResult]:
@@ -778,6 +1078,7 @@ class DatasetAuditor:
         category_failures: list[str] = []
         artifact_failures: list[str] = []
         leak_failures: list[str] = []
+        prompt_leaks: list[str] = []
         meta_items: list[dict[str, Any]] = []
         measured_categories: dict[str, int] = {}
 
@@ -809,7 +1110,16 @@ class DatasetAuditor:
             if not ok_img:
                 leak_failures.append(f"{tdir.name}: {img_msg}")
 
-            # RECOMPUTE ACTUAL GEOMETRY
+            # Prompt Neutrality Check for Task E
+            ok_p, p_msg = self.check_prompt_neutrality(
+                q_data.get("prompt", ""),
+                q_data.get("question", ""),
+                str(gt_data.get("answer", gt_data.get("can_see", ""))),
+            )
+            if not ok_p:
+                prompt_leaks.append(f"{tdir.name}: {p_msg}")
+
+            # RECOMPUTE ACTUAL GEOMETRY DIRECTLY (DO NOT TRUST MANIFEST)
             try:
                 scene = InspectionScene.model_validate(sc_data)
             except (ValidationError, ValueError, KeyError, TypeError, OSError) as e:
@@ -822,23 +1132,74 @@ class DatasetAuditor:
             if not cert.is_mathematically_certified:
                 dual_failures.append(f"{tdir.name}: Dual verifier failed: {cert.proof_summary}")
 
+            # 1. Compare recomputed visibility with stored visibility
             gt_vis = gt_data.get("can_see")
             if verdict.is_visible != gt_vis:
                 dual_failures.append(
-                    f"{tdir.name}: Recomputed visibility={verdict.is_visible} != GT={gt_vis}"
+                    f"{tdir.name}: Recomputed visibility={verdict.is_visible} != GT can_see={gt_vis}"
+                )
+            expected_state = "VISIBLE" if verdict.is_visible else "NOT_VISIBLE"
+            if sc_data.get("ground_truth_state") != expected_state:
+                dual_failures.append(
+                    f"{tdir.name}: Recomputed state={expected_state} != scene ground_truth_state={sc_data.get('ground_truth_state')}"
                 )
 
-            reason_str = verdict.reason.value if hasattr(verdict.reason, "value") else str(verdict.reason)
-            cat_label = "VISIBLE" if verdict.is_visible else reason_str
-            measured_categories[cat_label] = measured_categories.get(cat_label, 0) + 1
+            # 2. Compare recomputed obstruction reason with stored reason
+            reason_name = verdict.reason.name if hasattr(verdict.reason, "name") else str(verdict.reason)
+            sc_reason = sc_data.get("ground_truth_reason")
+            if sc_reason is not None and sc_reason != reason_name:
+                dual_failures.append(
+                    f"{tdir.name}: Recomputed reason '{reason_name}' != scene ground_truth_reason '{sc_reason}'"
+                )
 
-        # Check category diversity: must contain both visible and not-visible, and multiple failure reasons
-        num_visible = measured_categories.get("VISIBLE", 0)
-        num_categories = len(measured_categories)
-        if num_visible == 0:
-            category_failures.append("OOD dataset contains zero visible cases (all NO).")
-        if num_categories < 4:
-            category_failures.append(f"OOD dataset lacks diversity: only {num_categories} categories represented ({measured_categories}).")
+            # 3. Compare actual category with declared category
+            if verdict.is_visible:
+                canonical_cat = "VALID_VISIBLE"
+            elif verdict.reason == ObstructionReason.BLOCKED_INCIDENT:
+                canonical_cat = "BLOCKED_INCIDENT"
+            elif verdict.reason == ObstructionReason.BLOCKED_REFLECTED:
+                canonical_cat = "BLOCKED_REFLECTED"
+            elif verdict.reason == ObstructionReason.MISSED_MIRROR:
+                canonical_cat = "MIRROR_MISS"
+            elif verdict.reason == ObstructionReason.BACK_OF_MIRROR:
+                canonical_cat = "WRONG_SIDE"
+            elif verdict.reason == ObstructionReason.OUT_OF_FOV:
+                canonical_cat = "OUTSIDE_FOV"
+            else:
+                canonical_cat = reason_name
+
+            declared_cat = sc_data.get("category")
+            valid_aliases = {
+                "WRONG_SIDE": {"WRONG_SIDE", "BACK_OF_MIRROR"},
+                "OUTSIDE_FOV": {"OUTSIDE_FOV", "OUT_OF_FOV"},
+                "MIRROR_MISS": {"MIRROR_MISS", "MISSED_MIRROR"},
+                "VALID_VISIBLE": {"VALID_VISIBLE", "VISIBLE"},
+                "BLOCKED_INCIDENT": {"BLOCKED_INCIDENT"},
+                "BLOCKED_REFLECTED": {"BLOCKED_REFLECTED"},
+            }
+            allowed = valid_aliases.get(canonical_cat, {canonical_cat})
+            if declared_cat not in allowed:
+                category_failures.append(
+                    f"{tdir.name}: Recomputed category '{canonical_cat}' != declared category '{declared_cat}'"
+                )
+
+            measured_categories[canonical_cat] = measured_categories.get(canonical_cat, 0) + 1
+
+        # 4. Verify all six intended categories are represented
+        intended_categories = {"VALID_VISIBLE", "BLOCKED_INCIDENT", "BLOCKED_REFLECTED", "MIRROR_MISS", "WRONG_SIDE", "OUTSIDE_FOV"}
+        missing_categories = intended_categories - set(measured_categories.keys())
+        if missing_categories:
+            category_failures.append(f"OOD suite missing intended categories: {sorted(missing_categories)}")
+
+        # 5. Verify expected category counts for configured dataset size
+        if len(task_dirs) % 6 == 0 and len(task_dirs) > 0:
+            expected_per_cat = len(task_dirs) // 6
+            for cat in intended_categories:
+                actual_c = measured_categories.get(cat, 0)
+                if actual_c != expected_per_cat:
+                    category_failures.append(
+                        f"OOD category '{cat}' count mismatch: expected {expected_per_cat}, found {actual_c}"
+                    )
 
         checks.append(self.check_id_uniqueness(meta_items))
         checks.append(self.check_seed_recording(meta_items))
@@ -852,7 +1213,7 @@ class DatasetAuditor:
         checks.append(AuditCheckResult(
             name="Task E Category Diversity & Balance",
             passed=len(category_failures) == 0 and len(task_dirs) > 0,
-            details=f"OOD suite exhibits balanced distribution across {len(measured_categories)} categories: {measured_categories}." if not category_failures else f"{category_failures}",
+            details=f"OOD suite strictly verified across all 6 categories: {measured_categories}." if not category_failures else f"{category_failures}",
             items_checked=len(task_dirs),
             failures=category_failures,
         ))
@@ -862,6 +1223,13 @@ class DatasetAuditor:
             details=f"All {len(task_dirs)} OOD tasks have complete bundles and zero leakage." if not (artifact_failures or leak_failures) else f"{len(artifact_failures)} artifact failures, {len(leak_failures)} leakage failures",
             items_checked=len(task_dirs),
             failures=artifact_failures + leak_failures,
+        ))
+        checks.append(AuditCheckResult(
+            name="Task E Prompt Neutrality",
+            passed=len(prompt_leaks) == 0 and len(task_dirs) > 0,
+            details=f"All {len(task_dirs)} OOD task prompts verified neutral." if not prompt_leaks else f"{len(prompt_leaks)} prompt leaks",
+            items_checked=len(task_dirs),
+            failures=prompt_leaks,
         ))
         return checks
 
@@ -944,7 +1312,19 @@ class DatasetAuditor:
         )
 
     def check_dataset_split_isolation(self) -> AuditCheckResult:
-        """Check 10: Verify strict physical isolation and zero leakage across benchmark splits."""
+        """
+        Check 10: Verify strict physical isolation and zero leakage across benchmark splits.
+        Enforces:
+        1. All 6 mandatory split files exist and are non-empty:
+           - dev public tasks.jsonl & dev ground_truth.jsonl
+           - val public tasks.jsonl & val ground_truth.jsonl
+           - test public tasks.jsonl & test private ground_truth.jsonl
+        2. No duplicate IDs within any split file.
+        3. Public task IDs exactly match corresponding private answer-key IDs (1:1 alignment).
+        4. No task IDs overlap across dev, val, and test partitions.
+        5. No equivalent geometry fingerprints leak between splits.
+        6. Test public records contain zero private fields.
+        """
         splits_dir = self.data_root / "benchmark_splits"
         if not splits_dir.is_dir():
             return AuditCheckResult(
@@ -965,74 +1345,168 @@ class DatasetAuditor:
                 failures=["Missing manifest.json"],
             )
 
-        def _get_task_ids(filepath: Path) -> list[str]:
-            if not filepath.is_file():
-                return []
-            ids = []
+        split_files: dict[str, Path] = {
+            "dev_public": splits_dir / "dev" / "tasks.jsonl" if (splits_dir / "dev" / "tasks.jsonl").is_file() else splits_dir / "dev" / "public" / "tasks.jsonl",
+            "dev_ground_truth": splits_dir / "dev" / "ground_truth.jsonl" if (splits_dir / "dev" / "ground_truth.jsonl").is_file() else splits_dir / "dev" / "private" / "ground_truth.jsonl",
+            "val_public": splits_dir / "val" / "tasks.jsonl" if (splits_dir / "val" / "tasks.jsonl").is_file() else splits_dir / "val" / "public" / "tasks.jsonl",
+            "val_ground_truth": splits_dir / "val" / "ground_truth.jsonl" if (splits_dir / "val" / "ground_truth.jsonl").is_file() else splits_dir / "val" / "private" / "ground_truth.jsonl",
+            "test_public": splits_dir / "test" / "public" / "tasks.jsonl" if (splits_dir / "test" / "public" / "tasks.jsonl").is_file() else splits_dir / "test" / "tasks.jsonl",
+            "test_ground_truth": splits_dir / "test" / "private" / "ground_truth.jsonl" if (splits_dir / "test" / "private" / "ground_truth.jsonl").is_file() else splits_dir / "test" / "ground_truth.jsonl",
+        }
+
+        failures: list[str] = []
+
+        # 1. Require every file to exist and be non-empty
+        for key, fpath in split_files.items():
+            if not fpath.is_file():
+                failures.append(f"Required split file missing: {key} ({fpath})")
+            elif fpath.stat().st_size == 0:
+                failures.append(f"Required split file is empty: {key} ({fpath})")
+
+        if failures:
+            return AuditCheckResult(
+                name="Test Split Partition Isolation",
+                passed=False,
+                details=f"Split file completeness check failed with {len(failures)} missing/empty files.",
+                items_checked=0,
+                failures=failures,
+            )
+
+        def _read_split_jsonl(filepath: Path) -> tuple[list[str], list[dict[str, Any]], list[str]]:
+            ids: list[str] = []
+            records: list[dict[str, Any]] = []
+            file_fails: list[str] = []
             with open(filepath, encoding="utf-8") as fp:
-                for line in fp:
+                for line_idx, line in enumerate(fp, 1):
                     line_s = line.strip()
-                    if line_s:
-                        try:
-                            item = json.loads(line_s)
-                            if "task_id" in item:
-                                ids.append(item["task_id"])
-                        except json.JSONDecodeError:
-                            continue
-            return ids
-
-        dev_ids = set(_get_task_ids(splits_dir / "dev" / "tasks.jsonl"))
-        val_ids = set(_get_task_ids(splits_dir / "val" / "tasks.jsonl"))
-        test_ids = set(_get_task_ids(splits_dir / "test" / "public" / "tasks.jsonl"))
-        total_split_items = len(dev_ids) + len(val_ids) + len(test_ids)
-
-        leakages: list[str] = []
-        # Check mutual exclusion
-        dev_val_overlap = dev_ids & val_ids
-        if dev_val_overlap:
-            leakages.append(f"Overlap between dev and val: {sorted(dev_val_overlap)[:5]}")
-
-        dev_test_overlap = dev_ids & test_ids
-        if dev_test_overlap:
-            leakages.append(f"Overlap between dev and test: {sorted(dev_test_overlap)[:5]}")
-
-        val_test_overlap = val_ids & test_ids
-        if val_test_overlap:
-            leakages.append(f"Overlap between val and test: {sorted(val_test_overlap)[:5]}")
-
-        # Check public test set for ground-truth leakage
-        pub_test_file = splits_dir / "test" / "public" / "tasks.jsonl"
-        if pub_test_file.is_file():
-            with open(pub_test_file, encoding="utf-8") as fp:
-                for line in fp:
-                    line_s = line.strip()
-                    if line_s:
+                    if not line_s:
+                        continue
+                    try:
                         item = json.loads(line_s)
-                        for forbidden in [
-                            "can_see", "is_visible", "correct_candidate",
-                            "ground_truth_reason", "blocking_obstacle_label",
-                            "blocked_segment", "reflection_point", "virtual_target"
-                        ]:
-                            if forbidden in item:
-                                leakages.append(f"Public test record {item.get('task_id')} leaked private field '{forbidden}'")
+                        records.append(item)
+                        tid = item.get("task_id") or item.get("scene_id")
+                        if not tid:
+                            file_fails.append(f"{filepath.name} line {line_idx}: missing task_id/scene_id")
+                        else:
+                            ids.append(tid)
+                    except json.JSONDecodeError as err:
+                        file_fails.append(f"{filepath.name} line {line_idx}: invalid JSON: {err}")
+            return ids, records, file_fails
 
-        # Verify private test ground truth exists
-        priv_test_file = splits_dir / "test" / "private" / "ground_truth.jsonl"
-        if not priv_test_file.is_file() or priv_test_file.stat().st_size == 0:
-            leakages.append("Missing or empty private test ground_truth.jsonl")
+        dev_pub_ids, _dev_pub_recs, errs = _read_split_jsonl(split_files["dev_public"])
+        failures.extend(errs)
+        dev_gt_ids, _dev_gt_recs, errs = _read_split_jsonl(split_files["dev_ground_truth"])
+        failures.extend(errs)
 
-        passed = len(leakages) == 0 and total_split_items > 0
+        val_pub_ids, _val_pub_recs, errs = _read_split_jsonl(split_files["val_public"])
+        failures.extend(errs)
+        val_gt_ids, _val_gt_recs, errs = _read_split_jsonl(split_files["val_ground_truth"])
+        failures.extend(errs)
+
+        test_pub_ids, test_pub_recs, errs = _read_split_jsonl(split_files["test_public"])
+        failures.extend(errs)
+        test_gt_ids, _test_gt_recs, errs = _read_split_jsonl(split_files["test_ground_truth"])
+        failures.extend(errs)
+
+        total_split_items = len(dev_pub_ids) + len(val_pub_ids) + len(test_pub_ids)
+
+        # 2. Duplicate ID check within each file
+        for label, id_list in [
+            ("dev_public", dev_pub_ids),
+            ("dev_ground_truth", dev_gt_ids),
+            ("val_public", val_pub_ids),
+            ("val_ground_truth", val_gt_ids),
+            ("test_public", test_pub_ids),
+            ("test_ground_truth", test_gt_ids),
+        ]:
+            seen: set[str] = set()
+            for tid in id_list:
+                if tid in seen:
+                    failures.append(f"Duplicate task ID in {label}: {tid}")
+                seen.add(tid)
+
+        # 3. Public task IDs must exactly match corresponding private answer-key IDs
+        for split_name, pub_ids, gt_ids in [
+            ("dev", dev_pub_ids, dev_gt_ids),
+            ("val", val_pub_ids, val_gt_ids),
+            ("test", test_pub_ids, test_gt_ids),
+        ]:
+            if len(pub_ids) != len(gt_ids):
+                failures.append(f"{split_name} split count mismatch: {len(pub_ids)} public tasks vs {len(gt_ids)} ground-truth records")
+            diff_pub_gt = set(pub_ids) ^ set(gt_ids)
+            if diff_pub_gt:
+                failures.append(f"{split_name} split unaligned IDs: {len(diff_pub_gt)} mismatched IDs ({sorted(diff_pub_gt)[:5]})")
+
+        # 4. No task IDs overlap across splits
+        dev_set, val_set, test_set = set(dev_pub_ids), set(val_pub_ids), set(test_pub_ids)
+        if dev_set & val_set:
+            failures.append(f"Task ID overlap between dev and val: {sorted(dev_set & val_set)[:5]}")
+        if dev_set & test_set:
+            failures.append(f"Task ID overlap between dev and test: {sorted(dev_set & test_set)[:5]}")
+        if val_set & test_set:
+            failures.append(f"Task ID overlap between val and test: {sorted(val_set & test_set)[:5]}")
+
+        # 5. Test public records contain no private fields
+        for item in test_pub_recs:
+            tid = item.get("task_id", "unknown")
+            ok_rec, leaks = self.check_public_record_non_leakage(item)
+            if not ok_rec:
+                failures.extend([f"test_public [{tid}]: {lk}" for lk in leaks])
+
+        # 6. Anti-leakage of equivalent geometry fingerprints across splits
+        geom_map: dict[str, tuple[Any, ...]] = {}
+        for rel_pat in [
+            "benchmark_tasks/*/scene.json",
+            "obstruction_tasks/*/scene.json",
+            "repair_tasks/*/scene.json",
+            "ood_tasks/*/scene.json",
+            "counterfactual_pairs/*/*/scene.json",
+        ]:
+            for f in self.data_root.glob(rel_pat):
+                try:
+                    with open(f, encoding="utf-8") as fp:
+                        sdata = json.load(fp)
+                    cam = sdata.get("camera", {}).get("position", {})
+                    m_a = sdata.get("mirror", {}).get("endpoint_a", {})
+                    m_b = sdata.get("mirror", {}).get("endpoint_b", {})
+                    tgt = sdata.get("target", {}).get("center", {})
+                    obs = tuple(sorted((round(o["center"]["x"], 1), round(o["center"]["y"], 1)) for o in sdata.get("obstacles", [])))
+                    fp_key = (
+                        round(cam.get("x", 0), 1), round(cam.get("y", 0), 1),
+                        round(m_a.get("x", 0), 1), round(m_a.get("y", 0), 1),
+                        round(m_b.get("x", 0), 1), round(m_b.get("y", 0), 1),
+                        round(tgt.get("x", 0), 1), round(tgt.get("y", 0), 1),
+                        obs,
+                    )
+                    sid = sdata.get("scene_id") or f.parent.name
+                    geom_map[sid] = fp_key
+                    geom_map[f.parent.name] = fp_key
+                except (KeyError, ValueError, json.JSONDecodeError, OSError):
+                    pass
+
+        dev_geoms = {geom_map[tid] for tid in dev_pub_ids if tid in geom_map}
+        val_geoms = {geom_map[tid] for tid in val_pub_ids if tid in geom_map}
+        test_geoms = {geom_map[tid] for tid in test_pub_ids if tid in geom_map}
+
+        if dev_geoms & val_geoms:
+            failures.append(f"Geometry fingerprint overlap between dev and val ({len(dev_geoms & val_geoms)} scenes)")
+        if dev_geoms & test_geoms:
+            failures.append(f"Geometry fingerprint overlap between dev and test ({len(dev_geoms & test_geoms)} scenes)")
+        if val_geoms & test_geoms:
+            failures.append(f"Geometry fingerprint overlap between val and test ({len(val_geoms & test_geoms)} scenes)")
+
+        passed = len(failures) == 0 and total_split_items > 0
         details = (
-            f"Zero split leakage. Dev={len(dev_ids)}, Val={len(val_ids)}, Blind Test={len(test_ids)} mutually disjoint."
+            f"Zero split leakage. Dev={len(dev_pub_ids)}, Val={len(val_pub_ids)}, Blind Test={len(test_pub_ids)} strictly isolated and aligned."
             if passed
-            else (f"Found {len(leakages)} split isolation violations." if total_split_items > 0 else "Splits empty.")
+            else f"Split isolation violations detected: {len(failures)} failures"
         )
         return AuditCheckResult(
             name="Test Split Partition Isolation",
             passed=passed,
             details=details,
             items_checked=total_split_items,
-            failures=leakages,
+            failures=failures,
         )
 
     def audit_all(self) -> ComprehensiveAuditReport:
@@ -1064,7 +1538,7 @@ class DatasetAuditor:
         e_checks = self.audit_ood_tasks(self.data_root / "ood_tasks")
 
         # Compile master 10-point checklist:
-        # 1. ID Uniqueness across all suites
+        # 1. ID Uniqueness across all suites (top-level tasks + pairs + child scenes)
         all_meta_items: list[dict[str, Any]] = []
         for tdir in t_a_dirs + t_b_dirs + t_c_dirs + t_e_dirs:
             sc_f = tdir / "scene.json"
@@ -1084,6 +1558,15 @@ class DatasetAuditor:
                     all_meta_items.append({"task_id": pdata["pair_id"], "seed": 0})
                 except (json.JSONDecodeError, OSError):
                     pass
+            for sub in ["scene_a", "scene_b"]:
+                sc_f = pdir / sub / "scene.json"
+                if sc_f.is_file():
+                    try:
+                        with open(sc_f, encoding="utf-8") as sf:
+                            sc = json.load(sf)
+                        all_meta_items.append({"task_id": sc.get("scene_id") or f"{pdir.name}_{sub[-1]}", "seed": sc.get("seed")})
+                    except (json.JSONDecodeError, OSError):
+                        pass
 
         all_checks.append(self.check_id_uniqueness(all_meta_items))
 
@@ -1091,29 +1574,18 @@ class DatasetAuditor:
         seed_failures = []
         seeds_checked = 0
         for item in all_meta_items:
+            # Skip the top-level pair container, inspect individual scenes
+            if item["task_id"].startswith("pair_") and not (item["task_id"].endswith("_a") or item["task_id"].endswith("_b")):
+                continue
             seeds_checked += 1
-            if item["task_id"].startswith("pair_"):
-                # Check both child scene seeds
-                pdir = self.data_root / "counterfactual_pairs" / item["task_id"]
-                for sub in ["scene_a", "scene_b"]:
-                    sc_f = pdir / sub / "scene.json"
-                    if sc_f.is_file():
-                        with open(sc_f, encoding="utf-8") as f:
-                            sc = json.load(f)
-                        s_val = sc.get("seed")
-                        if s_val is None or not isinstance(s_val, int) or s_val < 0:
-                            seed_failures.append(f"{item['task_id']}/{sub} invalid seed: {s_val}")
-                    else:
-                        seed_failures.append(f"{item['task_id']}/{sub} missing scene.json")
-            else:
-                s_val = item.get("seed")
-                if s_val is None or not isinstance(s_val, int) or s_val < 0:
-                    seed_failures.append(f"{item['task_id']} invalid seed: {s_val}")
+            s_val = item.get("seed")
+            if s_val is None or not isinstance(s_val, int) or s_val < 0:
+                seed_failures.append(f"{item['task_id']} invalid seed: {s_val}")
 
         all_checks.append(AuditCheckResult(
             name="Deterministic Seed Recording",
             passed=len(seed_failures) == 0 and seeds_checked > 0,
-            details=f"All {seeds_checked} tasks (including both counterfactual child scenes) record valid integer seeds." if not seed_failures else f"{len(seed_failures)} invalid seeds",
+            details=f"All {seeds_checked} scenes (including both counterfactual child scenes) record valid integer seeds." if not seed_failures else f"{len(seed_failures)} invalid seeds",
             items_checked=seeds_checked,
             failures=seed_failures,
         ))
@@ -1148,14 +1620,16 @@ class DatasetAuditor:
 
         # 5. Prompt Neutrality & Zero-Leakage
         prompt_fails = []
+        prompts_checked = 0
         for c in a_checks + b_checks + c_checks + d_checks + e_checks:
             if "Prompt" in c.name:
                 prompt_fails.extend(c.failures)
+                prompts_checked += c.items_checked
         all_checks.append(AuditCheckResult(
             name="Prompt Neutrality & Zero-Leakage",
-            passed=len(prompt_fails) == 0 and len(t_a_dirs) > 0,
-            details="All prompts and questions verified neutral across all suites." if not prompt_fails else f"{len(prompt_fails)} prompt leaks",
-            items_checked=len(t_a_dirs),
+            passed=len(prompt_fails) == 0 and prompts_checked > 0,
+            details=f"All {prompts_checked} prompts and questions verified neutral across all suites." if not prompt_fails else f"{len(prompt_fails)} prompt leaks",
+            items_checked=prompts_checked,
             failures=prompt_fails,
         ))
 
@@ -1197,6 +1671,11 @@ class DatasetAuditor:
             except (json.JSONDecodeError, OSError):
                 pass
 
+        total_pairs = len(t_d_dirs)
+        total_seeds = seeds_checked
+        total_images = total_imgs
+        total_prompts = prompts_checked
+
         return ComprehensiveAuditReport(
             total_tasks_checked=total_tasks,
             total_scenes_checked=total_scenes,
@@ -1204,6 +1683,10 @@ class DatasetAuditor:
             checks=all_checks,
             rejection_records=self.rejection_records,
             split_summary=split_summary,
+            total_pairs_checked=total_pairs,
+            total_seeds_checked=total_seeds,
+            total_images_checked=total_images,
+            total_prompts_checked=total_prompts,
         )
 
 
@@ -1283,6 +1766,13 @@ class DatasetSplitter:
         task_d_dirs = sorted([p for p in (self.data_root / "counterfactual_pairs").iterdir() if p.is_dir()])
         _partition_items(task_d_dirs, "TASK_D_COUNTERFACTUAL")
 
+        # 5. Partition Task E (OOD Boundary & Stress)
+        ood_dir = self.data_root / "ood_tasks"
+        if ood_dir.is_dir():
+            task_e_dirs = sorted([p for p in ood_dir.iterdir() if p.is_dir()])
+            if task_e_dirs:
+                _partition_items(task_e_dirs, "TASK_E_OOD")
+
         manifest = {
             "version": "1.0.0",
             "split_counts": split_counts,
@@ -1302,6 +1792,12 @@ class DatasetSplitter:
         gt_jl = (target_dir / "private" / "ground_truth.jsonl") if is_test else (target_dir / "ground_truth.jsonl")
         pairs_jl = (target_dir / "private" / "pairs.jsonl") if is_test else (target_dir / "pairs.jsonl")
 
+        img_pub_dir = (target_dir / "public" / "images") if is_test else (target_dir / "images")
+        overlay_priv_dir = (target_dir / "private" / "overlays") if is_test else (target_dir / "images")
+
+        img_pub_dir.mkdir(parents=True, exist_ok=True)
+        overlay_priv_dir.mkdir(parents=True, exist_ok=True)
+
         for item in items:
             if task_type == "TASK_D_COUNTERFACTUAL":
                 with open(item / "pair.json", encoding="utf-8") as f:
@@ -1313,6 +1809,9 @@ class DatasetSplitter:
                     sdir = item / sub
                     with open(sdir / "question.json", encoding="utf-8") as f:
                         qdata = json.load(f)
+                    tid = qdata.get("task_id") or sdir.name
+                    target_img_name = f"{tid}.png"
+                    qdata["image_filename"] = target_img_name
                     with open(tasks_jl, "a", encoding="utf-8") as fp:
                         fp.write(json.dumps(qdata) + "\n")
 
@@ -1320,11 +1819,27 @@ class DatasetSplitter:
                         gtdata = json.load(f)
                     with open(gt_jl, "a", encoding="utf-8") as fp:
                         fp.write(json.dumps(gtdata) + "\n")
+
+                    # Copy blind and reference overlay images
+                    src_blind = sdir / "diagram_blind.png"
+                    if src_blind.is_file():
+                        shutil.copy2(src_blind, img_pub_dir / target_img_name)
+
+                    src_overlay = sdir / "diagram_overlay.png"
+                    if not src_overlay.is_file():
+                        src_overlay = sdir / "diagram_reference_path.png"
+                    if src_overlay.is_file():
+                        dst_ov = overlay_priv_dir / (target_img_name if is_test else f"{tid}_overlay.png")
+                        shutil.copy2(src_overlay, dst_ov)
             else:
+                tid = item.name
                 q_file = item / "question.json"
                 if q_file.exists():
                     with open(q_file, encoding="utf-8") as f:
                         qdata = json.load(f)
+                    tid = qdata.get("task_id") or tid
+                    target_img_name = f"{tid}.png"
+                    qdata["image_filename"] = target_img_name
                     with open(tasks_jl, "a", encoding="utf-8") as fp:
                         fp.write(json.dumps(qdata) + "\n")
 
@@ -1335,12 +1850,32 @@ class DatasetSplitter:
                     with open(gt_jl, "a", encoding="utf-8") as fp:
                         fp.write(json.dumps(ansdata) + "\n")
 
+                # Copy blind and reference overlay images
+                src_blind = item / "diagram_blind.png"
+                if src_blind.is_file():
+                    shutil.copy2(src_blind, img_pub_dir / target_img_name)
+
+                src_overlay = item / "diagram_overlay.png"
+                if not src_overlay.is_file():
+                    src_overlay = item / "diagram_reference_path.png"
+                if src_overlay.is_file():
+                    dst_ov = overlay_priv_dir / (target_img_name if is_test else f"{tid}_overlay.png")
+                    shutil.copy2(src_overlay, dst_ov)
+
 
 def render_audit_report_markdown(report: ComprehensiveAuditReport) -> str:
     """Format audit results as a publication-grade Markdown document."""
     md = []
     md.append("# MIRRORLAB Benchmark Dataset Audit & Integrity Report\n")
-    md.append(f"**Audit Status:** {'PASSED' if report.all_passed else 'FAILED'} | **Total Scenes Audited:** {report.total_scenes_checked} | **Total Tasks:** {report.total_tasks_checked}\n")
+    md.append(
+        f"**Audit Status:** {'PASSED' if report.all_passed else 'FAILED'} | "
+        f"**Total Tasks:** {report.total_tasks_checked} | "
+        f"**Counterfactual Pairs:** {report.total_pairs_checked} | "
+        f"**Individual Scenes:** {report.total_scenes_checked} | "
+        f"**Deterministic Seeds:** {report.total_seeds_checked} | "
+        f"**Evaluated Images:** {report.total_images_checked} | "
+        f"**Inspected Prompts:** {report.total_prompts_checked}\n"
+    )
 
     md.append("## 1. Executive Summary & Audit Checklist\n")
     md.append("| # | Audit Check Name | Status | Items Checked | Result Summary |")

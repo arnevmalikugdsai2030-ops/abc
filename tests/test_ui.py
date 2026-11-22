@@ -218,6 +218,6 @@ def test_load_benchmark_manifest() -> None:
     manifest = load_benchmark_manifest()
     assert manifest is not None
     assert "split_counts" in manifest
-    assert manifest["split_counts"]["dev"] == 40
-    assert manifest["split_counts"]["val"] == 40
-    assert manifest["split_counts"]["test"] == 120
+    assert manifest["split_counts"]["dev"] == 46
+    assert manifest["split_counts"]["val"] == 46
+    assert manifest["split_counts"]["test"] == 138

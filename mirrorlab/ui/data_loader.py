@@ -326,7 +326,6 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
     """
     root = Path(data_root)
     manifest = load_benchmark_manifest(root / "benchmark_splits")
-    sample_scenes = load_sample_scenes(root / "sample_scenes")
 
     # Counts from physical task directories on disk
     vis_count = len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()]) if (root / "benchmark_tasks").exists() else 0
@@ -338,21 +337,54 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
     total_disk_tasks = vis_count + obs_count + rep_count + pair_count + ood_count
     total_child_scenes = vis_count + obs_count + rep_count + (pair_count * 2) + ood_count
 
-    # Difficulty tiers from actual loaded sample scenes or task scenes
+    # Difficulty tiers and obstacle count distribution from all actual benchmark scenes on disk
     difficulty_counts: dict[str, int] = {}
-    if sample_scenes:
-        for s in sample_scenes:
-            tier = s.difficulty.value if hasattr(s.difficulty, "value") else str(s.difficulty)
-            difficulty_counts[tier] = difficulty_counts.get(tier, 0) + 1
-    if ood_count > 0:
-        difficulty_counts["OOD_BOUNDARY"] = ood_count
+    all_scenes_obs_counts: list[int] = []
 
-    # Obstacle count distribution from sample scenes
-    obs_counts = [len(s.obstacles) for s in sample_scenes]
-    avg_obstacles = round(sum(obs_counts) / len(obs_counts), 2) if obs_counts else 0.0
+    scene_patterns = [
+        "benchmark_tasks/*/scene.json",
+        "obstruction_tasks/*/scene.json",
+        "repair_tasks/*/scene.json",
+        "ood_tasks/*/scene.json",
+        "counterfactual_pairs/*/*/scene.json",
+    ]
+    for pat in scene_patterns:
+        for sf in root.glob(pat):
+            try:
+                with open(sf, encoding="utf-8") as sfp:
+                    sc = json.load(sfp)
+                tier = sc.get("difficulty") or "UNKNOWN"
+                if isinstance(tier, dict):
+                    tier = tier.get("value", "UNKNOWN")
+                tier_str = str(tier).upper()
+                difficulty_counts[tier_str] = difficulty_counts.get(tier_str, 0) + 1
+                all_scenes_obs_counts.append(len(sc.get("obstacles", [])))
+            except (json.JSONDecodeError, OSError):
+                continue
 
-    # Split counts from manifest
-    split_counts = manifest.get("split_counts", {}) if manifest else {}
+    avg_obstacles = (
+        round(sum(all_scenes_obs_counts) / len(all_scenes_obs_counts), 2)
+        if all_scenes_obs_counts
+        else 0.0
+    )
+
+    # Split counts directly from actual split files on disk
+    splits_dir = root / "benchmark_splits"
+    dev_pub_f = splits_dir / "dev" / "tasks.jsonl"
+    val_pub_f = splits_dir / "val" / "tasks.jsonl"
+    test_pub_f = splits_dir / "test" / "public" / "tasks.jsonl"
+
+    split_counts: dict[str, int] = {}
+    if dev_pub_f.is_file():
+        with open(dev_pub_f, encoding="utf-8") as f:
+            split_counts["dev"] = sum(1 for line in f if line.strip())
+    if val_pub_f.is_file():
+        with open(val_pub_f, encoding="utf-8") as f:
+            split_counts["val"] = sum(1 for line in f if line.strip())
+    if test_pub_f.is_file():
+        with open(test_pub_f, encoding="utf-8") as f:
+            split_counts["test"] = sum(1 for line in f if line.strip())
+
     total_split_tasks = sum(split_counts.values()) if split_counts else 0
 
     return {
@@ -362,10 +394,9 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
         "total_child_scenes": total_child_scenes,
         "total_counterfactual_pairs": pair_count,
         "total_ood_tasks": ood_count,
+        "target_dataset_size": total_disk_tasks,
         "actual_generated_tasks": total_disk_tasks,
-        "target_dataset_size": 200,
         "total_split_tasks": total_split_tasks,
-        "target_split_counts": {"dev": 40, "val": 40, "test": 120},
         "split_counts": split_counts,
         "family_counts": {
             "TASK_A_VISIBILITY": vis_count,
@@ -375,7 +406,7 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
             "TASK_E_OOD": ood_count,
         },
         "difficulty_counts": difficulty_counts,
-        "sample_scenes_count": len(sample_scenes),
+        "sample_scenes_count": len(all_scenes_obs_counts),
         "average_obstacles_per_scene": avg_obstacles,
         "isolation_verified": manifest.get("isolation_verified", False) if manifest else False,
     }
@@ -649,7 +680,8 @@ def get_dataset_validation_status(
     obs_count = len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()]) if (root / "obstruction_tasks").exists() else 0
     rep_count = len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()]) if (root / "repair_tasks").exists() else 0
     pair_count = len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()]) if (root / "counterfactual_pairs").exists() else 0
-    total_tasks = vis_count + obs_count + rep_count + pair_count
+    ood_count = len([d for d in (root / "ood_tasks").iterdir() if d.is_dir()]) if (root / "ood_tasks").exists() else 0
+    total_tasks = vis_count + obs_count + rep_count + pair_count + ood_count
 
     check_names = [
         "Scene ID Uniqueness",

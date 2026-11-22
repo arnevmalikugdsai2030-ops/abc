@@ -32,10 +32,10 @@ class TestRealBackendDataLoaders:
         stats = get_dataset_statistics(data_root="data")
         assert stats["has_data"] is True
         assert stats["total_tasks"] > 0
-        assert stats["total_split_tasks"] == 200
-        assert stats["split_counts"]["dev"] == 40
-        assert stats["split_counts"]["val"] == 40
-        assert stats["split_counts"]["test"] == 120
+        assert stats["total_split_tasks"] == 350
+        assert stats["split_counts"]["dev"] == 70
+        assert stats["split_counts"]["val"] == 70
+        assert stats["split_counts"]["test"] == 210
         assert "EASY" in stats["difficulty_counts"]
         assert stats["average_obstacles_per_scene"] > 0
 
