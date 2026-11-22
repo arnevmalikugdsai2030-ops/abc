@@ -1,0 +1,21 @@
+{
+  "task_id": "task_vis_10013",
+  "can_see": false,
+  "answer": "NO",
+  "reason_code": "OUTSIDE_FOV",
+  "detailed_explanation": "Mathematical Proof: Mirror point (496.2, 739.9) is outside FOV: angle=55.6 deg > half_fov=28.2 deg. Ground truth state is NOT_VISIBLE with reason OUTSIDE_FOV.",
+  "proof_geometry": {
+    "reflection_point": {
+      "x": 496.1908699983338,
+      "y": 739.8958745089052
+    },
+    "virtual_target": {
+      "x": 320.27861035928856,
+      "y": 956.8210279581679
+    },
+    "incident_angle_deg": null,
+    "reflected_angle_deg": null,
+    "total_optical_distance": null,
+    "optical_path": []
+  }
+}

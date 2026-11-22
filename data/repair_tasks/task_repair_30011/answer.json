@@ -1,30 +1,30 @@
 {
   "task_id": "task_repair_30011",
   "correct_candidate": "C",
-  "detailed_explanation": "Mathematical Proof: Candidate [C] uniquely restores reflected visibility. Candidate [C]: VISIBLE at reflection point (569.9, 690.6) with theta_i=theta_r=48.6 deg. Candidate [A]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.642)). Candidate [B]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.157)).",
+  "detailed_explanation": "Mathematical Proof: Candidate [C] uniquely restores reflected visibility. Candidate [C]: VISIBLE at reflection point (592.9, 708.8) with theta_i=theta_r=50.3 deg. Candidate [A]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.784)). Candidate [B]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.201)).",
   "candidates": {
     "A": {
       "candidate_id": "A",
       "mirror": {
         "endpoint_a": {
-          "x": 542.0630968036145,
-          "y": 731.9387750333941
+          "x": 567.0429240613032,
+          "y": 746.9562564625386
         },
         "endpoint_b": {
-          "x": 656.7293452414254,
-          "y": 694.8718048750883
+          "x": 671.5080063927448,
+          "y": 717.4234071532459
         },
         "reflective_normal": {
-          "dx": -0.3075879053840445,
-          "dy": -0.9515196689829676
+          "dx": -0.2720432335045242,
+          "dy": -0.9622850300739397
         }
       },
       "is_visible": false,
       "reason_code": "MIRROR_MISS",
-      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.642)",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.784)",
       "reflection_point": {
-        "x": 730.3138045657822,
-        "y": 671.084919064742
+        "x": 753.452311139818,
+        "y": 694.2573046638814
       },
       "incident_angle_deg": null,
       "reflected_angle_deg": null
@@ -33,24 +33,24 @@
       "candidate_id": "B",
       "mirror": {
         "endpoint_a": {
-          "x": 431.40788934120286,
-          "y": 675.1269509623771
+          "x": 463.91844599407864,
+          "y": 689.4552903693655
         },
         "endpoint_b": {
-          "x": 551.169131955661,
-          "y": 688.5267112199124
+          "x": 571.2820046174947,
+          "y": 705.5241700613838
         },
         "reflective_normal": {
-          "dx": 0.11119344722973241,
-          "dy": -0.9937987810885908
+          "dx": 0.14801924272292896,
+          "dy": -0.9889844810631412
         }
       },
       "is_visible": false,
       "reason_code": "MIRROR_MISS",
-      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.157)",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.201)",
       "reflection_point": {
-        "x": 569.9329640267453,
-        "y": 690.6261454423393
+        "x": 592.8622446337306,
+        "y": 708.7540395347131
       },
       "incident_angle_deg": null,
       "reflected_angle_deg": null
@@ -59,27 +59,27 @@
       "candidate_id": "C",
       "mirror": {
         "endpoint_a": {
-          "x": 539.5155997152909,
-          "y": 687.2228291394874
+          "x": 565.593685915316,
+          "y": 704.672811275897
         },
         "endpoint_b": {
-          "x": 659.276842329749,
-          "y": 700.6225893970227
+          "x": 672.9572445387321,
+          "y": 720.7416909679152
         },
         "reflective_normal": {
-          "dx": 0.11119344722973241,
-          "dy": -0.9937987810885908
+          "dx": 0.14801924272292896,
+          "dy": -0.9889844810631412
         }
       },
       "is_visible": true,
       "reason_code": "CLEAR",
-      "diagnostic_details": "Unobstructed optical sightline via mirror at (569.9, 690.6) with theta_i=theta_r=48.6 deg",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (592.9, 708.8) with theta_i=theta_r=50.3 deg",
       "reflection_point": {
-        "x": 569.9329640267451,
-        "y": 690.6261454423393
+        "x": 592.8622446337306,
+        "y": 708.754039534713
       },
-      "incident_angle_deg": 48.58092532698407,
-      "reflected_angle_deg": 48.58092532698409
+      "incident_angle_deg": 50.29711039238089,
+      "reflected_angle_deg": 50.29711039238087
     }
   }
 }

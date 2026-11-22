@@ -1,0 +1,106 @@
+{
+  "scene_id": "task_vis_10008",
+  "seed": 10008,
+  "category": "VALID_VISIBLE",
+  "difficulty": "HARD",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 413.073537891764,
+      "y": 478.1601889434563
+    },
+    "heading_deg": 52.083894589402476,
+    "fov_degrees": 42.77489559326682,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 436.7692771206844,
+      "y": 723.0028376467999
+    },
+    "endpoint_b": {
+      "x": 540.1175002895791,
+      "y": 749.5430021502659
+    },
+    "reflective_normal": {
+      "dx": 0.2487325372784331,
+      "dy": -0.9685722094397675
+    }
+  },
+  "target": {
+    "center": {
+      "x": 789.8805355598543,
+      "y": 547.0487039458204
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "O1",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 601.4770367258091,
+        "y": 512.6044464446384
+      },
+      "radius": null,
+      "width": 31.383155308497965,
+      "height": 90.79935776860565,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O2",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 870.3432934996139,
+        "y": 195.67531274770909
+      },
+      "radius": 23.40986149040058,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O3",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 163.32495684337718,
+        "y": 770.7075166696388
+      },
+      "radius": 26.739487378287784,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "VISIBLE",
+  "ground_truth_reason": "NONE",
+  "diagnostic_details": "Unobstructed optical sightline via mirror at (530.4, 747.0) with theta_i=theta_r=38.0 deg",
+  "reflection_point": {
+    "x": 530.3918252970649,
+    "y": 747.0454167414994
+  },
+  "virtual_target": {
+    "x": 661.4079199264629,
+    "y": 1047.3250511341498
+  },
+  "optical_path": [
+    {
+      "x": 413.073537891764,
+      "y": 478.1601889434563
+    },
+    {
+      "x": 530.3918252970649,
+      "y": 747.0454167414994
+    },
+    {
+      "x": 789.8805355598543,
+      "y": 547.0487039458204
+    }
+  ],
+  "incident_angle_deg": 37.97482182227222,
+  "reflected_angle_deg": 37.97482182227223,
+  "total_optical_distance": 620.9819688631119,
+  "is_direct_sight_blocked": true,
+  "is_boundary": false
+}

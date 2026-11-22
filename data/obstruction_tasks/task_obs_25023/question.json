@@ -1,0 +1,17 @@
+{
+  "task_id": "task_obs_25023",
+  "task_type": "TASK_B_OBSTRUCTION",
+  "question": "Is the camera's view of the red X blocked by an obstacle? If so, which obstacle blocks which segment of the path?",
+  "prompt": "You are an industrial machine-vision inspector analyzing a 2D optical inspection diagram.\n\nApparatus Legend:\n- CAMERA: Represented by the blue camera symbol with a directional lens pointing along its optical axis. The translucent cone represents the camera's field of view (FOV).\n- MIRROR: Finite flat mirror segment between endpoints A and B. The reflective front face is marked with a vibrant cyan line. The non-reflective back face is marked with diagonal hatch lines.\n- TARGET DEFECT: A red 'X' scratch defect in the cavity.\n- OBSTACLES: Opaque polygonal barriers labeled O1, O2, O3, etc. Barrier O1 is the cavity partition wall blocking direct sightline between camera and scratch, requiring reflected inspection via the mirror. Other obstacles may be blockers or irrelevant distractors.\n\nOptical Path:\nThe physical specular reflection path consists of two straight segments:\n1. Incident Segment: Camera -> Mirror Reflection Point (CAMERA_TO_MIRROR)\n2. Reflected Segment: Mirror Reflection Point -> Target Scratch (MIRROR_TO_TARGET)\n\nQuestion:\nIs the camera's view of the red X blocked by an obstacle? If so, which obstacle blocks which segment of the path?\n\nAnalyze:\n1. Trace the straight incident ray from the camera to the specular reflection point on the mirror.\n2. Trace the straight reflected ray from the mirror to the red X target scratch.\n3. Determine whether any obstacle (O1, O2, O3...) intersects either segment:\n   - If an obstacle intersects the path from camera to mirror -> blocked on CAMERA_TO_MIRROR.\n   - If an obstacle intersects the path from mirror to target -> blocked on MIRROR_TO_TARGET.\n   - If both segments are completely unobstructed -> view is UNBLOCKED (NONE).\n\nRespond in JSON format with:\n{\n  \"is_blocked\": true or false,\n  \"blocking_obstacle\": \"O1\" | \"O2\" | \"O3\" | \"NONE\",\n  \"blocked_segment\": \"CAMERA_TO_MIRROR\" | \"MIRROR_TO_TARGET\" | \"NONE\",\n  \"explanation\": \"<your step-by-step reasoning identifying the blocking obstacle and path leg>\"\n}\n",
+  "image_filename": "diagram_blind.png",
+  "obstacle_labels": [
+    "O1",
+    "O2",
+    "O3"
+  ],
+  "segment_options": [
+    "NONE",
+    "CAMERA_TO_MIRROR",
+    "MIRROR_TO_TARGET"
+  ]
+}

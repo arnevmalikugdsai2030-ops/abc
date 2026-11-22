@@ -1,0 +1,49 @@
+{
+  "pair_id": "pair_0105",
+  "pair_type": "IRRELEVANT_OBSTACLE",
+  "parent_scene_id": "scene_parent_43015",
+  "child_scene_ids": [
+    "pair_0105_a",
+    "pair_0105_b"
+  ],
+  "changed_parameter": "obstacles.irrelevant_inserted",
+  "original_values": {
+    "obstacle_count": 2,
+    "distractor": null
+  },
+  "new_values": {
+    "obstacle_count": 3,
+    "distractor": {
+      "obstacle_id": "O3",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 228.8521028845526,
+        "y": 274.8099802866533
+      },
+      "radius": 22.0,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    },
+    "min_clearance_mm": 171.78
+  },
+  "ground_truth_outcomes": {
+    "pair_0105_a": {
+      "scene_id": "pair_0105_a",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (617.1, 684.8) with theta_i=theta_r=50.9 deg",
+      "image_filename": "diagram_blind.png"
+    },
+    "pair_0105_b": {
+      "scene_id": "pair_0105_b",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (617.1, 684.8) with theta_i=theta_r=50.9 deg",
+      "image_filename": "diagram_blind.png"
+    }
+  },
+  "expected_relationship": "INVARIANT_OUTCOME",
+  "relationship_verified": true,
+  "difference_summary": "Irrelevant distractor obstacle O3 was added with 171.8 mm clearance from optical rays. Sightline remains unblocked and outcome remains invariant (CLEAR)."
+}

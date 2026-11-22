@@ -1,0 +1,34 @@
+{
+  "task_id": "pair_0088_b",
+  "can_see": false,
+  "answer": "NO",
+  "reason_code": "BLOCKED_CAMERA_TO_MIRROR",
+  "detailed_explanation": "Mathematical Proof: Incident ray C->R blocked by obstacle 'O4' at (343.2, 621.4). Ground truth state is NOT_VISIBLE with reason BLOCKED_CAMERA_TO_MIRROR.",
+  "proof_geometry": {
+    "reflection_point": {
+      "x": 426.59965355390995,
+      "y": 779.3516476468978
+    },
+    "virtual_target": {
+      "x": 551.9369242734227,
+      "y": 1016.7411579309521
+    },
+    "incident_angle_deg": null,
+    "reflected_angle_deg": null,
+    "total_optical_distance": null,
+    "optical_path": [
+      {
+        "x": 253.6203833488512,
+        "y": 451.7279168320928
+      },
+      {
+        "x": 426.59965355390995,
+        "y": 779.3516476468978
+      },
+      {
+        "x": 560.02393089722,
+        "y": 546.4113693785505
+      }
+    ]
+  }
+}

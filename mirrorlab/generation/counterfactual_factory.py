@@ -723,7 +723,7 @@ class CounterfactualFactory:
         # 1. Type 1: Mirror Angle Flip
         for i in range(num_pairs_per_type):
             seed = start_seed + i
-            pid = f"pair_mirror_flip_{i:03d}"
+            pid = f"pair_{i:04d}"
             theme = themes[i % len(themes)]
             bundle = self.create_mirror_angle_flip_pair(
                 seed=seed,
@@ -737,7 +737,7 @@ class CounterfactualFactory:
         cosmetic_start_seed = start_seed + 1000
         for i in range(num_pairs_per_type):
             seed = cosmetic_start_seed + i
-            pid = f"pair_cosmetic_{i:03d}"
+            pid = f"pair_{num_pairs_per_type + i:04d}"
             t_a = themes[i % len(themes)]
             t_b = themes[(i + 1) % len(themes)]
             bundle = self.create_cosmetic_control_pair(
@@ -753,7 +753,7 @@ class CounterfactualFactory:
         obs_insert_start_seed = start_seed + 2000
         for i in range(num_pairs_per_type):
             seed = obs_insert_start_seed + i
-            pid = f"pair_obs_insert_{i:03d}"
+            pid = f"pair_{2 * num_pairs_per_type + i:04d}"
             theme = themes[i % len(themes)]
             bundle = self.create_obstacle_insertion_pair(
                 seed=seed,
@@ -767,7 +767,7 @@ class CounterfactualFactory:
         irrel_start_seed = start_seed + 3000
         for i in range(num_pairs_per_type):
             seed = irrel_start_seed + i
-            pid = f"pair_irrel_obs_{i:03d}"
+            pid = f"pair_{3 * num_pairs_per_type + i:04d}"
             theme = themes[i % len(themes)]
             bundle = self.create_irrelevant_obstacle_pair(
                 seed=seed,

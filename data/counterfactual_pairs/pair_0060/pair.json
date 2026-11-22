@@ -1,0 +1,49 @@
+{
+  "pair_id": "pair_0060",
+  "pair_type": "OBSTACLE_INSERTION",
+  "parent_scene_id": "scene_parent_42000",
+  "child_scene_ids": [
+    "pair_0060_a",
+    "pair_0060_b"
+  ],
+  "changed_parameter": "obstacles.blocking_inserted",
+  "original_values": {
+    "obstacle_count": 2,
+    "blocking_obstacle": null
+  },
+  "new_values": {
+    "obstacle_count": 3,
+    "blocking_obstacle": {
+      "obstacle_id": "O3",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 298.2576808690237,
+        "y": 603.938468550065
+      },
+      "radius": 24.0,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    },
+    "blocked_leg": "CAMERA_TO_MIRROR"
+  },
+  "ground_truth_outcomes": {
+    "pair_0060_a": {
+      "scene_id": "pair_0060_a",
+      "is_visible": true,
+      "reason_code": "CLEAR",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (423.3, 698.9) with theta_i=theta_r=51.3 deg",
+      "image_filename": "diagram_blind.png"
+    },
+    "pair_0060_b": {
+      "scene_id": "pair_0060_b",
+      "is_visible": false,
+      "reason_code": "BLOCKED_CAMERA_TO_MIRROR",
+      "diagnostic_details": "Incident ray C->R blocked by obstacle 'O3' at (279.1, 589.4)",
+      "image_filename": "diagram_blind.png"
+    }
+  },
+  "expected_relationship": "FLIPPED_OUTCOME",
+  "relationship_verified": true,
+  "difference_summary": "Opaque obstacle O3 was inserted directly into the CAMERA_TO_MIRROR path segment, flipping visibility from CLEAR to BLOCKED_INCIDENT."
+}

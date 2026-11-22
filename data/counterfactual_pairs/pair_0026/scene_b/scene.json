@@ -1,0 +1,94 @@
+{
+  "scene_id": "pair_0026_b",
+  "seed": 40026,
+  "category": "MIRROR_MISS",
+  "difficulty": "MEDIUM",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 355.5668429764867,
+      "y": 376.7624407990991
+    },
+    "heading_deg": 42.05518246877887,
+    "fov_degrees": 68.72136098158614,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 506.22968170767876,
+      "y": 708.6997312662202
+    },
+    "endpoint_b": {
+      "x": 666.740717347674,
+      "y": 643.3405822967602
+    },
+    "reflective_normal": {
+      "dx": -0.3771274579940804,
+      "dy": -0.9261613684595806
+    }
+  },
+  "target": {
+    "center": {
+      "x": 708.8017117511566,
+      "y": 308.7896928822165
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "O1",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 532.1842773638217,
+        "y": 342.7760668406578
+      },
+      "radius": null,
+      "width": 45.03830960668988,
+      "height": 87.93037815412293,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O2",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 811.685690725227,
+        "y": 238.03597537435792
+      },
+      "radius": 25.609008267597158,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "MISSED_MIRROR",
+  "diagnostic_details": "Ray misses finite mirror (t_mirror=1.044)",
+  "reflection_point": {
+    "x": 673.7412835966215,
+    "y": 640.4899929244395
+  },
+  "virtual_target": {
+    "x": 930.5419116792849,
+    "y": 853.3461887159405
+  },
+  "optical_path": [
+    {
+      "x": 355.5668429764867,
+      "y": 376.7624407990991
+    },
+    {
+      "x": 673.7412835966215,
+      "y": 640.4899929244395
+    },
+    {
+      "x": 708.8017117511566,
+      "y": 308.7896928822165
+    }
+  ],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": false,
+  "is_boundary": false
+}

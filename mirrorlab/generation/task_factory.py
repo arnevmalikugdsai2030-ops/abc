@@ -198,7 +198,7 @@ class VisibilityTaskFactory:
         """
         Generate a single verified task with all 5 required artifacts.
         """
-        tid = task_id or f"task_vis_{seed}_{category.value.lower()}"
+        tid = task_id or f"task_vis_{seed:05d}"
 
         # 1. Generate Scene Geometry verified by Oracle
         scene = self.scene_generator.generate_scene(

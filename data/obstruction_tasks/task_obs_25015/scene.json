@@ -1,0 +1,105 @@
+{
+  "scene_id": "task_obs_25015",
+  "seed": 26015,
+  "category": "BLOCKED_INCIDENT",
+  "difficulty": "EASY",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 770.7555736321241,
+      "y": 596.0171453997909
+    },
+    "heading_deg": 141.50939027908908,
+    "fov_degrees": 84.78223059532749,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 499.3161204565938,
+      "y": 758.594551658164
+    },
+    "endpoint_b": {
+      "x": 733.7588571952401,
+      "y": 758.594551658164
+    },
+    "reflective_normal": {
+      "dx": 0.0,
+      "dy": -1.0
+    }
+  },
+  "target": {
+    "center": {
+      "x": 307.9495270859099,
+      "y": 542.6491409818932
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "partition_wall",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 539.352550359017,
+        "y": 569.3331431908421
+      },
+      "radius": null,
+      "width": 35.797697345396315,
+      "height": 68.1043901113002,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "blocker_leg1",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 696.9908152970478,
+        "y": 656.3483453135937
+      },
+      "radius": 24.225951623910397,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "distractor_1",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 487.7836968364005,
+        "y": 295.14756277470815
+      },
+      "radius": 21.098129348854,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "distractor_2",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 273.85285326651996,
+        "y": 598.7526152551213
+      },
+      "radius": 17.199735499884593,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "BLOCKED_INCIDENT",
+  "diagnostic_details": "Incident ray C->R blocked by obstacle 'blocker_leg1' at (715.7, 641.0)",
+  "reflection_point": {
+    "x": 571.9781069063422,
+    "y": 758.594551658164
+  },
+  "virtual_target": {
+    "x": 307.9495270859099,
+    "y": 974.5399623344349
+  },
+  "optical_path": [],
+  "incident_angle_deg": 50.720730191382145,
+  "reflected_angle_deg": 50.72073019138213,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": true,
+  "is_boundary": false
+}

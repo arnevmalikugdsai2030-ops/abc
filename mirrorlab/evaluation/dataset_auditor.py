@@ -300,8 +300,8 @@ class DatasetAuditor:
             try:
                 with open(blind_path.parent / "scene.json", encoding="utf-8") as f_sc:
                     target_scene = InspectionScene.model_validate(json.load(f_sc))
-            except (OSError, json.JSONDecodeError, ValueError, ValidationError):
-                target_scene = None
+            except (OSError, json.JSONDecodeError, ValueError, ValidationError) as ex:
+                return False, f"Deterministic rendering validation failed: cannot parse scene.json: {ex}"
 
         if target_scene is not None and w >= 512 and h >= 512:
             try:
@@ -330,14 +330,18 @@ class DatasetAuditor:
                 if mean_dev > 5.0 or diff_pixel_ratio > 0.05:
                     return False, f"Blind image diverges from deterministic render pipeline (mean pixel dev = {mean_dev:.2f}, diff ratio = {diff_pixel_ratio:.2%})"
             except (OSError, ValueError, TypeError) as ex:
-                logger.debug("Deterministic render validation skipped: %s", ex)
+                return False, f"Deterministic rendering validation failed execution: {ex}"
+        elif (blind_path.parent / "scene.json").is_file() and target_scene is None:
+            return False, f"Deterministic rendering validation failed: scene geometry could not be loaded for {blind_path}"
 
         return True, f"Clean separation (mean diff = {mean_diff:.2f})"
 
     @classmethod
     def check_public_record_non_leakage(cls, record: dict[str, Any]) -> tuple[bool, list[str]]:
         """
-        Check 5: Verify public question/task record contains zero private ground-truth fields.
+        Check 5: Verify public question/task record contains zero private ground-truth fields,
+        zero semantic answer-revealing tokens in task IDs, scene IDs, image filenames,
+        paths, options, or metadata.
         """
         leaked: list[str] = []
         forbidden_fields = {
@@ -361,15 +365,105 @@ class DatasetAuditor:
             "ground_truth_outcomes",
             "proof",
             "winning_candidate",
+            "repaired_mirror",
+            "oracle_reason",
+            "oracle_details",
+            "path_clear",
+            "internal_task_id",
+            "internal_scene_id",
+            "internal_id",
+            "expected_relationship",
+            "pair_type",
+            "child_scene_ids",
+            "category",
+            "reason_code",
         }
-        for k in record:
-            if k in forbidden_fields:
-                leaked.append(f"Private field '{k}' exposed in public record")
 
-        # Check image filenames in public record
+        # 1. Recursive key inspection across nested dicts and lists
+        def _check_keys(d: Any, path: str = "") -> None:
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    subpath = f"{path}.{k}" if path else k
+                    if k in forbidden_fields:
+                        leaked.append(f"Private field '{k}' exposed in public record at '{subpath}'")
+                    _check_keys(v, subpath)
+            elif isinstance(d, list):
+                for i, item in enumerate(d):
+                    _check_keys(item, f"{path}[{i}]")
+
+        _check_keys(record)
+
+        # 2. Semantic answer patterns forbidden in IDs, filenames, and metadata
+        semantic_leak_patterns = [
+            "valid_visible",
+            "not_visible",
+            "outside_fov",
+            "wrong_side",
+            "mirror_miss",
+            "blocked_incident",
+            "blocked_reflected",
+            "camera_to_mirror",
+            "mirror_to_target",
+            "mirror_flip",
+            "mirror_angle_flip",
+            "cosmetic_control",
+            "obstacle_insertion",
+            "obs_insert",
+            "irrel_obs",
+            "irrelevant_obstacle",
+            "winner_",
+            "choice_a",
+            "choice_b",
+            "choice_c",
+            "overlay",
+            "cosmetic",
+            "none_overlay",
+            "_none",
+        ]
+
+        # Tokens indicating outcome if present as delimited word in identifiers/filenames
+        delimited_tokens = [
+            "flip",
+            "invariant",
+            "visible",
+            "blocked",
+            "unblocked",
+        ]
+
+        def _scan_string_for_tokens(val: str, field_name: str) -> None:
+            val_lower = val.lower().strip()
+            # Direct pattern match
+            for pat in semantic_leak_patterns:
+                if pat in val_lower:
+                    leaked.append(f"Semantic answer pattern '{pat}' exposed in {field_name}: '{val}'")
+            # Delimited token match (e.g. "_flip_", "flip_", "_visible", "blocked_")
+            import re
+            for tok in delimited_tokens:
+                if re.search(rf"(?:^|[_\W]){tok}(?:$|[_\W])", val_lower):
+                    leaked.append(f"Delimited outcome token '{tok}' exposed in {field_name}: '{val}'")
+
+        # 3. Check task_id
+        tid = record.get("task_id", "")
+        if tid:
+            _scan_string_for_tokens(str(tid), "task_id")
+
+        # 4. Check scene_id if exposed
+        sid = record.get("scene_id", "")
+        if sid:
+            leaked.append(f"Private scene_id '{sid}' exposed in public record")
+            _scan_string_for_tokens(str(sid), "scene_id")
+
+        # 5. Check image paths / filenames
         img_field = record.get("image") or record.get("image_filename") or record.get("image_path")
-        if img_field and "overlay" in str(img_field).lower():
-            leaked.append(f"Answer overlay image exposed as public image: '{img_field}'")
+        if img_field:
+            _scan_string_for_tokens(str(img_field), "image_filename")
+
+        # 6. Check metadata dict if present
+        meta = record.get("metadata")
+        if meta and isinstance(meta, dict):
+            for mk, mv in meta.items():
+                if isinstance(mv, str):
+                    _scan_string_for_tokens(mv, f"metadata.{mk}")
 
         return len(leaked) == 0, leaked
 
@@ -1446,14 +1540,37 @@ class DatasetAuditor:
         if val_set & test_set:
             failures.append(f"Task ID overlap between val and test: {sorted(val_set & test_set)[:5]}")
 
-        # 5. Test public records contain no private fields
-        for item in test_pub_recs:
-            tid = item.get("task_id", "unknown")
-            ok_rec, leaks = self.check_public_record_non_leakage(item)
-            if not ok_rec:
-                failures.extend([f"test_public [{tid}]: {lk}" for lk in leaks])
+        # 5. Public records in ALL splits must contain zero private fields or answer leakage
+        for split_label, rec_list in [
+            ("dev_public", _dev_pub_recs),
+            ("val_public", _val_pub_recs),
+            ("test_public", test_pub_recs),
+        ]:
+            for item in rec_list:
+                tid = item.get("task_id", "unknown")
+                ok_rec, leaks = self.check_public_record_non_leakage(item)
+                if not ok_rec:
+                    failures.extend([f"{split_label} [{tid}]: {lk}" for lk in leaks])
 
-        # 6. Anti-leakage of equivalent geometry fingerprints across splits
+        # 6. Verify public image files exist on disk, are correctly named and non-empty
+        for split_label, rec_list, img_dir in [
+            ("dev", _dev_pub_recs, splits_dir / "dev" / "images"),
+            ("val", _val_pub_recs, splits_dir / "val" / "images"),
+            ("test", test_pub_recs, splits_dir / "test" / "public" / "images"),
+        ]:
+            for item in rec_list:
+                tid = item.get("task_id", "unknown")
+                img_name = item.get("image_filename")
+                if not img_name:
+                    failures.append(f"{split_label} [{tid}]: missing image_filename in public record")
+                else:
+                    img_path = img_dir / img_name
+                    if not img_path.is_file():
+                        failures.append(f"{split_label} [{tid}]: public image file does not exist: {img_path}")
+                    elif img_path.stat().st_size == 0:
+                        failures.append(f"{split_label} [{tid}]: public image file is empty: {img_path}")
+
+        # 7. Anti-leakage of equivalent geometry fingerprints across splits
         geom_map: dict[str, tuple[Any, ...]] = {}
         for rel_pat in [
             "benchmark_tasks/*/scene.json",
@@ -1484,9 +1601,17 @@ class DatasetAuditor:
                 except (KeyError, ValueError, json.JSONDecodeError, OSError):
                     pass
 
-        dev_geoms = {geom_map[tid] for tid in dev_pub_ids if tid in geom_map}
-        val_geoms = {geom_map[tid] for tid in val_pub_ids if tid in geom_map}
-        test_geoms = {geom_map[tid] for tid in test_pub_ids if tid in geom_map}
+        # Map public task IDs to internal IDs via ground_truth.jsonl records
+        all_gt_recs = _dev_gt_recs + _val_gt_recs + _test_gt_recs
+        pub_to_internal: dict[str, str] = {
+            rec.get("task_id"): str(rec.get("internal_task_id") or rec.get("internal_scene_id") or rec.get("internal_id") or "")
+            for rec in all_gt_recs
+            if rec.get("task_id")
+        }
+
+        dev_geoms = {geom_map[pub_to_internal.get(tid, tid)] for tid in dev_pub_ids if pub_to_internal.get(tid, tid) in geom_map}
+        val_geoms = {geom_map[pub_to_internal.get(tid, tid)] for tid in val_pub_ids if pub_to_internal.get(tid, tid) in geom_map}
+        test_geoms = {geom_map[pub_to_internal.get(tid, tid)] for tid in test_pub_ids if pub_to_internal.get(tid, tid) in geom_map}
 
         if dev_geoms & val_geoms:
             failures.append(f"Geometry fingerprint overlap between dev and val ({len(dev_geoms & val_geoms)} scenes)")
@@ -1711,14 +1836,20 @@ class DatasetSplitter:
         self.val_ratio = val_ratio
         self.test_ratio = test_ratio
         self.rng = np.random.default_rng(seed)
+        self.split_task_counters: dict[str, int] = {"dev": 0, "val": 0, "test": 0}
+        self.split_pair_counters: dict[str, int] = {"dev": 0, "val": 0, "test": 0}
 
     def create_splits(self) -> dict[str, Any]:
         """
         Create dev, val, and test splits with physical separation of public and private files.
+        Public tasks and image filenames use strictly neutral identifiers (ml_{split}_{idx:04d}).
         """
         if self.splits_root.exists():
             shutil.rmtree(self.splits_root)
         self.splits_root.mkdir(parents=True, exist_ok=True)
+
+        self.split_task_counters = {"dev": 0, "val": 0, "test": 0}
+        self.split_pair_counters = {"dev": 0, "val": 0, "test": 0}
 
         for split_name in ["dev", "val"]:
             (self.splits_root / split_name / "tasks").mkdir(parents=True, exist_ok=True)
@@ -1777,10 +1908,20 @@ class DatasetSplitter:
             "version": "1.0.0",
             "split_counts": split_counts,
             "type_breakdown": type_breakdown,
-            "isolation_verified": True,
+            "isolation_verified": False,
         }
         with open(self.splits_root / "manifest.json", "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2)
+
+        # Independently verify isolation before certifying
+        auditor = DatasetAuditor(data_root=self.data_root)
+        iso_res = auditor.check_dataset_split_isolation()
+        if iso_res.passed:
+            manifest["isolation_verified"] = True
+            with open(self.splits_root / "manifest.json", "w", encoding="utf-8") as f:
+                json.dump(manifest, f, indent=2)
+        else:
+            logger.warning("Split creation isolation check detected failures: %s", iso_res.failures)
 
         return manifest
 
@@ -1800,67 +1941,142 @@ class DatasetSplitter:
 
         for item in items:
             if task_type == "TASK_D_COUNTERFACTUAL":
+                self.split_pair_counters[split_name] += 1
+                pair_idx = self.split_pair_counters[split_name]
+                pub_pair_id = f"pair_{split_name}_{pair_idx:04d}"
+
                 with open(item / "pair.json", encoding="utf-8") as f:
                     pdata = json.load(f)
-                with open(pairs_jl, "a", encoding="utf-8") as fp:
-                    fp.write(json.dumps(pdata) + "\n")
+
+                child_pub_ids: list[str] = []
+                child_outcomes: dict[str, str] = {}
 
                 for sub in ["scene_a", "scene_b"]:
+                    self.split_task_counters[split_name] += 1
+                    t_idx = self.split_task_counters[split_name]
+                    pub_tid = f"ml_{split_name}_{t_idx:04d}"
+                    pub_img_name = f"img_{split_name}_{t_idx:04d}.png"
+                    ov_img_name = f"img_{split_name}_{t_idx:04d}_overlay.png"
+                    child_pub_ids.append(pub_tid)
+
                     sdir = item / sub
                     with open(sdir / "question.json", encoding="utf-8") as f:
                         qdata = json.load(f)
-                    tid = qdata.get("task_id") or sdir.name
-                    target_img_name = f"{tid}.png"
-                    qdata["image_filename"] = target_img_name
+
+                    # Build sanitized neutral public question record
+                    pub_q = {
+                        "task_id": pub_tid,
+                        "task_type": "TASK_A_VISIBILITY",
+                        "question": qdata.get("question", "Can the camera see the center of the red X through the mirror?"),
+                        "prompt": qdata.get("prompt", ""),
+                        "image_filename": pub_img_name,
+                        "binary_options": ["YES", "NO"],
+                        "reason_options": [
+                            "CLEAR",
+                            "MIRROR_MISS",
+                            "OUTSIDE_FOV",
+                            "WRONG_SIDE",
+                            "BLOCKED_CAMERA_TO_MIRROR",
+                            "BLOCKED_MIRROR_TO_TARGET",
+                        ],
+                    }
                     with open(tasks_jl, "a", encoding="utf-8") as fp:
-                        fp.write(json.dumps(qdata) + "\n")
+                        fp.write(json.dumps(pub_q) + "\n")
 
                     with open(sdir / "ground_truth.json", encoding="utf-8") as f:
                         gtdata = json.load(f)
+                    outcome = gtdata.get("answer", "NO")
+                    child_outcomes[pub_tid] = outcome
+
+                    # Build private ground truth with complete mapping
+                    priv_gt = {
+                        "task_id": pub_tid,
+                        "internal_task_id": qdata.get("task_id") or sdir.name,
+                        "internal_scene_id": sdir.name,
+                        "internal_pair_id": item.name,
+                        "split": split_name,
+                        "task_family": "TASK_D_COUNTERFACTUAL",
+                        **gtdata,
+                    }
+                    priv_gt["task_id"] = pub_tid  # ensure 1:1 key
                     with open(gt_jl, "a", encoding="utf-8") as fp:
-                        fp.write(json.dumps(gtdata) + "\n")
+                        fp.write(json.dumps(priv_gt) + "\n")
 
                     # Copy blind and reference overlay images
                     src_blind = sdir / "diagram_blind.png"
                     if src_blind.is_file():
-                        shutil.copy2(src_blind, img_pub_dir / target_img_name)
+                        shutil.copy2(src_blind, img_pub_dir / pub_img_name)
 
                     src_overlay = sdir / "diagram_overlay.png"
                     if not src_overlay.is_file():
                         src_overlay = sdir / "diagram_reference_path.png"
                     if src_overlay.is_file():
-                        dst_ov = overlay_priv_dir / (target_img_name if is_test else f"{tid}_overlay.png")
-                        shutil.copy2(src_overlay, dst_ov)
+                        shutil.copy2(src_overlay, overlay_priv_dir / ov_img_name)
+
+                # Write sanitized pair record to private pairs.jsonl
+                pair_record = {
+                    "pair_id": pub_pair_id,
+                    "internal_pair_id": item.name,
+                    "child_scene_ids": child_pub_ids,
+                    "pair_type": pdata.get("pair_type", "UNKNOWN"),
+                    "expected_relationship": pdata.get("expected_relationship", "UNKNOWN"),
+                    "ground_truth_outcomes": child_outcomes,
+                    "transformation": pdata.get("transformation", {}),
+                }
+                with open(pairs_jl, "a", encoding="utf-8") as fp:
+                    fp.write(json.dumps(pair_record) + "\n")
             else:
-                tid = item.name
+                self.split_task_counters[split_name] += 1
+                t_idx = self.split_task_counters[split_name]
+                pub_tid = f"ml_{split_name}_{t_idx:04d}"
+                pub_img_name = f"img_{split_name}_{t_idx:04d}.png"
+                ov_img_name = f"img_{split_name}_{t_idx:04d}_overlay.png"
+
                 q_file = item / "question.json"
                 if q_file.exists():
                     with open(q_file, encoding="utf-8") as f:
                         qdata = json.load(f)
-                    tid = qdata.get("task_id") or tid
-                    target_img_name = f"{tid}.png"
-                    qdata["image_filename"] = target_img_name
+
+                    pub_q = {
+                        "task_id": pub_tid,
+                        "task_type": task_type,
+                        "question": qdata.get("question"),
+                        "prompt": qdata.get("prompt"),
+                        "image_filename": pub_img_name,
+                    }
+                    for opt_key in ["options", "binary_options", "reason_options", "obstacle_labels", "segment_options"]:
+                        if opt_key in qdata:
+                            pub_q[opt_key] = qdata[opt_key]
+
                     with open(tasks_jl, "a", encoding="utf-8") as fp:
-                        fp.write(json.dumps(qdata) + "\n")
+                        fp.write(json.dumps(pub_q) + "\n")
 
                 ans_file = item / "ground_truth.json" if (item / "ground_truth.json").exists() else (item / "answer.json")
                 if ans_file.exists():
                     with open(ans_file, encoding="utf-8") as f:
                         ansdata = json.load(f)
+                    priv_gt = {
+                        "task_id": pub_tid,
+                        "internal_task_id": item.name,
+                        "internal_scene_id": item.name,
+                        "split": split_name,
+                        "task_family": task_type,
+                        **ansdata,
+                    }
+                    priv_gt["task_id"] = pub_tid  # ensure 1:1 key
                     with open(gt_jl, "a", encoding="utf-8") as fp:
-                        fp.write(json.dumps(ansdata) + "\n")
+                        fp.write(json.dumps(priv_gt) + "\n")
 
                 # Copy blind and reference overlay images
                 src_blind = item / "diagram_blind.png"
                 if src_blind.is_file():
-                    shutil.copy2(src_blind, img_pub_dir / target_img_name)
+                    shutil.copy2(src_blind, img_pub_dir / pub_img_name)
 
                 src_overlay = item / "diagram_overlay.png"
                 if not src_overlay.is_file():
                     src_overlay = item / "diagram_reference_path.png"
                 if src_overlay.is_file():
-                    dst_ov = overlay_priv_dir / (target_img_name if is_test else f"{tid}_overlay.png")
-                    shutil.copy2(src_overlay, dst_ov)
+                    shutil.copy2(src_overlay, overlay_priv_dir / ov_img_name)
 
 
 def render_audit_report_markdown(report: ComprehensiveAuditReport) -> str:

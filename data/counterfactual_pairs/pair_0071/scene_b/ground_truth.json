@@ -1,0 +1,34 @@
+{
+  "task_id": "pair_0071_b",
+  "can_see": false,
+  "answer": "NO",
+  "reason_code": "BLOCKED_MIRROR_TO_TARGET",
+  "detailed_explanation": "Mathematical Proof: Reflected ray R->T blocked by obstacle 'O4' at (312.8, 558.4). Ground truth state is NOT_VISIBLE with reason BLOCKED_MIRROR_TO_TARGET.",
+  "proof_geometry": {
+    "reflection_point": {
+      "x": 429.0312046510847,
+      "y": 737.965577891635
+    },
+    "virtual_target": {
+      "x": 90.55146117877806,
+      "y": 974.2370410378024
+    },
+    "incident_angle_deg": null,
+    "reflected_angle_deg": null,
+    "total_optical_distance": null,
+    "optical_path": [
+      {
+        "x": 702.1756866853312,
+        "y": 547.3005597771503
+      },
+      {
+        "x": 429.0312046510847,
+        "y": 737.965577891635
+      },
+      {
+        "x": 204.73135199872002,
+        "y": 391.43662219177315
+      }
+    ]
+  }
+}

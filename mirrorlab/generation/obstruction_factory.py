@@ -119,7 +119,7 @@ class ObstructionTaskFactory:
         Generate a single verified Task B bundle.
         """
         rng = np.random.default_rng(seed)
-        tid = task_id or f"task_obs_{seed}_{target_segment.value.lower()}"
+        tid = task_id or f"task_obs_{seed:05d}"
 
         for attempt in range(1, self.max_attempts + 1):
             candidate = self._generate_candidate(

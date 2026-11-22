@@ -1,0 +1,63 @@
+{
+  "scene_id": "task_vis_10015",
+  "seed": 10015,
+  "category": "WRONG_SIDE",
+  "difficulty": "EASY",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 547.8227812334267,
+      "y": 412.03708747329546
+    },
+    "heading_deg": 111.83888705953275,
+    "fov_degrees": 80.43293211517556,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 324.72994703659197,
+      "y": 686.1039769706217
+    },
+    "endpoint_b": {
+      "x": 583.3867204523503,
+      "y": 686.1039769706217
+    },
+    "reflective_normal": {
+      "dx": -0.0,
+      "dy": 1.0
+    }
+  },
+  "target": {
+    "center": {
+      "x": 299.2909565091458,
+      "y": 390.22558408633245
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "O1",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 423.55686887128627,
+        "y": 401.131335779814
+      },
+      "radius": null,
+      "width": 30.8765090853678,
+      "height": 89.0525721745598,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "BACK_OF_MIRROR",
+  "diagnostic_details": "Reflection failed: WRONG_SIDE_BOTH",
+  "reflection_point": null,
+  "virtual_target": null,
+  "optical_path": [],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": true,
+  "is_boundary": false
+}

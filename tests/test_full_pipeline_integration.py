@@ -248,3 +248,75 @@ class TestPipelineCorruptionDetection:
         ok, leak = auditor.check_image_leakage(blind_img_path, t_a_dir / "diagram_overlay.png")
         assert ok is False
         assert "Answer badge colors detected" in leak
+
+    def test_catches_semantic_answer_leak_in_task_id(self, fresh_data_pipeline: Path):
+        """Auditor must fail if public task ID leaks category outcome tokens."""
+        clean_rec = {"task_id": "ml_test_0001", "image_filename": "img_test_0001.png"}
+        ok, _ = DatasetAuditor.check_public_record_non_leakage(clean_rec)
+        assert ok is True
+
+        leak_ids = [
+            "task_vis_10000_valid_visible",
+            "task_vis_10003_outside_fov",
+            "task_vis_10005_wrong_side",
+            "task_obs_25006_camera_to_mirror",
+            "task_obs_25029_none",
+            "pair_mirror_flip_022_a",
+            "pair_cosmetic_001_a",
+            "pair_obs_insert_001_b",
+        ]
+        for lid in leak_ids:
+            bad_rec = {"task_id": lid, "image_filename": "img_001.png"}
+            is_clean, reasons = DatasetAuditor.check_public_record_non_leakage(bad_rec)
+            assert is_clean is False, f"Failed to catch leak in {lid}"
+            assert any("semantic answer pattern" in r.lower() or "delimited outcome token" in r.lower() for r in reasons)
+
+    def test_catches_semantic_answer_leak_in_image_filename(self):
+        """Auditor must fail if public image filename leaks outcome tokens."""
+        leak_imgs = [
+            "task_vis_valid_visible.png",
+            "img_test_outside_fov.png",
+            "pair_mirror_flip_001.png",
+            "pair_cosmetic_b.png",
+            "candidate_winner_a.png",
+        ]
+        for limg in leak_imgs:
+            bad_rec = {"task_id": "ml_test_0042", "image_filename": limg}
+            is_clean, _reasons = DatasetAuditor.check_public_record_non_leakage(bad_rec)
+            assert is_clean is False, f"Failed to catch leak in {limg}"
+
+    def test_blind_image_verification_never_fails_open(self, fresh_data_pipeline: Path):
+        """Auditor must never silently pass image verification when corrupted or missing."""
+        data_root = fresh_data_pipeline
+        t_a_dir = next((data_root / "benchmark_tasks").iterdir())
+        blind_path = t_a_dir / "diagram_blind.png"
+        overlay_path = t_a_dir / "diagram_overlay.png"
+
+        # Corrupt blind image
+        with open(blind_path, "wb") as f:
+            f.write(b"NOT_A_VALID_PNG_FILE_DATA")
+
+        auditor = DatasetAuditor(data_root=data_root)
+        ok, msg = auditor.check_image_leakage(blind_path, overlay_path)
+        assert ok is False
+        assert "image" in msg.lower() or "error" in msg.lower()
+
+    def test_isolation_verified_reflects_actual_validation(self, fresh_data_pipeline: Path):
+        """isolation_verified in manifest.json must only be True when all artifacts pass independent validation."""
+        data_root = fresh_data_pipeline
+        splits_root = data_root / "benchmark_splits"
+        splitter = DatasetSplitter(data_root=data_root, splits_root=splits_root)
+        manifest = splitter.create_splits()
+        assert manifest["isolation_verified"] is True
+
+        # Tamper with public file: inject semantic leakage
+        test_pub = splits_root / "test" / "public" / "tasks.jsonl"
+        with open(test_pub, encoding="utf-8") as f:
+            lines = [json.loads(l) for l in f if l.strip()]
+        lines[0]["task_id"] = "ml_test_0001_valid_visible"
+        with open(test_pub, "w", encoding="utf-8") as f:
+            f.writelines(json.dumps(l) + "\n" for l in lines)
+
+        auditor = DatasetAuditor(data_root=data_root)
+        iso_res = auditor.check_dataset_split_isolation()
+        assert iso_res.passed is False

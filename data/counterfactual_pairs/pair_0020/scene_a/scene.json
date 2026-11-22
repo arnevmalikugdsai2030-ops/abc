@@ -1,0 +1,94 @@
+{
+  "scene_id": "pair_0020_a",
+  "seed": 40020,
+  "category": "VALID_VISIBLE",
+  "difficulty": "MEDIUM",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 326.3446965711485,
+      "y": 523.7659672496693
+    },
+    "heading_deg": 46.86092211531236,
+    "fov_degrees": 60.993174508958056,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 517.0756797496396,
+      "y": 766.3379228671758
+    },
+    "endpoint_b": {
+      "x": 697.0407281883923,
+      "y": 743.3232353648298
+    },
+    "reflective_normal": {
+      "dx": -0.12685112850942967,
+      "dy": -0.9919217666710839
+    }
+  },
+  "target": {
+    "center": {
+      "x": 753.4535012718401,
+      "y": 538.1797606278762
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "O1",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 539.8990989214943,
+        "y": 530.9728639387728
+      },
+      "radius": null,
+      "width": 33.22330701693642,
+      "height": 85.46329516862704,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O2",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 824.4854648484924,
+        "y": 712.444709202224
+      },
+      "radius": null,
+      "width": 46.838791381525894,
+      "height": 42.62316377645542,
+      "angle_degrees": 37.05334616779141
+    }
+  ],
+  "ground_truth_state": "VISIBLE",
+  "ground_truth_reason": "NONE",
+  "diagnostic_details": "Unobstructed optical sightline via mirror at (600.2, 755.7) with theta_i=theta_r=42.5 deg",
+  "reflection_point": {
+    "x": 600.2138183457039,
+    "y": 755.7058679436537
+  },
+  "virtual_target": {
+    "x": 803.2629298210919,
+    "y": 927.6682653342266
+  },
+  "optical_path": [
+    {
+      "x": 326.3446965711485,
+      "y": 523.7659672496693
+    },
+    {
+      "x": 600.2138183457039,
+      "y": 755.7058679436537
+    },
+    {
+      "x": 753.4535012718401,
+      "y": 538.1797606278762
+    }
+  ],
+  "incident_angle_deg": 42.45105112749974,
+  "reflected_angle_deg": 42.4510511274997,
+  "total_optical_distance": 624.9704533849854,
+  "is_direct_sight_blocked": true,
+  "is_boundary": false
+}

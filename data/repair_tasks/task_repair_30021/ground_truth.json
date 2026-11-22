@@ -1,18 +1,18 @@
 {
   "task_id": "task_repair_30021",
   "correct_candidate": "A",
-  "detailed_explanation": "Mathematical Proof: Candidate [A] uniquely restores reflected visibility. Candidate [A]: VISIBLE at reflection point (521.8, 657.6) with theta_i=theta_r=42.2 deg. Candidate [B]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.062)). Candidate [C]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.484)).",
+  "detailed_explanation": "Mathematical Proof: Candidate [A] uniquely restores reflected visibility. Candidate [A]: VISIBLE at reflection point (544.1, 669.1) with theta_i=theta_r=42.6 deg. Candidate [B]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.091)). Candidate [C]: FAILS (MIRROR_MISS - Ray misses finite mirror (t_mirror=1.481)).",
   "candidates": {
     "A": {
       "candidate_id": "A",
       "mirror": {
         "endpoint_a": {
-          "x": 466.3567814867854,
-          "y": 657.5558981535177
+          "x": 469.0952715245479,
+          "y": 669.0670777842212
         },
         "endpoint_b": {
-          "x": 674.3497753807037,
-          "y": 657.5558981535177
+          "x": 699.7525967164389,
+          "y": 669.0670777842212
         },
         "reflective_normal": {
           "dx": 0.0,
@@ -21,24 +21,24 @@
       },
       "is_visible": true,
       "reason_code": "CLEAR",
-      "diagnostic_details": "Unobstructed optical sightline via mirror at (521.8, 657.6) with theta_i=theta_r=42.2 deg",
+      "diagnostic_details": "Unobstructed optical sightline via mirror at (544.1, 669.1) with theta_i=theta_r=42.6 deg",
       "reflection_point": {
-        "x": 521.8421025490411,
-        "y": 657.5558981535177
+        "x": 544.0759714487822,
+        "y": 669.0670777842212
       },
-      "incident_angle_deg": 42.19095075167599,
-      "reflected_angle_deg": 42.19095075167602
+      "incident_angle_deg": 42.62914090201122,
+      "reflected_angle_deg": 42.62914090201122
     },
     "B": {
       "candidate_id": "B",
       "mirror": {
         "endpoint_a": {
-          "x": 301.0409161999682,
-          "y": 657.5558981535177
+          "x": 292.44724058874436,
+          "y": 669.0670777842212
         },
         "endpoint_b": {
-          "x": 509.0339100938865,
-          "y": 657.5558981535177
+          "x": 523.1045657806353,
+          "y": 669.0670777842212
         },
         "reflective_normal": {
           "dx": 0.0,
@@ -47,10 +47,10 @@
       },
       "is_visible": false,
       "reason_code": "MIRROR_MISS",
-      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.062)",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.091)",
       "reflection_point": {
-        "x": 521.8421025490411,
-        "y": 657.5558981535177
+        "x": 544.0759714487822,
+        "y": 669.0670777842212
       },
       "incident_angle_deg": null,
       "reflected_angle_deg": null
@@ -59,12 +59,12 @@
       "candidate_id": "C",
       "mirror": {
         "endpoint_a": {
-          "x": 479.0229948569879,
-          "y": 731.6675973952262
+          "x": 483.14168165397155,
+          "y": 748.5987672024163
         },
         "endpoint_b": {
-          "x": 661.6835620105012,
-          "y": 632.1879375842256
+          "x": 685.7061865870153,
+          "y": 638.2791270384424
         },
         "reflective_normal": {
           "dx": -0.4782837053720079,
@@ -73,10 +73,10 @@
       },
       "is_visible": false,
       "reason_code": "MIRROR_MISS",
-      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.484)",
+      "diagnostic_details": "Ray misses finite mirror (t_mirror=1.481)",
       "reflection_point": {
-        "x": 750.1642652884352,
-        "y": 584.0000314636371
+        "x": 783.0757102102475,
+        "y": 585.2502372405821
       },
       "incident_angle_deg": null,
       "reflected_angle_deg": null

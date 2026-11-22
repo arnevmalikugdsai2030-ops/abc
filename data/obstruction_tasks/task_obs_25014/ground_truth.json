@@ -1,0 +1,39 @@
+{
+  "task_id": "task_obs_25014",
+  "is_blocked": false,
+  "blocking_obstacle_label": null,
+  "blocked_segment": "NONE",
+  "detailed_explanation": "Mathematical Proof: Path is UNBLOCKED. Specular reflection C -> R(460.2, 746.0) -> T is 100% clear with theta_i=theta_r=37.3 deg. All distractor obstacles maintain clear margin (>=82.9mm).",
+  "proof": {
+    "reflection_point": {
+      "x": 460.237216066988,
+      "y": 745.9867614050174
+    },
+    "virtual_target": {
+      "x": 584.989598696232,
+      "y": 978.6108231806292
+    },
+    "incident_angle_deg": 37.27027228400287,
+    "reflected_angle_deg": 37.270272284002885,
+    "blocked_segment": "NONE",
+    "blocking_obstacle_label": null,
+    "blocking_obstacle_id": null,
+    "intersection_point": null,
+    "penetration_depth_mm": null,
+    "min_distractor_clearance_mm": 82.91388893870234,
+    "optical_path": [
+      {
+        "x": 301.1140575575408,
+        "y": 449.2719839001989
+      },
+      {
+        "x": 460.237216066988,
+        "y": 745.9867614050174
+      },
+      {
+        "x": 651.1912337997652,
+        "y": 563.7405702229598
+      }
+    ]
+  }
+}

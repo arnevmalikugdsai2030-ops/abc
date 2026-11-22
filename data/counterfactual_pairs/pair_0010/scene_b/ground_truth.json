@@ -1,0 +1,34 @@
+{
+  "task_id": "pair_0010_b",
+  "can_see": false,
+  "answer": "NO",
+  "reason_code": "MIRROR_MISS",
+  "detailed_explanation": "Mathematical Proof: Ray misses finite mirror (t_mirror=1.102). Ground truth state is NOT_VISIBLE with reason MIRROR_MISS.",
+  "proof_geometry": {
+    "reflection_point": {
+      "x": 483.3399442525563,
+      "y": 711.9882404949319
+    },
+    "virtual_target": {
+      "x": 767.23086535843,
+      "y": 913.6084708977082
+    },
+    "incident_angle_deg": null,
+    "reflected_angle_deg": null,
+    "total_optical_distance": null,
+    "optical_path": [
+      {
+        "x": 202.42971235210987,
+        "y": 512.484904996777
+      },
+      {
+        "x": 483.3399442525563,
+        "y": 711.9882404949319
+      },
+      {
+        "x": 711.5569577323427,
+        "y": 449.0019915152998
+      }
+    ]
+  }
+}

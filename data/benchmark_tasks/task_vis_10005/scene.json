@@ -1,0 +1,87 @@
+{
+  "scene_id": "task_vis_10005",
+  "seed": 10005,
+  "category": "WRONG_SIDE",
+  "difficulty": "HARD",
+  "canvas_width": 1000.0,
+  "canvas_height": 1000.0,
+  "camera": {
+    "position": {
+      "x": 704.3566546112233,
+      "y": 515.6562709932491
+    },
+    "heading_deg": 129.93556617015994,
+    "fov_degrees": 35.18815120201563,
+    "max_range": 1500.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 416.071066485339,
+      "y": 770.0455505231555
+    },
+    "endpoint_b": {
+      "x": 501.5313011879356,
+      "y": 784.1745910393681
+    },
+    "reflective_normal": {
+      "dx": -0.16311460115906357,
+      "dy": 0.9866071289468364
+    }
+  },
+  "target": {
+    "center": {
+      "x": 297.75255819561994,
+      "y": 416.40461012255724
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "O1",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 501.05460640342164,
+        "y": 466.03044055790315
+      },
+      "radius": null,
+      "width": 33.60279872773451,
+      "height": 91.72480214978422,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O2",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 803.5513250857866,
+        "y": 144.49929657594774
+      },
+      "radius": null,
+      "width": 42.40080566762791,
+      "height": 37.458580992218025,
+      "angle_degrees": 4.209768697839452
+    },
+    {
+      "obstacle_id": "O3",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 821.3324933591889,
+        "y": 804.1200003153292
+      },
+      "radius": null,
+      "width": 42.522024310050995,
+      "height": 35.48991215826151,
+      "angle_degrees": 13.567382306608312
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "BACK_OF_MIRROR",
+  "diagnostic_details": "Reflection failed: WRONG_SIDE_BOTH",
+  "reflection_point": null,
+  "virtual_target": null,
+  "optical_path": [],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": true,
+  "is_boundary": false
+}

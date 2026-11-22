@@ -1,0 +1,34 @@
+{
+  "task_id": "pair_0006_a",
+  "can_see": true,
+  "answer": "YES",
+  "reason_code": "CLEAR",
+  "detailed_explanation": "Mathematical Proof: Unobstructed optical sightline via mirror at (399.4, 690.5) with theta_i=theta_r=50.9 deg. Ground truth state is VISIBLE with reason CLEAR.",
+  "proof_geometry": {
+    "reflection_point": {
+      "x": 399.3748090163473,
+      "y": 690.5120129027366
+    },
+    "virtual_target": {
+      "x": 603.3829257893118,
+      "y": 928.1227706292545
+    },
+    "incident_angle_deg": 50.90221571739591,
+    "reflected_angle_deg": 50.902215717395904,
+    "total_optical_distance": 615.9940252080862,
+    "optical_path": [
+      {
+        "x": 202.11195846979086,
+        "y": 460.75754954566094
+      },
+      {
+        "x": 399.3748090163473,
+        "y": 690.5120129027366
+      },
+      {
+        "x": 673.6947716210454,
+        "y": 539.4267984931906
+      }
+    ]
+  }
+}
