@@ -36,6 +36,8 @@ def create_optical_figure(
     theme: str = "dark",
     width: int | None = None,
     height: int | None = None,
+    candidate_mirrors: dict[str, MirrorSpec] | None = None,
+    active_candidate: str | None = None,
 ) -> go.Figure:
     """
     Generate an interactive Plotly figure representing the 2D inspection scene.
@@ -49,6 +51,8 @@ def create_optical_figure(
         theme: "dark" (default, industrial console) or "light" (clean report paper).
         width: Optional fixed pixel width.
         height: Optional fixed pixel height.
+        candidate_mirrors: Optional dict mapping candidate IDs ('A', 'B', 'C') to MirrorSpecs for Task C.
+        active_candidate: Currently selected candidate ID to highlight.
 
     Returns:
         plotly.graph_objects.Figure with 1:1 aspect ratio.
@@ -82,8 +86,11 @@ def create_optical_figure(
     for obs in scene.obstacles:
         _draw_obstacle(fig, obs, is_dark)
 
-    # 3. Draw Mirror
-    _draw_mirror(fig, scene.mirror, is_dark)
+    # 3. Draw Mirror or Candidate Mirrors
+    if candidate_mirrors:
+        _draw_candidate_mirrors(fig, candidate_mirrors, active_candidate, is_dark)
+    else:
+        _draw_mirror(fig, scene.mirror, is_dark)
 
     # 4. Draw Camera and FOV Cone
     _draw_camera(fig, scene.camera, show_fov_cone, is_dark)
@@ -279,6 +286,53 @@ def _draw_mirror(fig: go.Figure, mirror: MirrorSpec, is_dark: bool) -> None:
         arrowwidth=2,
         arrowcolor="#14b8a6",
     )
+
+
+def _draw_candidate_mirrors(
+    fig: go.Figure,
+    candidate_mirrors: dict[str, MirrorSpec],
+    active_candidate: str | None,
+    is_dark: bool,
+) -> None:
+    """Render multiple candidate mirrors for Task C (Repair)."""
+    cand_colors = {
+        "A": "#38bdf8",  # Sky blue
+        "B": "#f59e0b",  # Amber
+        "C": "#ec4899",  # Pink
+    }
+    for cid, mirror in sorted(candidate_mirrors.items()):
+        is_active = (active_candidate == cid) if active_candidate else True
+        ma = mirror.endpoint_a
+        mb = mirror.endpoint_b
+        col = cand_colors.get(cid, "#00e5ff")
+        width = 6 if is_active else 3
+        opacity = 1.0 if is_active else 0.55
+
+        # Reflective face line
+        fig.add_trace(
+            go.Scatter(
+                x=[ma.x, mb.x],
+                y=[ma.y, mb.y],
+                mode="lines+markers",
+                line={"color": col, "width": width},
+                marker={"size": 8 if is_active else 5, "color": col, "symbol": "circle"},
+                name=f"Candidate Mirror {cid}" + (" (Active)" if is_active else ""),
+                opacity=opacity,
+                hoverinfo="text",
+                text=f"Candidate [{cid}]<br>A: ({ma.x:.1f}, {ma.y:.1f})<br>B: ({mb.x:.1f}, {mb.y:.1f})<br>Length: {math.hypot(mb.x - ma.x, mb.y - ma.y):.1f}mm",
+            )
+        )
+
+        # Label at midpoint
+        mid_x = (ma.x + mb.x) / 2.0
+        mid_y = (ma.y + mb.y) / 2.0
+        fig.add_annotation(
+            x=mid_x,
+            y=mid_y + 14.0,
+            text=f"Setting {cid}",
+            showarrow=False,
+            font={"size": 11, "color": col, "family": "monospace"},
+        )
 
 
 def _draw_camera(fig: go.Figure, cam: CameraSpec, show_fov: bool, is_dark: bool) -> None:

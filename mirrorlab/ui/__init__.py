@@ -34,6 +34,7 @@ from mirrorlab.ui.design_tokens import (
     get_theme_css,
 )
 from mirrorlab.ui.optical_plot import create_optical_figure
+from mirrorlab.ui.scene_lab import render_scene_laboratory
 
 __all__ = [
     "COLOR_BG_BASE",
@@ -60,6 +61,7 @@ __all__ = [
     "render_comparison_kpi_row",
     "render_header",
     "render_metric_card",
+    "render_scene_laboratory",
     "render_telemetry_strip",
     "render_verdict_badge",
 ]

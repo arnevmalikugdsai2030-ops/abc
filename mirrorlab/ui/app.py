@@ -13,15 +13,11 @@ from typing import Any
 import plotly.express as px
 import streamlit as st
 
-from mirrorlab.geometry.oracle import VisibilityOracle
 from mirrorlab.ui.components import (
     render_header,
     render_metric_card,
-    render_telemetry_strip,
-    render_verdict_badge,
 )
 from mirrorlab.ui.data_loader import (
-    build_interactive_scene,
     get_dataset_statistics,
     get_dataset_validation_status,
     get_failure_analysis,
@@ -36,7 +32,7 @@ from mirrorlab.ui.design_tokens import (
     COLOR_TEXT_PRIMARY,
     get_theme_css,
 )
-from mirrorlab.ui.optical_plot import create_optical_figure
+from mirrorlab.ui.scene_lab import render_scene_laboratory
 
 # ---------------------------------------------------------------------------
 # Page Configuration & CSS Injection
@@ -60,6 +56,17 @@ def main() -> None:
     recent_runs = get_recent_evaluation_runs()
     validation_status = get_dataset_validation_status()
 
+    # Platform Mode Selector in Sidebar
+    platform_mode = st.sidebar.radio(
+        "Workspace View:",
+        [
+            "🔬 Scene Laboratory",
+            "📊 Benchmark Dashboard",
+            "🛠️ Physical Rig Guide",
+        ],
+        index=0,
+    )
+
     # Active Run Selector
     selected_run_id = None
     if recent_runs:
@@ -79,8 +86,16 @@ def main() -> None:
         engine_status=engine_status,
     )
 
+    if platform_mode == "🔬 Scene Laboratory":
+        render_scene_laboratory()
+        return
+
+    if platform_mode == "🛠️ Physical Rig Guide":
+        render_tab_physical_setup()
+        return
+
     # -----------------------------------------------------------------------
-    # Main Navigation Tabs (Covering all 10 requirements + Optical Viewport)
+    # Main Navigation Tabs (Covering all 10 requirements + Scene Laboratory)
     # -----------------------------------------------------------------------
     nav_tabs = st.tabs(
         [
@@ -94,7 +109,7 @@ def main() -> None:
             "8. Failure Analysis",
             "9. Recent Evaluation Runs",
             "10. Dataset Validation Status",
-            "Optical Viewport Lab",
+            "🔬 Scene Laboratory",
             "Physical Rig Specifications",
         ]
     )
@@ -529,73 +544,10 @@ def render_section_validation_status(status: dict[str, Any]) -> None:
 
 
 # ===========================================================================
-# INTERACTIVE OPTICAL LAB VIEWPORT (Integrated)
+# 11. SCENE LABORATORY (Integrated)
 # ===========================================================================
 def render_tab_optical_lab() -> None:
-    st.subheader("Interactive Specular Cavity Viewport")
-    st.caption(
-        "Manipulate camera position, planar mirror angle, and obstacles. The deterministic oracle evaluates reflection in real-time."
-    )
-
-    ctrl_col, view_col = st.columns([1, 2])
-
-    with ctrl_col:
-        c_x = st.slider("Camera X (mm)", 50.0, 950.0, 150.0, 10.0)
-        c_y = st.slider("Camera Y (mm)", 50.0, 950.0, 200.0, 10.0)
-        c_head = st.slider("Camera Heading (°)", -180.0, 180.0, 35.0, 5.0)
-        c_fov = st.slider("Camera FOV (°)", 10.0, 120.0, 60.0, 2.0)
-
-        m_cx = st.slider("Mirror Center X (mm)", 100.0, 900.0, 500.0, 10.0)
-        m_cy = st.slider("Mirror Center Y (mm)", 100.0, 950.0, 800.0, 10.0)
-        m_len = st.slider("Mirror Length (mm)", 50.0, 600.0, 400.0, 10.0)
-        m_ang = st.slider("Mirror Angle (°)", -180.0, 180.0, 0.0, 5.0)
-        m_flip = st.checkbox("Invert Normal Vector", value=False)
-
-        t_x = st.slider("Defect Scratch X (mm)", 50.0, 950.0, 800.0, 10.0)
-        t_y = st.slider("Defect Scratch Y (mm)", 50.0, 950.0, 250.0, 10.0)
-
-    scene = build_interactive_scene(
-        cam_x=c_x,
-        cam_y=c_y,
-        cam_heading_deg=c_head,
-        cam_fov_deg=c_fov,
-        mirror_cx=m_cx,
-        mirror_cy=m_cy,
-        mirror_length=m_len,
-        mirror_angle_deg=m_ang,
-        flip_mirror_normal=m_flip,
-        target_x=t_x,
-        target_y=t_y,
-        obstacles=[],
-    )
-
-    oracle_res = VisibilityOracle.evaluate(scene)
-
-    with view_col:
-        verdict_badge = render_verdict_badge(
-            "CLEAR" if oracle_res.is_visible else (oracle_res.reason.value if hasattr(oracle_res.reason, "value") else str(oracle_res.reason)),
-            is_visible=oracle_res.is_visible,
-        )
-        st.markdown(f"<div style='margin-bottom:12px;'>{verdict_badge}</div>", unsafe_allow_html=True)
-
-        fig = create_optical_figure(
-            scene=scene,
-            oracle_result=oracle_res,
-            show_debug_rays=True,
-            show_fov_cone=True,
-            show_direct_sightline=True,
-            theme="dark",
-            height=540,
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-        telemetry_items = [
-            ("Incidence Angle (θ_i)", f"{oracle_res.incident_angle_deg:.1f}°" if oracle_res.incident_angle_deg else "N/A"),
-            ("Reflection Angle (θ_r)", f"{oracle_res.reflected_angle_deg:.1f}°" if oracle_res.reflected_angle_deg else "N/A"),
-            ("Total Optical Distance", f"{oracle_res.total_optical_distance:.1f} mm" if oracle_res.total_optical_distance else "N/A"),
-            ("Direct Path Blocked", str(oracle_res.is_direct_sight_blocked)),
-        ]
-        render_telemetry_strip(telemetry_items)
+    render_scene_laboratory()
 
 
 # ===========================================================================
