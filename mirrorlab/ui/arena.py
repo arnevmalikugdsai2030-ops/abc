@@ -115,8 +115,14 @@ def _execute_model_challenge(
         settings=settings,
     )
 
-    # Perform blind inference
-    response = adapter.ask(image_path=image_path, question=question_prompt)
+    # Perform blind inference with explicit task identification
+    task_type_str = task_type.value if hasattr(task_type, "value") else str(task_type)
+    response = adapter.ask(
+        image_path=image_path,
+        question=question_prompt,
+        task_id=task_id,
+        task_type=task_type_str,
+    )
 
     # Parse and grade against ground truth
     record = ResponseParser.parse_and_grade(
@@ -179,7 +185,12 @@ def _render_single_task_arena() -> None:
         )
         task_family = st.selectbox(
             "Task Family:",
-            ["Task A: Reflected Visibility", "Task B: Obstruction Identification", "Task C: Mirror-Setting Repair"],
+            [
+                "Task A: Reflected Visibility",
+                "Task B: Obstruction Identification",
+                "Task C: Mirror-Setting Repair",
+                "Task E: Out-Of-Distribution (OOD) Stress Test",
+            ],
             key="single_task_family",
         )
 
@@ -190,6 +201,10 @@ def _render_single_task_arena() -> None:
             t_type = TaskType.TASK_B_OBSTRUCTION
         elif "Repair" in task_family:
             fam_key = "repair"
+            t_type = TaskType.TASK_C_REPAIR
+        elif "OOD" in task_family:
+            fam_key = "ood"
+            t_type = TaskType.TASK_A_VISIBILITY
             t_type = TaskType.TASK_C_REPAIR
 
         tasks_list = load_tasks_by_family(fam_key)
@@ -207,6 +222,18 @@ def _render_single_task_arena() -> None:
             unsafe_allow_html=True,
         )
         selected_model = st.selectbox("Vision Model:", AVAILABLE_ARENA_MODELS, index=0, key="single_model_name")
+        if selected_model.startswith("mock"):
+            st.markdown(
+                "<div style='font-size:11px; color:#F59E0B; font-weight:700; background:rgba(245,158,11,0.1); padding:4px 8px; border-radius:4px; margin-top:4px; border:1px solid rgba(245,158,11,0.3);'>"
+                "⚠️ SIMULATED BASELINE — NOT AN ACTUAL MODEL API RESULT</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"<div style='font-size:11px; color:{COLOR_CYAN_PRIMARY}; font-weight:700; background:rgba(0,229,255,0.1); padding:4px 8px; border-radius:4px; margin-top:4px; border:1px solid rgba(0,229,255,0.3);'>"
+                "🌐 REAL MULTIMODAL API EVALUATION</div>",
+                unsafe_allow_html=True,
+            )
         api_key_input = st.text_input(
             "API Key (Optional override, otherwise reads from .env):",
             type="password",
@@ -450,6 +477,18 @@ def _render_paired_task_arena() -> None:
 
     with col_model_sel:
         selected_model = st.selectbox("Vision Model:", AVAILABLE_ARENA_MODELS, index=0, key="cf_model_name")
+        if selected_model.startswith("mock"):
+            st.markdown(
+                "<div style='font-size:11px; color:#F59E0B; font-weight:700; background:rgba(245,158,11,0.1); padding:4px 8px; border-radius:4px; margin-top:4px; border:1px solid rgba(245,158,11,0.3);'>"
+                "⚠️ SIMULATED BASELINE — NOT AN ACTUAL MODEL API RESULT</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"<div style='font-size:11px; color:{COLOR_CYAN_PRIMARY}; font-weight:700; background:rgba(0,229,255,0.1); padding:4px 8px; border-radius:4px; margin-top:4px; border:1px solid rgba(0,229,255,0.3);'>"
+                "🌐 REAL MULTIMODAL API EVALUATION</div>",
+                unsafe_allow_html=True,
+            )
         api_key_input = st.text_input("API Key (Optional override):", type="password", key="cf_api_key")
 
     pair_data = current_pair.get("pair_data", {})

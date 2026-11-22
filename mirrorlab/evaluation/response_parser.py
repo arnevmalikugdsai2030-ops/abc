@@ -86,7 +86,7 @@ class ResponseParser:
         "BLOCKED_CAMERA_TO_MIRROR",
         "BLOCKED_MIRROR_TO_TARGET",
     }
-    VALID_OBSTACLE_LABELS: ClassVar[set[str]] = {"O1", "O2", "O3", "NONE"}
+    VALID_OBSTACLE_LABELS: ClassVar[set[str]] = {"O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "NONE"}
     VALID_BLOCKED_LEGS: ClassVar[set[str]] = {"CAMERA_TO_MIRROR", "MIRROR_TO_TARGET", "NONE"}
     VALID_REPAIR_SETTINGS: ClassVar[set[str]] = {"A", "B", "C"}
 

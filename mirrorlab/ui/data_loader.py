@@ -70,6 +70,7 @@ def load_tasks_by_family(family: str, base_dir: Path | str = "data") -> list[dic
         "obstruction": b / "obstruction_tasks",
         "repair": b / "repair_tasks",
         "counterfactual": b / "counterfactual_pairs",
+        "ood": b / "ood_tasks",
     }
 
     target_dir = family_map.get(family.lower())
@@ -320,52 +321,53 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
     sample_scenes = load_sample_scenes(root / "sample_scenes")
 
     # Counts from physical task directories on disk
-    vis_count = len(list((root / "benchmark_tasks").glob("*"))) if (root / "benchmark_tasks").exists() else 0
-    obs_count = len(list((root / "obstruction_tasks").glob("*"))) if (root / "obstruction_tasks").exists() else 0
-    rep_count = len(list((root / "repair_tasks").glob("*"))) if (root / "repair_tasks").exists() else 0
-    pair_count = len(list((root / "counterfactual_pairs").glob("*"))) if (root / "counterfactual_pairs").exists() else 0
+    vis_count = len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()]) if (root / "benchmark_tasks").exists() else 0
+    obs_count = len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()]) if (root / "obstruction_tasks").exists() else 0
+    rep_count = len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()]) if (root / "repair_tasks").exists() else 0
+    pair_count = len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()]) if (root / "counterfactual_pairs").exists() else 0
 
     total_disk_tasks = vis_count + obs_count + rep_count + pair_count
 
-    # Difficulty tiers from manifest or sample scenes
-    difficulty_counts = {"EASY": 50, "STANDARD": 70, "HARD": 50, "BOUNDARY": 30}
+    # Difficulty tiers from actual loaded sample scenes or task scenes
+    difficulty_counts: dict[str, int] = {}
     if sample_scenes:
-        diff_tally: dict[str, int] = {}
         for s in sample_scenes:
             tier = s.difficulty.value if hasattr(s.difficulty, "value") else str(s.difficulty)
-            diff_tally[tier] = diff_tally.get(tier, 0) + 1
-        if diff_tally:
-            difficulty_counts = diff_tally
+            difficulty_counts[tier] = difficulty_counts.get(tier, 0) + 1
 
     # Obstacle count distribution from sample scenes
     obs_counts = [len(s.obstacles) for s in sample_scenes]
-    avg_obstacles = round(sum(obs_counts) / len(obs_counts), 2) if obs_counts else 1.25
+    avg_obstacles = round(sum(obs_counts) / len(obs_counts), 2) if obs_counts else 0.0
 
     # Split counts from manifest
-    split_counts = manifest.get("split_counts", {}) if manifest else {"dev": 40, "val": 40, "test": 120}
-    total_split_tasks = sum(split_counts.values()) if split_counts else 200
+    split_counts = manifest.get("split_counts", {}) if manifest else {}
+    total_split_tasks = sum(split_counts.values()) if split_counts else 0
 
     return {
-        "has_data": total_disk_tasks > 0 or manifest is not None,
-        "total_tasks": total_disk_tasks if total_disk_tasks > 0 else total_split_tasks,
+        "has_data": total_disk_tasks > 0,
+        "total_tasks": total_disk_tasks,
+        "actual_generated_tasks": total_disk_tasks,
+        "target_dataset_size": 200,
         "total_split_tasks": total_split_tasks,
+        "target_split_counts": {"dev": 40, "val": 40, "test": 120},
         "split_counts": split_counts,
         "family_counts": {
-            "TASK_A_VISIBILITY": vis_count or 22,
-            "TASK_B_OBSTRUCTION": obs_count or 32,
-            "TASK_C_REPAIR": rep_count or 32,
-            "TASK_D_COUNTERFACTUAL": pair_count or 123,
+            "TASK_A_VISIBILITY": vis_count,
+            "TASK_B_OBSTRUCTION": obs_count,
+            "TASK_C_REPAIR": rep_count,
+            "TASK_D_COUNTERFACTUAL": pair_count,
         },
         "difficulty_counts": difficulty_counts,
         "sample_scenes_count": len(sample_scenes),
         "average_obstacles_per_scene": avg_obstacles,
-        "isolation_verified": manifest.get("isolation_verified", True) if manifest else True,
+        "isolation_verified": manifest.get("isolation_verified", False) if manifest else False,
     }
 
 
 def get_task_distribution(data_root: Path | str = "data") -> dict[str, Any]:
     """
     Returns verified task family and counterfactual subtype distributions.
+    Strictly zero fabricated fallbacks: reports measured records or 0.
     """
     root = Path(data_root)
     pair_dir = root / "counterfactual_pairs"
@@ -392,21 +394,13 @@ def get_task_distribution(data_root: Path | str = "data") -> dict[str, Any]:
                 except (json.JSONDecodeError, OSError):
                     continue
 
-    # Fallback default verified minimums (30 of each generated per requirement)
-    if sum(subtypes.values()) == 0:
-        subtypes = {
-            "MIRROR_ANGLE_FLIP": 30,
-            "COSMETIC_CONTROL": 30,
-            "OBSTACLE_INSERTION": 31,
-            "IRRELEVANT_OBSTACLE": 32,
-        }
-
     stats = get_dataset_statistics(data_root=data_root)
+    total_pairs = sum(subtypes.values())
     return {
-        "has_data": stats["has_data"],
+        "has_data": stats["has_data"] and total_pairs > 0,
         "family_counts": stats["family_counts"],
         "counterfactual_subtypes": subtypes,
-        "total_counterfactual_pairs": sum(subtypes.values()),
+        "total_counterfactual_pairs": total_pairs,
     }
 
 
@@ -585,33 +579,97 @@ def get_failure_analysis(run_details: dict[str, Any] | None) -> list[dict[str, A
     return failed_items
 
 
-def get_dataset_validation_status(data_root: Path | str = "data") -> dict[str, Any]:
-    """
-    Performs or loads the 10-point benchmark dataset integrity audit.
-    """
-    root = Path(data_root)
-    manifest = load_benchmark_manifest(root / "benchmark_splits")
+_VALIDATION_CACHE: dict[str, dict[str, Any]] = {}
 
-    # Real audit check list
-    checks = [
-        {"id": 1, "name": "Scene ID Uniqueness", "status": "PASSED", "details": "Zero ID collisions across all 200 tasks."},
-        {"id": 2, "name": "Deterministic Seed Recording", "status": "PASSED", "details": "100% of tasks store integer seeds."},
-        {"id": 3, "name": "Oracle Mathematical Agreement", "status": "PASSED", "details": "Ground-truth verified against 2D reflection oracle."},
-        {"id": 4, "name": "Blind Image Non-Leakage", "status": "PASSED", "details": "Blind schematics contain zero ray/normal overlays."},
-        {"id": 5, "name": "Prompt Neutrality & Zero-Leakage", "status": "PASSED", "details": "Prompts contain zero answer keywords or hints."},
-        {"id": 6, "name": "Mirror Repair Single-Solution", "status": "PASSED", "details": "Exactly ONE candidate setting restores sightline."},
-        {"id": 7, "name": "Obstruction Single-Blocker", "status": "PASSED", "details": "Obstruction tasks contain exactly one blocker."},
-        {"id": 8, "name": "Counterfactual Invariant Verification", "status": "PASSED", "details": "All pairs satisfy expected relationship."},
-        {"id": 9, "name": "Anti-Duplicate Geometry", "status": "PASSED", "details": "Clustering verifies zero duplicate scenes."},
-        {"id": 10, "name": "Test Set Partition Isolation", "status": "PASSED", "details": "Test split answer keys physically isolated."},
+
+def get_dataset_validation_status(
+    data_root: Path | str = "data",
+    force_refresh: bool = False,
+) -> dict[str, Any]:
+    """
+    Performs real, executable 10-point benchmark dataset integrity audit.
+    Zero hardcoded PASSED defaults: executes checks and measures real records.
+    If dataset is missing, returns NOT RUN / FAILED.
+    Results are cached in-memory per data_root for fast UI reruns.
+    """
+    cache_key = str(data_root)
+    if not force_refresh and cache_key in _VALIDATION_CACHE:
+        return _VALIDATION_CACHE[cache_key]
+
+    from mirrorlab.evaluation.dataset_auditor import DatasetAuditor
+
+    root = Path(data_root)
+    # Check if physical dataset exists
+    vis_count = len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()]) if (root / "benchmark_tasks").exists() else 0
+    obs_count = len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()]) if (root / "obstruction_tasks").exists() else 0
+    rep_count = len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()]) if (root / "repair_tasks").exists() else 0
+    pair_count = len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()]) if (root / "counterfactual_pairs").exists() else 0
+    total_tasks = vis_count + obs_count + rep_count + pair_count
+
+    check_names = [
+        "Scene ID Uniqueness",
+        "Deterministic Seed Recording",
+        "Oracle Mathematical Agreement",
+        "Blind Image Non-Leakage",
+        "Prompt Neutrality & Zero-Leakage",
+        "Mirror Repair Single-Solution",
+        "Obstruction Single-Blocker",
+        "Counterfactual Invariant Verification",
+        "Anti-Duplicate Geometry",
+        "Test Set Partition Isolation",
     ]
 
-    all_passed = manifest.get("isolation_verified", True) if manifest else True
+    if total_tasks == 0:
+        empty_checks = [
+            {
+                "id": idx,
+                "name": name,
+                "status": "NOT RUN",
+                "passed": False,
+                "items_checked": 0,
+                "details": f"No dataset records found in '{data_root}'. Run task generator to populate benchmark suites.",
+                "failure_count": 1,
+                "failures": ["Dataset empty or directory not found."],
+            }
+            for idx, name in enumerate(check_names, 1)
+        ]
+        return {
+            "all_passed": False,
+            "total_checks": len(empty_checks),
+            "checks": empty_checks,
+            "isolation_verified": False,
+            "split_summary": {},
+            "total_tasks": 0,
+            "status_message": "NOT RUN: Dataset records missing.",
+        }
 
-    return {
-        "all_passed": all_passed,
-        "total_checks": len(checks),
-        "checks": checks,
-        "isolation_verified": all_passed,
-        "split_summary": manifest.get("split_counts", {"dev": 40, "val": 40, "test": 120}) if manifest else {},
+    # Execute actual dataset audit
+    auditor = DatasetAuditor(data_root=data_root)
+    report = auditor.audit_all()
+
+    formatted_checks = []
+    for idx, c in enumerate(report.checks, 1):
+        status_str = "PASSED" if c.passed else "FAILED"
+        formatted_checks.append({
+            "id": idx,
+            "name": c.name,
+            "status": status_str,
+            "passed": c.passed,
+            "items_checked": c.items_checked,
+            "details": c.details,
+            "failure_count": len(c.failures),
+            "failures": c.failures[:10],
+        })
+
+    result = {
+        "all_passed": report.all_passed,
+        "total_checks": len(formatted_checks),
+        "checks": formatted_checks,
+        "isolation_verified": report.all_passed,
+        "split_summary": report.split_summary.get("split_counts", {}) if report.split_summary else {},
+        "total_tasks": report.total_tasks_checked,
+        "total_scenes": report.total_scenes_checked,
+        "status_message": "PASSED: All 10 verification checks satisfied." if report.all_passed else "FAILED: Audit violations detected.",
     }
+    _VALIDATION_CACHE[cache_key] = result
+    return result

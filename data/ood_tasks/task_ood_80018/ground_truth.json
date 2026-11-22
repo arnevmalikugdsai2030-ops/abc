@@ -1,0 +1,15 @@
+{
+  "task_id": "task_ood_80018",
+  "can_see": false,
+  "answer": "NO",
+  "reason_code": "WRONG_SIDE",
+  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Reflection failed: WRONG_SIDE_TARGET | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason WRONG_SIDE.",
+  "proof_geometry": {
+    "reflection_point": null,
+    "virtual_target": null,
+    "incident_angle_deg": null,
+    "reflected_angle_deg": null,
+    "total_optical_distance": null,
+    "optical_path": []
+  }
+}

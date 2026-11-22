@@ -56,7 +56,6 @@ def main() -> None:
     dataset_stats = get_dataset_statistics()
     task_dist = get_task_distribution()
     recent_runs = get_recent_evaluation_runs()
-    validation_status = get_dataset_validation_status()
 
     # Platform Mode Selector in Sidebar
     platform_mode = st.sidebar.radio(
@@ -105,6 +104,9 @@ def main() -> None:
     if platform_mode == "🛠️ Physical Rig Guide":
         render_tab_physical_setup()
         return
+
+    # Benchmark Dashboard view: load validation status
+    validation_status = get_dataset_validation_status()
 
     # -----------------------------------------------------------------------
     # Main Navigation Tabs (Covering all 10 requirements + Scene Lab, Arena, Analytics)
@@ -249,9 +251,10 @@ def render_section_dataset_statistics(stats: dict[str, Any]) -> None:
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_metric_card("Total Tasks on Disk", str(stats["total_tasks"]), subtext="Stored across task suites")
+        render_metric_card("Actual Tasks on Disk", str(stats["total_tasks"]), subtext=f"Target: {stats.get('target_dataset_size', 200)} tasks")
     with c2:
-        render_metric_card("Benchmark Split Tasks", str(stats["total_split_tasks"]), subtext="Dev: 40 | Val: 40 | Test: 120")
+        split_sub = " | ".join(f"{k.capitalize()}: {v}" for k, v in stats.get("split_counts", {}).items()) or "No splits created"
+        render_metric_card("Benchmark Split Tasks", str(stats["total_split_tasks"]), subtext=split_sub)
     with c3:
         render_metric_card("Avg Obstacles / Scene", f"{stats['average_obstacles_per_scene']:.2f}", subtext="Poisson distributed barriers")
     with c4:
@@ -546,23 +549,40 @@ def render_section_recent_runs(runs: list[dict[str, Any]]) -> None:
 # ===========================================================================
 def render_section_validation_status(status: dict[str, Any]) -> None:
     st.subheader("Dataset Validation Status & 10-Point Audit Checklist")
-    st.caption("Exhaustive verification of unique scene IDs, deterministic random seeds, oracle agreement, and test isolation.")
+    st.caption("Exhaustive executable verification of unique scene IDs, deterministic random seeds, oracle agreement, and test isolation.")
 
     checks = status.get("checks", [])
     if not checks:
         st.warning("Empty State: No audit checks loaded.")
         return
 
+    all_passed = status.get("all_passed", False)
+    tot_tasks = status.get("total_tasks", 0)
+    status_msg = status.get("status_message", "Audit complete.")
+    if all_passed:
+        st.success(f"✅ {status_msg} ({tot_tasks} tasks verified across all suites)")
+    else:
+        st.error(f"⚠️ {status_msg}")
+
     for c in checks:
-        col_id, col_name, col_det, col_stat = st.columns([1, 4, 6, 2])
+        col_id, col_name, col_det, col_items, col_stat = st.columns([1, 4, 5, 2, 2])
         with col_id:
             st.markdown(f"**#{c['id']}**")
         with col_name:
             st.markdown(f"**{c['name']}**")
         with col_det:
             st.caption(c["details"])
+        with col_items:
+            st.caption(f"N = {c.get('items_checked', 0)}")
         with col_stat:
-            st.markdown(f"<span style='color:{COLOR_STATUS_SUCCESS}; font-family:monospace; font-weight:700;'>{c['status']}</span>", unsafe_allow_html=True)
+            stat_str = c["status"]
+            if stat_str == "PASSED":
+                color = COLOR_STATUS_SUCCESS
+            elif stat_str == "FAILED":
+                color = "#EF4444"
+            else:
+                color = "#F59E0B"
+            st.markdown(f"<span style='color:{color}; font-family:monospace; font-weight:700;'>{stat_str}</span>", unsafe_allow_html=True)
 
 
 # ===========================================================================
@@ -576,30 +596,82 @@ def render_tab_optical_lab() -> None:
 # PHYSICAL WORLD SETUP GUIDE
 # ===========================================================================
 def render_tab_physical_setup() -> None:
-    st.subheader("Physical World Setup Guide & Reproducibility Specifications")
-    st.caption("Laboratory hardware alignment protocol for industrial specular inspection cavity validation.")
+    st.subheader("Physical World Setup Guide & Industrial Relevance")
+    st.caption("Laboratory hardware alignment protocol, physical benchtop experiment, and real-world optical limitations.")
 
     s1, s2 = st.columns(2)
     with s1:
         st.markdown(
             """
-            #### Hardware Specifications
-            - **Cavity Enclosure:** 500 mm × 500 mm × 300 mm matte black enclosure.
-            - **Machine-Vision Camera:** 1080p USB3/GigE camera with 6–12mm lens (~60° FOV).
-            - **First-Surface Mirror:** Aluminized front-surface glass (150 mm × 100 mm).
-            - **Defect Target:** High-contrast red crosshair (15 mm stroke).
+            #### 1. Hardware Specifications & Bill of Materials (BOM)
+            - **Cavity Enclosure:** 500 mm × 500 mm × 300 mm matte black anti-reflective aluminum or 3D-printed enclosure.
+            - **Machine-Vision Camera / Sensor:** 1080p USB3/GigE camera (or smartphone camera) with 6–12mm lens (~60° horizontal FOV).
+            - **First-Surface Specular Mirror:** 150 mm × 100 mm aluminized front-surface optical mirror (prevents second-surface ghost reflections).
+            - **Defect Target:** High-contrast calibrated red crosshair (15 mm stroke, matte finish to prevent glint).
+            - **Calibrated Obstacles:** Matte black wooden or Delrin blocks (40×40 mm cylinder and 30×80 mm rectangular prism).
+            - **Laser Diode / Line Projector:** 650nm red alignment laser (<= 5mW) mounted on rotatable arm for physical ray verification.
             """
         )
     with s2:
         st.markdown(
             """
-            #### 4-Step Alignment Protocol
-            1. **Block Direct Sightline:** Position camera so opaque wall occludes defect.
-            2. **Align Mirror Stage:** Adjust mirror angle until reflection hits camera.
-            3. **Place Obstacles:** Position blocks along optical sightline.
-            4. **Capture & Verify:** Compare VLM output against geometry oracle.
+            #### 2. 4-Step Physical Alignment & Validation Protocol
+            1. **Direct Sightline Occlusion:** Align camera and target so direct line $C \\to T$ is 100% blocked by opaque partition $O_1$.
+            2. **Mirror Goniometer Alignment:** Adjust rotation stage $\\theta_{mirror}$ until laser reflection strikes camera aperture ($C \\to R \\to T$).
+            3. **Controlled Obstacle Insertion:** Insert blocker $O_2$ into Leg 1 ($C \\to R$) or Leg 2 ($R \\to T$) and measure clearance margin in millimeters.
+            4. **Empirical Capture vs. Oracle Comparison:** Photograph camera view, submit to vision model, and compare physical visibility with oracle ground truth.
             """
         )
+
+    st.divider()
+
+    st.markdown("#### 3. Real-World Physical Limitations & Scientific Boundary Conditions")
+    st.info(
+        "**Scientific Integrity Notice:** MIRRORLAB's core benchmark evaluates 2D planar specular reflection geometry. "
+        "The following real-world optical factors describe the boundary between our controlled synthetic benchmark and live factory deployment:"
+    )
+
+    lim_col1, lim_col2, lim_col3 = st.columns(3)
+    with lim_col1:
+        st.markdown(
+            r"""
+            **Optical & Surface Effects**
+            - *Surface Imperfections:* Non-ideal planarity ($\lambda/4$ optical flatness vs stamped sheet metal).
+            - *Ghost Reflections:* Standard rear-surface glass mirrors create double images; front-surface mirrors required.
+            - *Diffuse Scattering:* Brushed metals exhibit anisotropic specular lobes rather than Dirac delta reflections.
+            """
+        )
+    with lim_col2:
+        st.markdown(
+            r"""
+            **Camera & Sensor Factors**
+            - *Lens Distortion:* Wide-angle lenses introduce barrel distortion; requires checkerboard intrinsic calibration.
+            - *Depth of Field:* Narrow aperture ($f/8-f/16$) needed to keep both mirror frame and reflected target in focus.
+            - *Dynamic Range:* Specular reflections create sensor blooming requiring HDR multi-exposure bracketing.
+            """
+        )
+    with lim_col3:
+        st.markdown(
+            r"""
+            **3D & Environmental Dynamics**
+            - *Non-Coplanar Geometry:* 3D out-of-plane pitch and yaw tilt ray paths outside 2D inspection planes.
+            - *Ambient Glare:* Stray factory lighting creates spurious caustic highlights.
+            - *Vibration & Jitter:* Robotic arm micro-vibrations displace reflection points by $\pm 2.5\text{ mm}$.
+            """
+        )
+
+    st.divider()
+
+    st.markdown("#### 4. High-Impact Industrial Transfer Applications")
+    st.markdown(
+        """
+        The specular reflection reasoning benchmarked by MIRRORLAB directly underpins modern automated optical inspection (AOI):
+        1. **Aerospace Turbine Blade Borescopy:** Inspecting high-pressure compressor stator blades through narrow inspection ports using 45° angled mirrors.
+        2. **Automotive Cylinder Bore Metrology:** Detecting micro-scratches on honed engine cylinder inner walls via angled reflection mirrors.
+        3. **PCB Underside Solder Ball Inspection:** Viewing BGA (Ball Grid Array) solder joint voids around tall electrolytic capacitors and inductors.
+        4. **Robotic Camera Path Planning:** Finding collision-free viewpoints where non-line-of-sight cavities can be optically inspected via mirror reflections.
+        """
+    )
 
 
 if __name__ == "__main__":

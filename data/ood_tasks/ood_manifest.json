@@ -1,0 +1,247 @@
+{
+  "ood_task_count": 30,
+  "generator_version": "1.0.0-ood",
+  "certification": "100% dual-verified via IndependentGeometryVerifier",
+  "records": [
+    {
+      "task_id": "task_ood_80000",
+      "seed": 80000,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80001",
+      "seed": 80001,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 8,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80002",
+      "seed": 80002,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80003",
+      "seed": 80003,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80004",
+      "seed": 80004,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80005",
+      "seed": 80005,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 8,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80006",
+      "seed": 80006,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80007",
+      "seed": 80007,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 8,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80008",
+      "seed": 80008,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80009",
+      "seed": 80009,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 8,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80010",
+      "seed": 80010,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80011",
+      "seed": 80011,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80012",
+      "seed": 80012,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 8,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80013",
+      "seed": 80013,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 7,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80014",
+      "seed": 80014,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 7,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80015",
+      "seed": 80015,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80016",
+      "seed": 80016,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80017",
+      "seed": 80017,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80018",
+      "seed": 80018,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "BACK_OF_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80019",
+      "seed": 80019,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80020",
+      "seed": 80020,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "BACK_OF_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80021",
+      "seed": 80021,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 8,
+      "is_visible": false,
+      "reason": "BACK_OF_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80022",
+      "seed": 80022,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80023",
+      "seed": 80023,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80024",
+      "seed": 80024,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 7,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80025",
+      "seed": 80025,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 7,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80026",
+      "seed": 80026,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 5,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80027",
+      "seed": 80027,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 6,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80028",
+      "seed": 80028,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 8,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    },
+    {
+      "task_id": "task_ood_80029",
+      "seed": 80029,
+      "difficulty": "OOD_BOUNDARY",
+      "obstacle_count": 7,
+      "is_visible": false,
+      "reason": "MISSED_MIRROR"
+    }
+  ]
+}

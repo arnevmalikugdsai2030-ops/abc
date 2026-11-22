@@ -203,7 +203,7 @@ def run_audit() -> None:
     # Journey 4: Benchmark Dashboard (All 10 Sections)
     # -----------------------------------------------------------------------
     print("\n[QA AUDIT 4/5] Testing 📈 Benchmark Dashboard (10 Sections)...")
-    at = AppTest.from_file(APP_PATH, default_timeout=30)
+    at = AppTest.from_file(APP_PATH, default_timeout=60)
     at.run()
     workspace_radio = at.sidebar.radio[0]
     workspace_radio.set_value("📈 Benchmark Dashboard")

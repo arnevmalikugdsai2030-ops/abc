@@ -620,7 +620,8 @@ class MockVisionAdapter(BaseVisionAdapter):
         self.validate_image(image_path)
         t0 = time.perf_counter()
         task_id = kwargs.get("task_id", "")
-        task_type = kwargs.get("task_type", "TASK_A_VISIBILITY")
+        task_type_raw = kwargs.get("task_type", "TASK_A_VISIBILITY")
+        task_type = task_type_raw.value if hasattr(task_type_raw, "value") else str(task_type_raw)
 
         gt = self.ground_truth_map.get(task_id) or self.ground_truth_map.get("_current", {})
 
@@ -680,14 +681,29 @@ class MockVisionAdapter(BaseVisionAdapter):
             retry_count=0,
             finish_reason="STOP",
             is_mock=True,
-            raw_metadata={"strategy": self.strategy.value, "task_id": task_id},
+            raw_metadata={
+                "strategy": self.strategy.value,
+                "task_id": task_id,
+                "is_simulated": True,
+                "provenance": "SIMULATED — NOT AN ACTUAL MODEL API RESULT",
+            },
         )
 
     def _generate_oracle(self, task_type: str, gt: dict[str, Any]) -> str:
-        if task_type in ("TASK_A_VISIBILITY", "TASK_D_COUNTERFACTUAL"):
+        tt = task_type.value if hasattr(task_type, "value") else str(task_type)
+        if "VISIBILITY" in tt or "COUNTERFACTUAL" in tt:
             can_see = gt.get("can_see", True)
             ans = gt.get("answer", "YES" if can_see else "NO")
-            reason = gt.get("reason_code", "CLEAR" if can_see else "OUTSIDE_FOV")
+            raw_reason = gt.get("reason_code") or gt.get("ground_truth_reason") or ("CLEAR" if can_see else "OUTSIDE_FOV")
+            raw_str = raw_reason.value if hasattr(raw_reason, "value") else str(raw_reason)
+            reason_map = {
+                "BLOCKED_INCIDENT": "BLOCKED_CAMERA_TO_MIRROR",
+                "BLOCKED_REFLECTED": "BLOCKED_MIRROR_TO_TARGET",
+                "BACK_OF_MIRROR": "WRONG_SIDE",
+                "MISSED_MIRROR": "MIRROR_MISS",
+                "OUT_OF_FOV": "OUTSIDE_FOV",
+            }
+            reason = reason_map.get(raw_str, raw_str)
             data = {
                 "can_see": can_see,
                 "answer": ans,
@@ -696,7 +712,7 @@ class MockVisionAdapter(BaseVisionAdapter):
                     "detailed_explanation", "Analytical geometric proof."
                 ),
             }
-        elif task_type == "TASK_B_OBSTRUCTION":
+        elif "OBSTRUCTION" in tt:
             is_blocked = gt.get("is_blocked", True)
             ans = "YES" if is_blocked else "NO"
             blocker = gt.get("blocking_obstacle_label") or gt.get("blocker_label") or ("O1" if is_blocked else "NONE")
@@ -710,7 +726,7 @@ class MockVisionAdapter(BaseVisionAdapter):
                     "detailed_explanation", "Obstacle intersection proof."
                 ),
             }
-        elif task_type == "TASK_C_REPAIR":
+        elif "REPAIR" in tt:
             winner = gt.get("correct_candidate", "A")
             data = {
                 "selected_candidate": winner,

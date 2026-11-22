@@ -1,0 +1,129 @@
+{
+  "scene_id": "task_ood_80015",
+  "seed": 80015,
+  "category": "MIRROR_MISS",
+  "difficulty": "BOUNDARY",
+  "canvas_width": 1200.0,
+  "canvas_height": 800.0,
+  "camera": {
+    "position": {
+      "x": 262.1931028429711,
+      "y": 182.61458444778862
+    },
+    "heading_deg": 50.873310127810015,
+    "fov_degrees": 75.0,
+    "max_range": 1600.0
+  },
+  "mirror": {
+    "endpoint_a": {
+      "x": 433.32306651247967,
+      "y": 430.8428131842847
+    },
+    "endpoint_b": {
+      "x": 649.2034351928797,
+      "y": 620.5245459177563
+    },
+    "reflective_normal": {
+      "dx": 0.6600531125663562,
+      "dy": -0.7512189351923081
+    }
+  },
+  "target": {
+    "center": {
+      "x": 1027.0656413171216,
+      "y": 145.00876808831688
+    },
+    "radius_mm": 8.0
+  },
+  "obstacles": [
+    {
+      "obstacle_id": "O1_direct_barrier",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 650.1900142380179,
+        "y": 179.0615200443653
+      },
+      "radius": null,
+      "width": 35.0,
+      "height": 160.0,
+      "angle_degrees": -8.671797623317406
+    },
+    {
+      "obstacle_id": "O2_clutter",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 654.9150889612278,
+        "y": 342.56050520234305
+      },
+      "radius": 26.88113887686146,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O3_clutter",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 577.7496773500204,
+        "y": 391.6699065372542
+      },
+      "radius": null,
+      "width": 40.82953667973919,
+      "height": 42.992688482471586,
+      "angle_degrees": 14.956001894348306
+    },
+    {
+      "obstacle_id": "O4_clutter",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 947.1745178182354,
+        "y": 288.9066683485877
+      },
+      "radius": 22.627222349542663,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    },
+    {
+      "obstacle_id": "O5_clutter",
+      "obstacle_type": "rectangle",
+      "center": {
+        "x": 901.9807471447139,
+        "y": 422.9931035842458
+      },
+      "radius": null,
+      "width": 39.55101714900811,
+      "height": 32.069367087512376,
+      "angle_degrees": 39.967771228726825
+    },
+    {
+      "obstacle_id": "O6_clutter",
+      "obstacle_type": "circle",
+      "center": {
+        "x": 249.2815266847751,
+        "y": 269.28859911025194
+      },
+      "radius": 27.047803419705424,
+      "width": null,
+      "height": null,
+      "angle_degrees": 0.0
+    }
+  ],
+  "ground_truth_state": "NOT_VISIBLE",
+  "ground_truth_reason": "MISSED_MIRROR",
+  "diagnostic_details": "OOD Benchmark: Ray misses finite mirror (t_mirror=-0.811) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00",
+  "reflection_point": {
+    "x": 258.3084911586006,
+    "y": 277.06751573756276
+  },
+  "virtual_target": {
+    "x": 226.25543477280996,
+    "y": 1056.426014970661
+  },
+  "optical_path": [],
+  "incident_angle_deg": null,
+  "reflected_angle_deg": null,
+  "total_optical_distance": null,
+  "is_direct_sight_blocked": true,
+  "is_boundary": false
+}

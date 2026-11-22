@@ -66,7 +66,7 @@ def test_main_cli_entrypoint(capsys):
     """Verify package CLI entrypoint returns exit code 0 and prints banner."""
     from mirrorlab.__main__ import main
 
-    exit_code = main()
+    exit_code = main([])
     assert exit_code == 0
     captured = capsys.readouterr()
     assert "MIRRORLAB Visual Task Factory" in captured.out

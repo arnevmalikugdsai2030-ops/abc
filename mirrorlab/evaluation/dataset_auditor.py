@@ -28,6 +28,7 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
+from mirrorlab.geometry.independent_verifier import IndependentGeometryVerifier
 from mirrorlab.geometry.oracle import VisibilityOracle
 from mirrorlab.schema.scene import (
     InspectionScene,
@@ -386,36 +387,369 @@ class DatasetAuditor:
         ))
         return checks
 
+    def check_anti_duplicate_geometry(self) -> AuditCheckResult:
+        """Check 9: Detect accidental duplicate scenes across all tasks."""
+        seen: dict[tuple[Any, ...], str] = {}
+        duplicates: list[str] = []
+        total_scanned = 0
+
+        # Scan independent tasks
+        for rel_pat in ["benchmark_tasks/*/scene.json", "obstruction_tasks/*/scene.json", "repair_tasks/*/scene.json"]:
+            for f in sorted(self.data_root.glob(rel_pat)):
+                total_scanned += 1
+                try:
+                    with open(f, encoding="utf-8") as fp:
+                        data = json.load(fp)
+                    cam = data["camera"]["position"]
+                    m_a = data["mirror"]["endpoint_a"]
+                    m_b = data["mirror"]["endpoint_b"]
+                    tgt = data["target"]["center"]
+                    obs = tuple(sorted((round(o["center"]["x"], 1), round(o["center"]["y"], 1)) for o in data.get("obstacles", [])))
+                    key = (
+                        round(cam["x"], 1), round(cam["y"], 1),
+                        round(m_a["x"], 1), round(m_a["y"], 1),
+                        round(m_b["x"], 1), round(m_b["y"], 1),
+                        round(tgt["x"], 1), round(tgt["y"], 1),
+                        obs,
+                    )
+                    tid = f.parent.name
+                    if key in seen and seen[key] != tid:
+                        duplicates.append(f"{tid} duplicates geometry of {seen[key]}")
+                    else:
+                        seen[key] = tid
+                except (json.JSONDecodeError, KeyError, OSError) as err:
+                    duplicates.append(f"Unreadable scene file {f}: {err}")
+
+        # Scan counterfactual pairs (allow controlled variations within the same pair)
+        for f in sorted(self.data_root.glob("counterfactual_pairs/*/*/scene.json")):
+            total_scanned += 1
+            try:
+                with open(f, encoding="utf-8") as fp:
+                    data = json.load(fp)
+                cam = data["camera"]["position"]
+                m_a = data["mirror"]["endpoint_a"]
+                m_b = data["mirror"]["endpoint_b"]
+                tgt = data["target"]["center"]
+                obs = tuple(sorted((round(o["center"]["x"], 1), round(o["center"]["y"], 1)) for o in data.get("obstacles", [])))
+                key = (
+                    round(cam["x"], 1), round(cam["y"], 1),
+                    round(m_a["x"], 1), round(m_a["y"], 1),
+                    round(m_b["x"], 1), round(m_b["y"], 1),
+                    round(tgt["x"], 1), round(tgt["y"], 1),
+                    obs,
+                )
+                pair_id = f.parent.parent.name
+                if key in seen and not seen[key].startswith(pair_id):
+                    duplicates.append(f"{pair_id}/{f.parent.name} duplicates geometry of {seen[key]}")
+                else:
+                    seen[key] = f"{pair_id}/{f.parent.name}"
+            except (json.JSONDecodeError, KeyError, OSError) as err:
+                duplicates.append(f"Unreadable scene file {f}: {err}")
+
+        passed = len(duplicates) == 0 and total_scanned > 0
+        details = (
+            f"Zero duplicate configurations detected across {total_scanned} scenes."
+            if passed
+            else (f"Found {len(duplicates)} duplicate geometries." if total_scanned > 0 else "No scenes available to check.")
+        )
+        return AuditCheckResult(
+            name="Anti-Duplicate Geometry Verification",
+            passed=passed,
+            details=details,
+            items_checked=total_scanned,
+            failures=duplicates,
+        )
+
+    def check_dataset_split_isolation(self) -> AuditCheckResult:
+        """Check 10: Verify strict physical isolation and zero leakage across benchmark splits."""
+        splits_dir = self.data_root / "benchmark_splits"
+        if not splits_dir.is_dir():
+            return AuditCheckResult(
+                name="Test Split Partition Isolation",
+                passed=False,
+                details=f"Missing benchmark splits directory at {splits_dir}",
+                items_checked=0,
+                failures=[f"Directory {splits_dir} not found"],
+            )
+
+        manifest_file = splits_dir / "manifest.json"
+        if not manifest_file.is_file():
+            return AuditCheckResult(
+                name="Test Split Partition Isolation",
+                passed=False,
+                details="Missing manifest.json in benchmark_splits",
+                items_checked=0,
+                failures=["Missing manifest.json"],
+            )
+
+        def _get_task_ids(filepath: Path) -> list[str]:
+            if not filepath.is_file():
+                return []
+            ids = []
+            with open(filepath, encoding="utf-8") as fp:
+                for line in fp:
+                    line_s = line.strip()
+                    if line_s:
+                        try:
+                            item = json.loads(line_s)
+                            if "task_id" in item:
+                                ids.append(item["task_id"])
+                        except json.JSONDecodeError:
+                            continue
+            return ids
+
+        dev_ids = set(_get_task_ids(splits_dir / "dev" / "tasks.jsonl"))
+        val_ids = set(_get_task_ids(splits_dir / "val" / "tasks.jsonl"))
+        test_ids = set(_get_task_ids(splits_dir / "test" / "public" / "tasks.jsonl"))
+        total_split_items = len(dev_ids) + len(val_ids) + len(test_ids)
+
+        leakages: list[str] = []
+        # Check mutual exclusion
+        dev_val_overlap = dev_ids & val_ids
+        if dev_val_overlap:
+            leakages.append(f"Overlap between dev and val: {sorted(dev_val_overlap)[:5]}")
+
+        dev_test_overlap = dev_ids & test_ids
+        if dev_test_overlap:
+            leakages.append(f"Overlap between dev and test: {sorted(dev_test_overlap)[:5]}")
+
+        val_test_overlap = val_ids & test_ids
+        if val_test_overlap:
+            leakages.append(f"Overlap between val and test: {sorted(val_test_overlap)[:5]}")
+
+        # Check public test set for ground-truth leakage
+        pub_test_file = splits_dir / "test" / "public" / "tasks.jsonl"
+        if pub_test_file.is_file():
+            with open(pub_test_file, encoding="utf-8") as fp:
+                for line in fp:
+                    line_s = line.strip()
+                    if line_s:
+                        item = json.loads(line_s)
+                        for forbidden in ["can_see", "correct_candidate", "ground_truth_reason", "blocking_obstacle_label"]:
+                            if forbidden in item:
+                                leakages.append(f"Public test record {item.get('task_id')} leaked private field '{forbidden}'")
+
+        # Verify private test ground truth exists
+        priv_test_file = splits_dir / "test" / "private" / "ground_truth.jsonl"
+        if not priv_test_file.is_file() or priv_test_file.stat().st_size == 0:
+            leakages.append("Missing or empty private test ground_truth.jsonl")
+
+        passed = len(leakages) == 0 and total_split_items > 0
+        details = (
+            f"Zero split leakage. Dev={len(dev_ids)}, Val={len(val_ids)}, Blind Test={len(test_ids)} mutually disjoint."
+            if passed
+            else (f"Found {len(leakages)} split isolation violations." if total_split_items > 0 else "Splits empty.")
+        )
+        return AuditCheckResult(
+            name="Test Split Partition Isolation",
+            passed=passed,
+            details=details,
+            items_checked=total_split_items,
+            failures=leakages,
+        )
+
     def audit_all(self) -> ComprehensiveAuditReport:
         """Run all 10 audit checks across all benchmark suites."""
+        # 1. Audit Task A
+        t_a_dirs = sorted([p for p in (self.data_root / "benchmark_tasks").iterdir() if p.is_dir()]) if (self.data_root / "benchmark_tasks").is_dir() else []
+        t_b_dirs = sorted([p for p in (self.data_root / "obstruction_tasks").iterdir() if p.is_dir()]) if (self.data_root / "obstruction_tasks").is_dir() else []
+        t_c_dirs = sorted([p for p in (self.data_root / "repair_tasks").iterdir() if p.is_dir()]) if (self.data_root / "repair_tasks").is_dir() else []
+        t_d_dirs = sorted([p for p in (self.data_root / "counterfactual_pairs").iterdir() if p.is_dir()]) if (self.data_root / "counterfactual_pairs").is_dir() else []
+
+        meta_all: list[dict[str, Any]] = []
+        oracle_mismatches: list[str] = []
+        image_leaks: list[str] = []
+        prompt_leaks: list[str] = []
+        total_tasks = len(t_a_dirs) + len(t_b_dirs) + len(t_c_dirs) + len(t_d_dirs)
+
+        # Audit Task A
+        for tdir in t_a_dirs:
+            if (tdir / "scene.json").is_file() and (tdir / "ground_truth.json").is_file():
+                with open(tdir / "scene.json", encoding="utf-8") as f:
+                    sc = json.load(f)
+                with open(tdir / "ground_truth.json", encoding="utf-8") as f:
+                    gt = json.load(f)
+                with open(tdir / "question.json", encoding="utf-8") as f:
+                    q = json.load(f)
+                meta_all.append({"task_id": tdir.name, "seed": sc.get("seed")})
+
+                scene = InspectionScene.model_validate(sc)
+                verdict = self.oracle.evaluate(scene)
+                if verdict.is_visible != gt.get("can_see"):
+                    oracle_mismatches.append(f"{tdir.name}: Oracle={verdict.is_visible} vs GT={gt.get('can_see')}")
+                # Cross-verify with independent virtual-camera verifier
+                dual_cert = IndependentGeometryVerifier.verify_dual(scene, verdict)
+                if not dual_cert.is_mathematically_certified:
+                    oracle_mismatches.append(f"{tdir.name}: Independent verifier mismatch: {dual_cert.proof_summary}")
+
+                ok_img, img_msg = self.check_image_leakage(tdir / "diagram_blind.png", tdir / "diagram_overlay.png")
+                if not ok_img:
+                    image_leaks.append(f"{tdir.name}: {img_msg}")
+
+                ok_p, p_msg = self.check_prompt_neutrality(q.get("prompt", ""), q.get("question", ""), gt.get("answer", ""))
+                if not ok_p:
+                    prompt_leaks.append(f"{tdir.name}: {p_msg}")
+
+        # Audit Task B
+        single_blocker_failures: list[str] = []
+        for tdir in t_b_dirs:
+            if (tdir / "scene.json").is_file() and (tdir / "ground_truth.json").is_file():
+                with open(tdir / "scene.json", encoding="utf-8") as f:
+                    sc = json.load(f)
+                with open(tdir / "ground_truth.json", encoding="utf-8") as f:
+                    gt = json.load(f)
+                meta_all.append({"task_id": tdir.name, "seed": sc.get("seed")})
+
+                is_blocked = gt.get("is_blocked", False)
+                blocking_lbl = gt.get("blocking_obstacle_label")
+                blocked_seg = gt.get("blocked_segment")
+                if is_blocked:
+                    if not blocking_lbl or blocked_seg == "NONE":
+                        single_blocker_failures.append(f"{tdir.name}: is_blocked=True but missing blocker/segment")
+                else:
+                    if blocking_lbl is not None or blocked_seg != "NONE":
+                        single_blocker_failures.append(f"{tdir.name}: is_blocked=False but blocker present")
+
+                if (tdir / "diagram_blind.png").is_file() and (tdir / "diagram_overlay.png").is_file():
+                    ok_img, img_msg = self.check_image_leakage(tdir / "diagram_blind.png", tdir / "diagram_overlay.png")
+                    if not ok_img:
+                        image_leaks.append(f"{tdir.name}: {img_msg}")
+
+        # Audit Task C
+        winner_failures: list[str] = []
+        for tdir in t_c_dirs:
+            if (tdir / "scene.json").is_file() and (tdir / "answer.json").is_file():
+                with open(tdir / "scene.json", encoding="utf-8") as f:
+                    sc = json.load(f)
+                with open(tdir / "answer.json", encoding="utf-8") as f:
+                    ans = json.load(f)
+                meta_all.append({"task_id": tdir.name, "seed": sc.get("seed")})
+
+                winner = ans.get("correct_candidate")
+                cands = ans.get("candidates", {})
+                visible_cands = [k for k, v in cands.items() if v.get("is_visible") is True]
+                if len(visible_cands) != 1 or visible_cands[0] != winner:
+                    winner_failures.append(f"{tdir.name}: Expected 1 winner '{winner}', got {visible_cands}")
+
+                if (tdir / "diagram_blind.png").is_file() and (tdir / "diagram_overlay.png").is_file():
+                    ok_img, img_msg = self.check_image_leakage(tdir / "diagram_blind.png", tdir / "diagram_overlay.png")
+                    if not ok_img:
+                        image_leaks.append(f"{tdir.name}: {img_msg}")
+
+        # Audit Task D
+        relationship_failures: list[str] = []
+        for pdir in t_d_dirs:
+            if (pdir / "pair.json").is_file():
+                with open(pdir / "pair.json", encoding="utf-8") as f:
+                    pdata = json.load(f)
+                pair_id = pdata["pair_id"]
+                meta_all.append({"task_id": pair_id, "seed": pdata.get("seed", 42)})
+
+                expected_rel = pdata.get("expected_relationship")
+                outcomes = pdata.get("ground_truth_outcomes", {})
+                child_ids = pdata.get("child_scene_ids", [])
+                if len(child_ids) >= 2 and child_ids[0] in outcomes and child_ids[1] in outcomes:
+                    vis_a = outcomes[child_ids[0]]["is_visible"]
+                    vis_b = outcomes[child_ids[1]]["is_visible"]
+                    if expected_rel == "FLIPPED_OUTCOME" and vis_a == vis_b:
+                        relationship_failures.append(f"{pair_id}: Expected flip, but A={vis_a}, B={vis_b}")
+                    elif expected_rel == "INVARIANT_OUTCOME" and vis_a != vis_b:
+                        relationship_failures.append(f"{pair_id}: Expected invariant, but A={vis_a}, B={vis_b}")
+
+                for sub in ["scene_a", "scene_b"]:
+                    sdir = pdir / sub
+                    if (sdir / "diagram_blind.png").is_file() and (sdir / "diagram_overlay.png").is_file():
+                        ok_img, img_msg = self.check_image_leakage(sdir / "diagram_blind.png", sdir / "diagram_overlay.png")
+                        if not ok_img:
+                            image_leaks.append(f"{pair_id}/{sub}: {img_msg}")
+
         all_checks: list[AuditCheckResult] = []
 
-        # 1. Audit Task A
-        all_checks.extend(self.audit_visibility_tasks(self.data_root / "benchmark_tasks"))
+        # 1. ID Uniqueness
+        all_checks.append(self.check_id_uniqueness(meta_all))
 
-        # 2. Audit Task B
-        all_checks.extend(self.audit_obstruction_tasks(self.data_root / "obstruction_tasks"))
+        # 2. Seed Recording
+        all_checks.append(self.check_seed_recording(meta_all))
 
-        # 3. Audit Task C
-        all_checks.extend(self.audit_repair_tasks(self.data_root / "repair_tasks"))
+        # 3. Oracle Mathematical Agreement
+        all_checks.append(AuditCheckResult(
+            name="Oracle Mathematical Agreement",
+            passed=len(oracle_mismatches) == 0 and len(t_a_dirs) > 0,
+            details=f"All {len(t_a_dirs)} visibility scenes match oracle and independently certified (Fermat residual < 1e-5, Delta_R < 1e-4 mm)." if not oracle_mismatches else f"{len(oracle_mismatches)} mismatches",
+            items_checked=len(t_a_dirs),
+            failures=oracle_mismatches,
+        ))
 
-        # 4. Audit Task D
-        all_checks.extend(self.audit_counterfactual_pairs(self.data_root / "counterfactual_pairs"))
+        # 4. Blind Image Non-Leakage
+        all_checks.append(AuditCheckResult(
+            name="Blind Image Non-Leakage",
+            passed=len(image_leaks) == 0 and total_tasks > 0,
+            details="All blind diagrams are strictly un-leaked across all suites." if not image_leaks else f"{len(image_leaks)} leaks",
+            items_checked=len(t_a_dirs) + len(t_b_dirs) + len(t_c_dirs) + (len(t_d_dirs) * 2),
+            failures=image_leaks,
+        ))
 
-        # Overall counts across suites: Task A (20) + Task B (30) + Task C (30) + Task D (120 pairs)
-        task_a_cnt = sum(c.items_checked for c in all_checks if "Task A Artifact Completeness" in c.name)
-        task_b_cnt = sum(c.items_checked for c in all_checks if "Task B Single-Blocker" in c.name)
-        task_c_cnt = sum(c.items_checked for c in all_checks if "Task C Single-Winner" in c.name)
-        task_d_cnt = sum(c.items_checked for c in all_checks if "Task D Counterfactual" in c.name)
-        total_tasks = task_a_cnt + task_b_cnt + task_c_cnt + task_d_cnt
-        all_passed = all(c.passed for c in all_checks)
+        # 5. Prompt Neutrality & Zero-Leakage
+        all_checks.append(AuditCheckResult(
+            name="Prompt Neutrality & Zero-Leakage",
+            passed=len(prompt_leaks) == 0 and len(t_a_dirs) > 0,
+            details="All prompts and questions are verified neutral." if not prompt_leaks else f"{len(prompt_leaks)} leaks",
+            items_checked=len(t_a_dirs),
+            failures=prompt_leaks,
+        ))
+
+        # 6. Mirror Repair Single-Solution
+        all_checks.append(AuditCheckResult(
+            name="Mirror Repair Single-Solution",
+            passed=len(winner_failures) == 0 and len(t_c_dirs) > 0,
+            details=f"All {len(t_c_dirs)} repair tasks have exactly ONE valid winner." if not winner_failures else f"{len(winner_failures)} invalid repairs",
+            items_checked=len(t_c_dirs),
+            failures=winner_failures,
+        ))
+
+        # 7. Obstruction Single-Blocker
+        all_checks.append(AuditCheckResult(
+            name="Obstruction Single-Blocker",
+            passed=len(single_blocker_failures) == 0 and len(t_b_dirs) > 0,
+            details=f"All {len(t_b_dirs)} obstruction tasks strictly enforce single-blocker precision." if not single_blocker_failures else f"{len(single_blocker_failures)} errors",
+            items_checked=len(t_b_dirs),
+            failures=single_blocker_failures,
+        ))
+
+        # 8. Counterfactual Invariant Verification
+        all_checks.append(AuditCheckResult(
+            name="Counterfactual Invariant Verification",
+            passed=len(relationship_failures) == 0 and len(t_d_dirs) > 0,
+            details=f"All {len(t_d_dirs)} counterfactual pairs satisfy their expected relationship." if not relationship_failures else f"{len(relationship_failures)} relationship failures",
+            items_checked=len(t_d_dirs),
+            failures=relationship_failures,
+        ))
+
+        # 9. Anti-Duplicate Geometry
+        all_checks.append(self.check_anti_duplicate_geometry())
+
+        # 10. Test Split Partition Isolation
+        all_checks.append(self.check_dataset_split_isolation())
+
+        all_passed = all(c.passed for c in all_checks) and total_tasks > 0
+
+        # Load manifest split summary if available
+        split_summary = {}
+        manifest_p = self.data_root / "benchmark_splits" / "manifest.json"
+        if manifest_p.is_file():
+            try:
+                with open(manifest_p, encoding="utf-8") as f:
+                    split_summary = json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass
 
         return ComprehensiveAuditReport(
             total_tasks_checked=total_tasks,
-            total_scenes_checked=320,  # 20 + 30 + 30 + 240
+            total_scenes_checked=len(t_a_dirs) + len(t_b_dirs) + len(t_c_dirs) + (len(t_d_dirs) * 2),
             all_passed=all_passed,
             checks=all_checks,
             rejection_records=self.rejection_records,
+            split_summary=split_summary,
         )
 
 
