@@ -13,6 +13,7 @@ from typing import Any
 import plotly.express as px
 import streamlit as st
 
+from mirrorlab.ui.analytics import render_analytics_dashboard
 from mirrorlab.ui.arena import render_model_arena
 from mirrorlab.ui.components import (
     render_header,
@@ -63,7 +64,8 @@ def main() -> None:
         [
             "🔬 Scene Laboratory",
             "⚔️ Model Arena",
-            "📊 Benchmark Dashboard",
+            "📊 Scientific Analytics",
+            "📈 Benchmark Dashboard",
             "🛠️ Physical Rig Guide",
         ],
         index=0,
@@ -96,12 +98,16 @@ def main() -> None:
         render_model_arena()
         return
 
+    if platform_mode == "📊 Scientific Analytics":
+        render_analytics_dashboard()
+        return
+
     if platform_mode == "🛠️ Physical Rig Guide":
         render_tab_physical_setup()
         return
 
     # -----------------------------------------------------------------------
-    # Main Navigation Tabs (Covering all 10 requirements + Scene Lab & Arena)
+    # Main Navigation Tabs (Covering all 10 requirements + Scene Lab, Arena, Analytics)
     # -----------------------------------------------------------------------
     nav_tabs = st.tabs(
         [
@@ -117,6 +123,7 @@ def main() -> None:
             "10. Dataset Validation Status",
             "🔬 Scene Laboratory",
             "⚔️ Model Arena",
+            "📊 Scientific Analytics",
             "Physical Rig Specifications",
         ]
     )
@@ -169,8 +176,12 @@ def main() -> None:
     with nav_tabs[11]:
         render_model_arena()
 
-    # Physical Rig Guide
+    # Scientific Analytics Dashboard
     with nav_tabs[12]:
+        render_analytics_dashboard()
+
+    # Physical Rig Guide
+    with nav_tabs[13]:
         render_tab_physical_setup()
 
 

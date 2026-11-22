@@ -2,6 +2,7 @@
 Interactive Streamlit Optical Studio and Inspector for MIRRORLAB.
 """
 
+from mirrorlab.ui.analytics import render_analytics_dashboard
 from mirrorlab.ui.arena import render_model_arena
 from mirrorlab.ui.components import (
     render_comparison_kpi_row,
@@ -59,6 +60,7 @@ __all__ = [
     "load_sample_scenes",
     "load_split_records",
     "load_tasks_by_family",
+    "render_analytics_dashboard",
     "render_comparison_kpi_row",
     "render_header",
     "render_metric_card",
