@@ -1,9 +1,61 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "accounting": {
+    "top_level_packages": {
+      "dev": 46,
+      "val": 46,
+      "test": 138,
+      "total": 230
+    },
+    "counterfactual_pairs": {
+      "dev": 24,
+      "val": 24,
+      "test": 72,
+      "total": 120
+    },
+    "counterfactual_child_tasks": {
+      "dev": 48,
+      "val": 48,
+      "test": 144,
+      "total": 240
+    },
+    "model_facing_tasks": {
+      "dev": 70,
+      "val": 70,
+      "test": 210,
+      "total": 350
+    },
+    "private_ground_truth_records": {
+      "dev": 70,
+      "val": 70,
+      "test": 210,
+      "total": 350
+    },
+    "images": {
+      "public_blind": {
+        "dev": 70,
+        "val": 70,
+        "test": 210,
+        "total": 350
+      },
+      "private_overlays": {
+        "dev": 70,
+        "val": 70,
+        "test": 210,
+        "total": 350
+      },
+      "total_images": 700
+    }
+  },
   "split_counts": {
     "dev": 46,
     "val": 46,
     "test": 138
+  },
+  "model_facing_task_counts": {
+    "dev": 70,
+    "val": 70,
+    "test": 210
   },
   "type_breakdown": {
     "dev": {
@@ -28,5 +80,29 @@
       "TASK_E_OOD": 18
     }
   },
-  "isolation_verified": true
+  "task_family_facing_breakdown": {
+    "dev": {
+      "TASK_A_VISIBILITY": 4,
+      "TASK_B_OBSTRUCTION": 6,
+      "TASK_C_REPAIR": 6,
+      "TASK_D_COUNTERFACTUAL": 48,
+      "TASK_E_OOD": 6
+    },
+    "val": {
+      "TASK_A_VISIBILITY": 4,
+      "TASK_B_OBSTRUCTION": 6,
+      "TASK_C_REPAIR": 6,
+      "TASK_D_COUNTERFACTUAL": 48,
+      "TASK_E_OOD": 6
+    },
+    "test": {
+      "TASK_A_VISIBILITY": 12,
+      "TASK_B_OBSTRUCTION": 18,
+      "TASK_C_REPAIR": 18,
+      "TASK_D_COUNTERFACTUAL": 144,
+      "TASK_E_OOD": 18
+    }
+  },
+  "isolation_verified": true,
+  "pair_integrity_verified": true
 }
