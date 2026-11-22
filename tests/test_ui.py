@@ -32,6 +32,7 @@ from mirrorlab.ui.data_loader import (
     load_split_records,
     load_tasks_by_family,
 )
+from mirrorlab.ui.design_tokens import COLOR_BG_BASE
 from mirrorlab.ui.optical_plot import create_optical_figure
 
 
@@ -107,7 +108,7 @@ def test_optical_figure_themes(sample_clear_scene: InspectionScene) -> None:
     fig_dark = create_optical_figure(scene=sample_clear_scene, theme="dark")
     fig_light = create_optical_figure(scene=sample_clear_scene, theme="light")
 
-    assert fig_dark.layout.plot_bgcolor == "#0e1117"
+    assert fig_dark.layout.plot_bgcolor == COLOR_BG_BASE
     assert fig_light.layout.plot_bgcolor == "#f8f9fa"
 
 

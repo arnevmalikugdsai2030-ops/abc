@@ -21,6 +21,10 @@ from mirrorlab.schema.scene import (
     ObstacleSpec,
     TargetSpec,
 )
+from mirrorlab.ui.design_tokens import (
+    COLOR_BG_BASE,
+    COLOR_TEXT_SECONDARY,
+)
 
 
 def create_optical_figure(
@@ -53,10 +57,10 @@ def create_optical_figure(
         oracle_result = VisibilityOracle.evaluate(scene)
 
     is_dark = theme.lower() == "dark"
-    bg_color = "#0e1117" if is_dark else "#f8f9fa"
-    paper_color = "#0e1117" if is_dark else "#ffffff"
-    grid_color = "rgba(255, 255, 255, 0.08)" if is_dark else "rgba(0, 0, 0, 0.06)"
-    text_color = "#e2e8f0" if is_dark else "#1e293b"
+    bg_color = COLOR_BG_BASE if is_dark else "#f8f9fa"
+    paper_color = COLOR_BG_BASE if is_dark else "#ffffff"
+    grid_color = "#131C2D" if is_dark else "rgba(0, 0, 0, 0.06)"
+    text_color = COLOR_TEXT_SECONDARY if is_dark else "#1e293b"
     cavity_wall_color = "#334155" if is_dark else "#cbd5e1"
 
     fig = go.Figure()
