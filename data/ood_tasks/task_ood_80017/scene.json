@@ -1,37 +1,37 @@
 {
   "scene_id": "task_ood_80017",
   "seed": 80017,
-  "category": "MIRROR_MISS",
+  "category": "OUTSIDE_FOV",
   "difficulty": "BOUNDARY",
   "canvas_width": 1000.0,
   "canvas_height": 1000.0,
   "camera": {
     "position": {
-      "x": 281.91892905658926,
-      "y": 174.7122684267656
+      "x": 216.9018787170669,
+      "y": 227.77399937042827
     },
-    "heading_deg": 81.32220453268378,
+    "heading_deg": 223.47341029903137,
     "fov_degrees": 75.0,
-    "max_range": 1600.0
+    "max_range": 2000.0
   },
   "mirror": {
     "endpoint_a": {
-      "x": 271.62451668485687,
-      "y": 654.5017511283544
+      "x": 57.301514921093855,
+      "y": 273.21186571895765
     },
     "endpoint_b": {
-      "x": 464.9489259797649,
-      "y": 826.6881367016248
+      "x": 243.6724184699705,
+      "y": 488.211920345906
     },
     "reflective_normal": {
-      "dx": 0.6651024801656139,
-      "dy": -0.7467520946589632
+      "dx": 0.7556238108534442,
+      "dy": -0.6550058446085183
     }
   },
   "target": {
     "center": {
-      "x": 713.6721145906848,
-      "y": 311.332979250995
+      "x": 662.191147554874,
+      "y": 240.59494391498959
     },
     "radius_mm": 8.0
   },
@@ -40,22 +40,22 @@
       "obstacle_id": "O1_direct_barrier",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 503.2098084343192,
-        "y": 231.02840244791753
+        "x": 442.2536564413115,
+        "y": 228.18736094722755
       },
       "radius": null,
       "width": 35.0,
-      "height": 160.0,
-      "angle_degrees": -3.6167145128316385
+      "height": 150.0,
+      "angle_degrees": -2.4111430085544256
     },
     {
       "obstacle_id": "O2_clutter",
       "obstacle_type": "circle",
       "center": {
-        "x": 233.078514041403,
-        "y": 498.36668460699434
+        "x": 194.94687319017487,
+        "y": 526.7047824079935
       },
-      "radius": 27.977690896676748,
+      "radius": 23.12692206905482,
       "width": null,
       "height": null,
       "angle_degrees": 0.0
@@ -64,22 +64,22 @@
       "obstacle_id": "O3_clutter",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 596.1256903584864,
-        "y": 513.2475243908661
+        "x": 609.8579318382701,
+        "y": 543.7114564467042
       },
       "radius": null,
-      "width": 38.89457681824361,
-      "height": 60.20077040211348,
+      "width": 35.115661454594886,
+      "height": 45.25758308692198,
       "angle_degrees": 3.7345784830240647
     },
     {
       "obstacle_id": "O4_clutter",
       "obstacle_type": "circle",
       "center": {
-        "x": 766.0068356687025,
-        "y": 356.8878109929625
+        "x": 804.0078121928029,
+        "y": 365.01464113481427
       },
-      "radius": 27.080951041852444,
+      "radius": 22.486393601323172,
       "width": null,
       "height": null,
       "angle_degrees": 0.0
@@ -88,37 +88,37 @@
       "obstacle_id": "O5_clutter",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 247.6845406933284,
-        "y": 386.7689703659303
+        "x": 511.63947507808956,
+        "y": 729.1645375610632
       },
       "radius": null,
-      "width": 53.81416073345379,
-      "height": 60.18115787398398,
+      "width": 47.051328586763034,
+      "height": 45.24637592799084,
       "angle_degrees": 13.848368048320443
     },
     {
       "obstacle_id": "O6_clutter",
       "obstacle_type": "circle",
       "center": {
-        "x": 799.8287464121732,
-        "y": 442.2692094038405
+        "x": 842.6614244710552,
+        "y": 462.59338217581774
       },
-      "radius": 19.77677948910331,
+      "radius": 17.269128206502362,
       "width": null,
       "height": null,
       "angle_degrees": 0.0
     }
   ],
   "ground_truth_state": "NOT_VISIBLE",
-  "ground_truth_reason": "MISSED_MIRROR",
-  "diagnostic_details": "OOD Benchmark: Ray misses finite mirror (t_mirror=-0.566) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00",
+  "ground_truth_reason": "OUT_OF_FOV",
+  "diagnostic_details": "OOD Benchmark: Mirror point (150.5, 380.7) is outside FOV: angle=110.0 deg > half_fov=37.5 deg | Dual Cert: Delta_R=2.84e-14mm, Fermat=3.33e-16",
   "reflection_point": {
-    "x": 162.16954561959625,
-    "y": 557.0145485578587
+    "x": 150.48696669553217,
+    "y": 380.7118930324318
   },
   "virtual_target": {
-    "x": -18.29837612554934,
-    "y": 1133.1619657175484
+    "x": -60.840014689791474,
+    "y": 867.3481381657726
   },
   "optical_path": [],
   "incident_angle_deg": null,

@@ -2,11 +2,17 @@
   "task_id": "task_ood_80021",
   "can_see": false,
   "answer": "NO",
-  "reason_code": "WRONG_SIDE",
-  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Reflection failed: WRONG_SIDE_CAMERA | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason WRONG_SIDE.",
+  "reason_code": "MIRROR_MISS",
+  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Ray misses finite mirror (t_mirror=-0.705) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason MIRROR_MISS.",
   "proof_geometry": {
-    "reflection_point": null,
-    "virtual_target": null,
+    "reflection_point": {
+      "x": 375.43267314491834,
+      "y": 223.58950327827262
+    },
+    "virtual_target": {
+      "x": 236.0789751194394,
+      "y": 835.6194792629153
+    },
     "incident_angle_deg": null,
     "reflected_angle_deg": null,
     "total_optical_distance": null,

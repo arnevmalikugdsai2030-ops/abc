@@ -3,15 +3,15 @@
   "can_see": false,
   "answer": "NO",
   "reason_code": "MIRROR_MISS",
-  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Ray misses finite mirror (t_mirror=-0.903) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason MIRROR_MISS.",
+  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Ray misses finite mirror (t_mirror=-0.629) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason MIRROR_MISS.",
   "proof_geometry": {
     "reflection_point": {
-      "x": 205.85516074059126,
-      "y": 446.79493463579405
+      "x": 233.07022634566874,
+      "y": 248.5263521578349
     },
     "virtual_target": {
-      "x": 82.67051141415573,
-      "y": 1063.1879160433916
+      "x": 269.4272441073307,
+      "y": 828.9655083556095
     },
     "incident_angle_deg": null,
     "reflected_angle_deg": null,

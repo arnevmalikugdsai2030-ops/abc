@@ -7,31 +7,31 @@
   "canvas_height": 800.0,
   "camera": {
     "position": {
-      "x": 345.1545869942038,
-      "y": 128.98772072528448
+      "x": 378.751280204846,
+      "y": 273.35515046969226
     },
-    "heading_deg": 62.82881401273006,
+    "heading_deg": 116.79312629477145,
     "fov_degrees": 75.0,
-    "max_range": 1600.0
+    "max_range": 2000.0
   },
   "mirror": {
     "endpoint_a": {
-      "x": 484.59212538057864,
-      "y": 468.2038062344589
+      "x": 441.81693523946336,
+      "y": 500.4314807287658
     },
     "endpoint_b": {
-      "x": 680.9412726009296,
-      "y": 715.6029174694088
+      "x": 624.3930939812265,
+      "y": 714.7789460225779
     },
     "reflective_normal": {
-      "dx": 0.7832879067483837,
-      "dy": -0.6216591149028022
+      "dx": 0.7612715028046316,
+      "dy": -0.6484332648912898
     }
   },
   "target": {
     "center": {
-      "x": 863.381709424548,
-      "y": 243.13014346163163
+      "x": 888.5111326605028,
+      "y": 191.90336185193382
     },
     "radius_mm": 8.0
   },
@@ -40,22 +40,22 @@
       "obstacle_id": "O1_direct_barrier",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 591.4659593150441,
-        "y": 184.06711088885666
+        "x": 632.6352958303737,
+        "y": 224.4544235463129
       },
       "radius": null,
       "width": 35.0,
-      "height": 160.0,
-      "angle_degrees": -12.262248921750182
+      "height": 150.0,
+      "angle_degrees": 1.6287517843535166
     },
     {
       "obstacle_id": "O2_clutter",
       "obstacle_type": "circle",
       "center": {
-        "x": 667.2682226702525,
-        "y": 460.5787924410132
+        "x": 876.2701455120452,
+        "y": 393.74350196902446
       },
-      "radius": 24.72627821114482,
+      "radius": 17.502416255950077,
       "width": null,
       "height": null,
       "angle_degrees": 0.0
@@ -64,22 +64,22 @@
       "obstacle_id": "O3_clutter",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 306.2029654998065,
-        "y": 340.19199235884673
+        "x": 463.5154023731889,
+        "y": 420.4923138589108
       },
       "radius": null,
-      "width": 44.100962020227406,
-      "height": 37.587771002319606,
-      "angle_degrees": 86.21498895025897
+      "width": 32.33586914418263,
+      "height": 47.15888643339088,
+      "angle_degrees": 40.735129047424046
     },
     {
       "obstacle_id": "O4_clutter",
       "obstacle_type": "circle",
       "center": {
-        "x": 560.1945377759578,
-        "y": 512.5044781737363
+        "x": 1054.3010680242385,
+        "y": 408.7029671368581
       },
-      "radius": 25.38075481223754,
+      "radius": 19.286880272797426,
       "width": null,
       "height": null,
       "angle_degrees": 0.0
@@ -88,37 +88,25 @@
       "obstacle_id": "O5_clutter",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 456.09794291498383,
-        "y": 362.5255437790341
+        "x": 856.0875786709739,
+        "y": 559.4828433207673
       },
       "radius": null,
-      "width": 31.522097134434944,
-      "height": 62.979353898523655,
-      "angle_degrees": 53.32180367290602
-    },
-    {
-      "obstacle_id": "O6_clutter",
-      "obstacle_type": "circle",
-      "center": {
-        "x": 303.5482714115749,
-        "y": 256.3312642824244
-      },
-      "radius": 22.563137839235583,
-      "width": null,
-      "height": null,
-      "angle_degrees": 0.0
+      "width": 46.84534508487066,
+      "height": 39.84928970509023,
+      "angle_degrees": 13.237314794097307
     }
   ],
   "ground_truth_state": "NOT_VISIBLE",
   "ground_truth_reason": "MISSED_MIRROR",
-  "diagnostic_details": "OOD Benchmark: Ray misses finite mirror (t_mirror=-0.870) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00",
+  "diagnostic_details": "OOD Benchmark: Ray misses finite mirror (t_mirror=-0.611) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00",
   "reflection_point": {
-    "x": 313.8475483539748,
-    "y": 253.06634726111542
+    "x": 330.2341366103953,
+    "y": 369.43140809409255
   },
   "virtual_target": {
-    "x": 179.38275992323838,
-    "y": 785.9882392882314
+    "x": 66.1621192538231,
+    "y": 892.3610220676367
   },
   "optical_path": [],
   "incident_angle_deg": null,

@@ -170,7 +170,11 @@ def load_split_records(
         return {"tasks": [], "ground_truth": []}
 
     tasks: list[dict[str, Any]] = []
+    # Support canonical layout: dev/val have tasks.jsonl; test has public/tasks.jsonl
     tasks_file = s_dir / "tasks.jsonl"
+    if not tasks_file.exists():
+        tasks_file = s_dir / "public" / "tasks.jsonl"
+
     if tasks_file.exists():
         with open(tasks_file, encoding="utf-8") as fp:
             for line in fp:
@@ -183,7 +187,11 @@ def load_split_records(
                         continue
 
     ground_truth: list[dict[str, Any]] = []
+    # Support canonical layout: dev/val have ground_truth.jsonl; test has private/ground_truth.jsonl
     gt_file = s_dir / "ground_truth.jsonl"
+    if not gt_file.exists():
+        gt_file = s_dir / "private" / "ground_truth.jsonl"
+
     if gt_file.exists():
         with open(gt_file, encoding="utf-8") as fp:
             for line in fp:
@@ -325,8 +333,10 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
     obs_count = len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()]) if (root / "obstruction_tasks").exists() else 0
     rep_count = len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()]) if (root / "repair_tasks").exists() else 0
     pair_count = len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()]) if (root / "counterfactual_pairs").exists() else 0
+    ood_count = len([d for d in (root / "ood_tasks").iterdir() if d.is_dir()]) if (root / "ood_tasks").exists() else 0
 
-    total_disk_tasks = vis_count + obs_count + rep_count + pair_count
+    total_disk_tasks = vis_count + obs_count + rep_count + pair_count + ood_count
+    total_child_scenes = vis_count + obs_count + rep_count + (pair_count * 2) + ood_count
 
     # Difficulty tiers from actual loaded sample scenes or task scenes
     difficulty_counts: dict[str, int] = {}
@@ -334,6 +344,8 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
         for s in sample_scenes:
             tier = s.difficulty.value if hasattr(s.difficulty, "value") else str(s.difficulty)
             difficulty_counts[tier] = difficulty_counts.get(tier, 0) + 1
+    if ood_count > 0:
+        difficulty_counts["OOD_BOUNDARY"] = ood_count
 
     # Obstacle count distribution from sample scenes
     obs_counts = [len(s.obstacles) for s in sample_scenes]
@@ -346,6 +358,10 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
     return {
         "has_data": total_disk_tasks > 0,
         "total_tasks": total_disk_tasks,
+        "total_top_level_tasks": total_disk_tasks,
+        "total_child_scenes": total_child_scenes,
+        "total_counterfactual_pairs": pair_count,
+        "total_ood_tasks": ood_count,
         "actual_generated_tasks": total_disk_tasks,
         "target_dataset_size": 200,
         "total_split_tasks": total_split_tasks,
@@ -356,6 +372,7 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
             "TASK_B_OBSTRUCTION": obs_count,
             "TASK_C_REPAIR": rep_count,
             "TASK_D_COUNTERFACTUAL": pair_count,
+            "TASK_E_OOD": ood_count,
         },
         "difficulty_counts": difficulty_counts,
         "sample_scenes_count": len(sample_scenes),
@@ -434,13 +451,36 @@ def get_recent_evaluation_runs(logs_root: Path | str = "eval_logs") -> list[dict
                 meta = c_data.get("metadata", {})
                 h = c_data.get("headline_metrics", {})
                 lat = c_data.get("latency_ms", {})
+
+                p1 = meta.get("provider_1", "gemini")
+                p2 = meta.get("provider_2", "openai")
+                task_cnt = meta.get("tasks_evaluated")
+
+                acc_p1 = h.get("overall_accuracy", {}).get("gemini")
+                acc_p2 = h.get("overall_accuracy", {}).get("openai")
+                if acc_p1 is not None and acc_p2 is not None:
+                    acc_str = f"{p1}: {acc_p1:.1f}% | {p2}: {acc_p2:.1f}%"
+                elif acc_p1 is not None:
+                    acc_str = f"{p1}: {acc_p1:.1f}%"
+                elif acc_p2 is not None:
+                    acc_str = f"{p2}: {acc_p2:.1f}%"
+                else:
+                    acc_str = "Unavailable"
+
+                med_lat = lat.get("gemini", {}).get("median")
+                cost_val = c_data.get("financial_cost_usd", {}).get("openai")
+
+                is_sim = bool("mock" in d.name.lower() or meta.get("is_simulated", True))
+
                 run_info.update(
                     {
-                        "model_name": f"{meta.get('provider_1', 'gemini')} vs {meta.get('provider_2', 'openai')}",
-                        "task_count": meta.get("tasks_evaluated", 20),
-                        "overall_accuracy_str": f"Gemini: {h.get('overall_accuracy', {}).get('gemini', 0):.1f}% | GPT-4o: {h.get('overall_accuracy', {}).get('openai', 0):.1f}%",
-                        "median_latency_ms": lat.get("gemini", {}).get("median", 0),
-                        "cost_usd": c_data.get("financial_cost_usd", {}).get("openai", 0.0),
+                        "model_name": f"{p1} vs {p2}",
+                        "task_count": task_cnt,
+                        "overall_accuracy_str": acc_str,
+                        "median_latency_ms": med_lat,
+                        "cost_usd": cost_val,
+                        "is_simulated": is_sim,
+                        "run_type": "SIMULATED" if is_sim else "ACTUAL_API",
                     }
                 )
                 runs.append(run_info)
@@ -451,26 +491,31 @@ def get_recent_evaluation_runs(logs_root: Path | str = "eval_logs") -> list[dict
                 with open(metrics_file, encoding="utf-8") as f:
                     m_data = json.load(f)
 
-                acc = m_data.get("overall_accuracy", {})
+                acc = m_data.get("overall_accuracy")
                 if isinstance(acc, dict):
-                    acc_val = acc.get("rate", 0.0) * 100.0
+                    acc_rate = acc.get("rate")
+                    acc_val = (float(acc_rate) * 100.0) if acc_rate is not None else None
                 elif isinstance(acc, (int, float)):
                     acc_val = float(acc) * 100.0 if acc <= 1.0 else float(acc)
                 else:
-                    acc_val = 0.0
+                    acc_val = None
 
-                tasks_evaluated = m_data.get("total_tasks_evaluated", 0)
+                acc_str = f"{acc_val:.1f}%" if acc_val is not None else "Unavailable"
+                tasks_evaluated = m_data.get("total_tasks_evaluated")
                 lat = m_data.get("latency", {})
-                med_lat = lat.get("median_ms", 0.0) if isinstance(lat, dict) else 0.0
+                med_lat = lat.get("median_ms") if isinstance(lat, dict) else None
 
                 model_tag = d.name.split("_")[0]
+                is_sim = bool("mock" in d.name.lower() or m_data.get("is_mock", False))
                 run_info.update(
                     {
                         "model_name": model_tag,
                         "task_count": tasks_evaluated,
-                        "overall_accuracy_str": f"{acc_val:.1f}%",
+                        "overall_accuracy_str": acc_str,
                         "overall_accuracy_pct": acc_val,
                         "median_latency_ms": med_lat,
+                        "is_simulated": is_sim,
+                        "run_type": "SIMULATED" if is_sim else "ACTUAL_API",
                     }
                 )
                 runs.append(run_info)

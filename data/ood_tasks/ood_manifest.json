@@ -1,15 +1,25 @@
 {
   "ood_task_count": 30,
-  "generator_version": "1.0.0-ood",
-  "certification": "100% dual-verified via IndependentGeometryVerifier",
+  "generator_version": "2.0.0-ood-certified",
+  "certification": "100% dual-verified via IndependentGeometryVerifier and post-export revalidated",
+  "all_records_certified": true,
+  "category_distribution": {
+    "VISIBLE": 5,
+    "BLOCKED_INCIDENT": 5,
+    "BLOCKED_REFLECTED": 5,
+    "MISSED_MIRROR": 5,
+    "BACK_OF_MIRROR": 5,
+    "OUT_OF_FOV": 5
+  },
   "records": [
     {
       "task_id": "task_ood_80000",
-      "seed": 80000,
+      "seed": 82000,
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 6,
-      "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "is_visible": true,
+      "reason": "NONE",
+      "category_label": "VISIBLE"
     },
     {
       "task_id": "task_ood_80001",
@@ -17,23 +27,26 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 8,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_INCIDENT",
+      "category_label": "BLOCKED_INCIDENT"
     },
     {
       "task_id": "task_ood_80002",
-      "seed": 80002,
+      "seed": 84002,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 5,
+      "obstacle_count": 8,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_REFLECTED",
+      "category_label": "BLOCKED_REFLECTED"
     },
     {
       "task_id": "task_ood_80003",
       "seed": 80003,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 6,
+      "obstacle_count": 5,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "MISSED_MIRROR",
+      "category_label": "MISSED_MIRROR"
     },
     {
       "task_id": "task_ood_80004",
@@ -41,7 +54,8 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 5,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BACK_OF_MIRROR",
+      "category_label": "BACK_OF_MIRROR"
     },
     {
       "task_id": "task_ood_80005",
@@ -49,15 +63,17 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 8,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "OUT_OF_FOV",
+      "category_label": "OUT_OF_FOV"
     },
     {
       "task_id": "task_ood_80006",
-      "seed": 80006,
+      "seed": 84006,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 6,
-      "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "obstacle_count": 5,
+      "is_visible": true,
+      "reason": "NONE",
+      "category_label": "VISIBLE"
     },
     {
       "task_id": "task_ood_80007",
@@ -65,23 +81,26 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 8,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_INCIDENT",
+      "category_label": "BLOCKED_INCIDENT"
     },
     {
       "task_id": "task_ood_80008",
-      "seed": 80008,
+      "seed": 86008,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 6,
+      "obstacle_count": 7,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_REFLECTED",
+      "category_label": "BLOCKED_REFLECTED"
     },
     {
       "task_id": "task_ood_80009",
       "seed": 80009,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 8,
+      "obstacle_count": 5,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "MISSED_MIRROR",
+      "category_label": "MISSED_MIRROR"
     },
     {
       "task_id": "task_ood_80010",
@@ -89,7 +108,8 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 5,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BACK_OF_MIRROR",
+      "category_label": "BACK_OF_MIRROR"
     },
     {
       "task_id": "task_ood_80011",
@@ -97,15 +117,17 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 5,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "OUT_OF_FOV",
+      "category_label": "OUT_OF_FOV"
     },
     {
       "task_id": "task_ood_80012",
-      "seed": 80012,
+      "seed": 89012,
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 8,
-      "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "is_visible": true,
+      "reason": "NONE",
+      "category_label": "VISIBLE"
     },
     {
       "task_id": "task_ood_80013",
@@ -113,23 +135,26 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 7,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_INCIDENT",
+      "category_label": "BLOCKED_INCIDENT"
     },
     {
       "task_id": "task_ood_80014",
-      "seed": 80014,
+      "seed": 82014,
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 7,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_REFLECTED",
+      "category_label": "BLOCKED_REFLECTED"
     },
     {
       "task_id": "task_ood_80015",
       "seed": 80015,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 6,
+      "obstacle_count": 8,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "MISSED_MIRROR",
+      "category_label": "MISSED_MIRROR"
     },
     {
       "task_id": "task_ood_80016",
@@ -137,7 +162,8 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 5,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BACK_OF_MIRROR",
+      "category_label": "BACK_OF_MIRROR"
     },
     {
       "task_id": "task_ood_80017",
@@ -145,39 +171,44 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 6,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "OUT_OF_FOV",
+      "category_label": "OUT_OF_FOV"
     },
     {
       "task_id": "task_ood_80018",
-      "seed": 80018,
+      "seed": 86018,
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 5,
-      "is_visible": false,
-      "reason": "BACK_OF_MIRROR"
+      "is_visible": true,
+      "reason": "NONE",
+      "category_label": "VISIBLE"
     },
     {
       "task_id": "task_ood_80019",
       "seed": 80019,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 5,
+      "obstacle_count": 6,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_INCIDENT",
+      "category_label": "BLOCKED_INCIDENT"
     },
     {
       "task_id": "task_ood_80020",
-      "seed": 80020,
+      "seed": 86020,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 5,
+      "obstacle_count": 6,
       "is_visible": false,
-      "reason": "BACK_OF_MIRROR"
+      "reason": "BLOCKED_REFLECTED",
+      "category_label": "BLOCKED_REFLECTED"
     },
     {
       "task_id": "task_ood_80021",
       "seed": 80021,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 8,
+      "obstacle_count": 5,
       "is_visible": false,
-      "reason": "BACK_OF_MIRROR"
+      "reason": "MISSED_MIRROR",
+      "category_label": "MISSED_MIRROR"
     },
     {
       "task_id": "task_ood_80022",
@@ -185,7 +216,8 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 5,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BACK_OF_MIRROR",
+      "category_label": "BACK_OF_MIRROR"
     },
     {
       "task_id": "task_ood_80023",
@@ -193,39 +225,44 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 6,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "OUT_OF_FOV",
+      "category_label": "OUT_OF_FOV"
     },
     {
       "task_id": "task_ood_80024",
       "seed": 80024,
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 7,
-      "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "is_visible": true,
+      "reason": "NONE",
+      "category_label": "VISIBLE"
     },
     {
       "task_id": "task_ood_80025",
       "seed": 80025,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 7,
+      "obstacle_count": 8,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_INCIDENT",
+      "category_label": "BLOCKED_INCIDENT"
     },
     {
       "task_id": "task_ood_80026",
-      "seed": 80026,
+      "seed": 82026,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 5,
+      "obstacle_count": 7,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BLOCKED_REFLECTED",
+      "category_label": "BLOCKED_REFLECTED"
     },
     {
       "task_id": "task_ood_80027",
       "seed": 80027,
       "difficulty": "OOD_BOUNDARY",
-      "obstacle_count": 6,
+      "obstacle_count": 7,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "MISSED_MIRROR",
+      "category_label": "MISSED_MIRROR"
     },
     {
       "task_id": "task_ood_80028",
@@ -233,7 +270,8 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 8,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "BACK_OF_MIRROR",
+      "category_label": "BACK_OF_MIRROR"
     },
     {
       "task_id": "task_ood_80029",
@@ -241,7 +279,8 @@
       "difficulty": "OOD_BOUNDARY",
       "obstacle_count": 7,
       "is_visible": false,
-      "reason": "MISSED_MIRROR"
+      "reason": "OUT_OF_FOV",
+      "category_label": "OUT_OF_FOV"
     }
   ]
 }

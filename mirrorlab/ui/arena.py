@@ -205,7 +205,6 @@ def _render_single_task_arena() -> None:
         elif "OOD" in task_family:
             fam_key = "ood"
             t_type = TaskType.TASK_A_VISIBILITY
-            t_type = TaskType.TASK_C_REPAIR
 
         tasks_list = load_tasks_by_family(fam_key)
         if not tasks_list:

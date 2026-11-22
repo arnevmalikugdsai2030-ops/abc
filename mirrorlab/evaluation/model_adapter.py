@@ -605,11 +605,20 @@ class MockVisionAdapter(BaseVisionAdapter):
         self.seed = seed
         self._counter = 0
 
-    def set_ground_truth(self, gt: dict[str, Any], task_id: str | None = None) -> None:
+    def set_ground_truth(
+        self,
+        gt: dict[str, Any] | None = None,
+        task_id: str | None = None,
+        ground_truth: dict[str, Any] | None = None,
+    ) -> None:
         """Dynamically attach ground truth for test simulation."""
-        tid = task_id or gt.get("task_id", "_current")
-        self.ground_truth_map[tid] = gt
-        self.ground_truth_map["_current"] = gt
+        target_gt = gt if gt is not None else ground_truth
+        if target_gt is None:
+            raise ValueError("ground truth dictionary is required")
+        tid = task_id or target_gt.get("task_id")
+        if not tid:
+            raise ValueError("task_id is required to register ground truth")
+        self.ground_truth_map[tid] = target_gt
 
     def ask(
         self,
@@ -623,10 +632,16 @@ class MockVisionAdapter(BaseVisionAdapter):
         task_type_raw = kwargs.get("task_type", "TASK_A_VISIBILITY")
         task_type = task_type_raw.value if hasattr(task_type_raw, "value") else str(task_type_raw)
 
-        gt = self.ground_truth_map.get(task_id) or self.ground_truth_map.get("_current", {})
-
         if self.strategy == MockStrategy.ORACLE:
-            text = self._generate_oracle(task_type, gt)
+            if not task_id:
+                raise ValueError("task_id is required when querying MockVisionAdapter with ORACLE strategy.")
+            if task_id not in self.ground_truth_map:
+                raise KeyError(
+                    f"Task-specific ground truth not found for task_id='{task_id}'. "
+                    f"MockStrategy.ORACLE requires explicit registered ground truth."
+                )
+            gt = self.ground_truth_map[task_id]
+            text = self._generate_oracle(task_type, gt, task_id=task_id)
         elif self.strategy == MockStrategy.ALL_YES:
             text = self._generate_all_yes(task_type)
         elif self.strategy == MockStrategy.ALL_NO:
@@ -634,7 +649,10 @@ class MockVisionAdapter(BaseVisionAdapter):
         elif self.strategy == MockStrategy.RANDOM:
             text = self._generate_random(task_type)
         elif self.strategy == MockStrategy.NOISY_WRAPPER:
-            base_json = self._generate_oracle(task_type, gt)
+            if not task_id or task_id not in self.ground_truth_map:
+                raise KeyError(f"Task ID '{task_id}' not found in ground_truth_map for NOISY_WRAPPER.")
+            gt = self.ground_truth_map[task_id]
+            base_json = self._generate_oracle(task_type, gt, task_id=task_id)
             text = (
                 f"Hello! I am an AI assistant analyzing this diagram carefully.\n\n"
                 f"Here is my step-by-step physical analysis:\n"
@@ -647,11 +665,16 @@ class MockVisionAdapter(BaseVisionAdapter):
                 "The diagram has too many obstacles and I cannot answer."
             )
         elif self.strategy in (MockStrategy.REALISTIC_VLM_BASELINE, MockStrategy.REALISTIC_GEMINI_BASELINE):
+            gt = self.ground_truth_map.get(task_id, {})
             text = self._generate_realistic_vlm(task_type, gt, task_id)
         elif self.strategy == MockStrategy.REALISTIC_GPT4O_BASELINE:
+            gt = self.ground_truth_map.get(task_id, {})
             text = self._generate_realistic_gpt4o(task_type, gt, task_id)
         else:
-            text = self._generate_oracle(task_type, gt)
+            if not task_id or task_id not in self.ground_truth_map:
+                raise KeyError(f"Task ID '{task_id}' not found in ground_truth_map.")
+            gt = self.ground_truth_map[task_id]
+            text = self._generate_oracle(task_type, gt, task_id=task_id)
 
         self._counter += 1
         # Realistic simulated latency and token counts for offline benchmarks
@@ -689,10 +712,20 @@ class MockVisionAdapter(BaseVisionAdapter):
             },
         )
 
-    def _generate_oracle(self, task_type: str, gt: dict[str, Any]) -> str:
+    def _generate_oracle(
+        self, task_type: str, gt: dict[str, Any], task_id: str = "unknown"
+    ) -> str:
         tt = task_type.value if hasattr(task_type, "value") else str(task_type)
         if "VISIBILITY" in tt or "COUNTERFACTUAL" in tt:
-            can_see = gt.get("can_see", True)
+            if "can_see" not in gt and "is_visible" not in gt:
+                raise ValueError(
+                    f"Ground truth for task_id='{task_id}' is missing required visibility field ('can_see' or 'is_visible')."
+                )
+            can_see = gt.get("can_see") if "can_see" in gt else gt["is_visible"]
+            if not isinstance(can_see, bool):
+                raise ValueError(
+                    f"Ground truth for task_id='{task_id}' has non-boolean visibility: {can_see}"
+                )
             ans = gt.get("answer", "YES" if can_see else "NO")
             raw_reason = gt.get("reason_code") or gt.get("ground_truth_reason") or ("CLEAR" if can_see else "OUTSIDE_FOV")
             raw_str = raw_reason.value if hasattr(raw_reason, "value") else str(raw_reason)
@@ -713,7 +746,15 @@ class MockVisionAdapter(BaseVisionAdapter):
                 ),
             }
         elif "OBSTRUCTION" in tt:
-            is_blocked = gt.get("is_blocked", True)
+            if "is_blocked" not in gt:
+                raise ValueError(
+                    f"Ground truth for obstruction task_id='{task_id}' is missing required field 'is_blocked'."
+                )
+            is_blocked = gt["is_blocked"]
+            if not isinstance(is_blocked, bool):
+                raise ValueError(
+                    f"Ground truth for task_id='{task_id}' has non-boolean is_blocked: {is_blocked}"
+                )
             ans = "YES" if is_blocked else "NO"
             blocker = gt.get("blocking_obstacle_label") or gt.get("blocker_label") or ("O1" if is_blocked else "NONE")
             segment = gt.get("blocked_segment") or ("CAMERA_TO_MIRROR" if is_blocked else "NONE")
@@ -727,14 +768,18 @@ class MockVisionAdapter(BaseVisionAdapter):
                 ),
             }
         elif "REPAIR" in tt:
-            winner = gt.get("correct_candidate", "A")
+            if "correct_candidate" not in gt and "selected_candidate" not in gt:
+                raise ValueError(
+                    f"Ground truth for repair task_id='{task_id}' is missing required field 'correct_candidate'."
+                )
+            winner = gt.get("correct_candidate") or gt["selected_candidate"]
             data = {
                 "selected_candidate": winner,
                 "answer": winner,
                 "explanation": gt.get("selection_reason", "Candidate restores view."),
             }
         else:
-            data = {"answer": "YES", "explanation": "Default response"}
+            raise ValueError(f"Unknown task type '{task_type}' for ORACLE strategy.")
 
         return json.dumps(data, indent=2)
 

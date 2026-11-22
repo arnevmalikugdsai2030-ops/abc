@@ -2,16 +2,16 @@
   "task_id": "task_ood_80026",
   "can_see": false,
   "answer": "NO",
-  "reason_code": "MIRROR_MISS",
-  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Ray misses finite mirror (t_mirror=2.756) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason MIRROR_MISS.",
+  "reason_code": "BLOCKED_MIRROR_TO_TARGET",
+  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Reflected ray R->T blocked by obstacle 'O2_reflected_blocker' at (779.0, 370.4) | Dual Cert: Delta_R=5.68e-14mm, Fermat=2.78e-16. Ground truth state is NOT_VISIBLE with reason BLOCKED_MIRROR_TO_TARGET.",
   "proof_geometry": {
     "reflection_point": {
-      "x": 778.0202477262744,
-      "y": 403.6328320431031
+      "x": 821.4850946638403,
+      "y": 440.341986577134
     },
     "virtual_target": {
-      "x": 861.9461993325242,
-      "y": 416.1186932921909
+      "x": 1070.3021550465505,
+      "y": 531.872267884929
     },
     "incident_angle_deg": null,
     "reflected_angle_deg": null,

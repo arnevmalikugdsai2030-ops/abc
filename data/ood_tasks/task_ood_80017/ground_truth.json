@@ -2,16 +2,16 @@
   "task_id": "task_ood_80017",
   "can_see": false,
   "answer": "NO",
-  "reason_code": "MIRROR_MISS",
-  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Ray misses finite mirror (t_mirror=-0.566) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason MIRROR_MISS.",
+  "reason_code": "OUTSIDE_FOV",
+  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Mirror point (150.5, 380.7) is outside FOV: angle=110.0 deg > half_fov=37.5 deg | Dual Cert: Delta_R=2.84e-14mm, Fermat=3.33e-16. Ground truth state is NOT_VISIBLE with reason OUTSIDE_FOV.",
   "proof_geometry": {
     "reflection_point": {
-      "x": 162.16954561959625,
-      "y": 557.0145485578587
+      "x": 150.48696669553217,
+      "y": 380.7118930324318
     },
     "virtual_target": {
-      "x": -18.29837612554934,
-      "y": 1133.1619657175484
+      "x": -60.840014689791474,
+      "y": 867.3481381657726
     },
     "incident_angle_deg": null,
     "reflected_angle_deg": null,

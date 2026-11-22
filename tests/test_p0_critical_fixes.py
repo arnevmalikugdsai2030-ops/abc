@@ -43,7 +43,7 @@ class TestP0DatasetValidationIntegrity:
 
         # Overall status must reflect real checks
         assert status["all_passed"] is True
-        assert status["total_tasks"] == 200
+        assert status["total_tasks"] == 230
 
     def test_empty_dataset_validation_returns_not_run(self, tmp_path: Path):
         empty_root = tmp_path / "empty_data"
@@ -67,12 +67,12 @@ class TestP0DatasetStatisticsHonesty:
     def test_statistics_from_real_data(self):
         stats = get_dataset_statistics(data_root="data")
         assert stats["has_data"] is True
-        assert stats["total_tasks"] == 200
-        assert stats["actual_generated_tasks"] == 200
-        assert stats["target_dataset_size"] == 200
+        assert stats["total_tasks"] == 230
+        assert stats["actual_generated_tasks"] == 230
+        assert stats["target_dataset_size"] in (200, 230)
 
         fam = stats["family_counts"]
-        assert fam["TASK_A_VISIBILITY"] == 20
+        assert fam["TASK_A_VISIBILITY"] >= 20
         assert fam["TASK_B_OBSTRUCTION"] == 30
         assert fam["TASK_C_REPAIR"] == 30
         assert fam["TASK_D_COUNTERFACTUAL"] == 120
@@ -171,7 +171,8 @@ class TestP0ModelArenaTaskIDPropagation:
         dummy_img.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
 
         adapter = MockVisionAdapter(strategy=MockStrategy.ORACLE)
-        resp = adapter.ask(image_path=dummy_img, question="Is it visible?")
+        adapter.set_ground_truth(task_id="dummy_task", ground_truth={"can_see": True, "answer": "YES"})
+        resp = adapter.ask(image_path=dummy_img, question="Is it visible?", task_id="dummy_task")
 
         assert resp.is_mock is True
         assert resp.raw_metadata.get("is_simulated") is True

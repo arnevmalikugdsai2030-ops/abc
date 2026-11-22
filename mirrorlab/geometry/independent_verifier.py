@@ -218,10 +218,10 @@ class IndependentGeometryVerifier:
         c = float(np.dot(f, f)) - radius * radius
 
         discriminant = b * b - 4.0 * a * c
-        if discriminant < 0.0:
+        if discriminant < -cls.EPSILON:
             return False, 0.0, None
 
-        sqrt_d = math.sqrt(discriminant)
+        sqrt_d = math.sqrt(max(0.0, discriminant))
         t1 = (-b - sqrt_d) / (2.0 * a)
         t2 = (-b + sqrt_d) / (2.0 * a)
 

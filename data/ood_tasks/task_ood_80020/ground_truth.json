@@ -2,11 +2,17 @@
   "task_id": "task_ood_80020",
   "can_see": false,
   "answer": "NO",
-  "reason_code": "WRONG_SIDE",
-  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Reflection failed: WRONG_SIDE_TARGET | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason WRONG_SIDE.",
+  "reason_code": "BLOCKED_MIRROR_TO_TARGET",
+  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Reflected ray R->T blocked by obstacle 'O2_reflected_blocker' at (828.4, 471.7) | Dual Cert: Delta_R=1.14e-13mm, Fermat=2.22e-16. Ground truth state is NOT_VISIBLE with reason BLOCKED_MIRROR_TO_TARGET.",
   "proof_geometry": {
-    "reflection_point": null,
-    "virtual_target": null,
+    "reflection_point": {
+      "x": 840.1464459393577,
+      "y": 559.8687074992793
+    },
+    "virtual_target": {
+      "x": 1074.4344049545311,
+      "y": 651.7451798606178
+    },
     "incident_angle_deg": null,
     "reflected_angle_deg": null,
     "total_optical_distance": null,

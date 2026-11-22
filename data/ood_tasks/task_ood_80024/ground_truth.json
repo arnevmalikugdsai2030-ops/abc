@@ -1,21 +1,34 @@
 {
   "task_id": "task_ood_80024",
-  "can_see": false,
-  "answer": "NO",
-  "reason_code": "MIRROR_MISS",
-  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Ray misses finite mirror (t_mirror=1.574) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00. Ground truth state is NOT_VISIBLE with reason MIRROR_MISS.",
+  "can_see": true,
+  "answer": "YES",
+  "reason_code": "CLEAR",
+  "detailed_explanation": "Mathematical Proof: OOD Benchmark: Unobstructed optical sightline via mirror at (954.3, 369.4) with theta_i=theta_r=37.5 deg | Dual Cert: Delta_R=1.14e-13mm, Fermat=4.44e-16. Ground truth state is VISIBLE with reason CLEAR.",
   "proof_geometry": {
     "reflection_point": {
-      "x": 892.8959833786937,
-      "y": 389.25298213826113
+      "x": 954.301858207783,
+      "y": 369.4465050752731
     },
     "virtual_target": {
-      "x": 1051.635856116838,
-      "y": 419.5450651175997
+      "x": 1159.5040189594047,
+      "y": 426.38717638008325
     },
-    "incident_angle_deg": null,
-    "reflected_angle_deg": null,
-    "total_optical_distance": null,
-    "optical_path": []
+    "incident_angle_deg": 37.468988274028625,
+    "reflected_angle_deg": 37.46898827402865,
+    "total_optical_distance": 970.7684613531535,
+    "optical_path": [
+      {
+        "x": 224.08080494752488,
+        "y": 166.82058329527507
+      },
+      {
+        "x": 954.301858207783,
+        "y": 369.4465050752731
+      },
+      {
+        "x": 955.9615764049187,
+        "y": 156.49718678267348
+      }
+    ]
   }
 }

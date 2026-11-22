@@ -1,37 +1,37 @@
 {
   "scene_id": "task_ood_80006",
-  "seed": 80006,
-  "category": "MIRROR_MISS",
+  "seed": 84006,
+  "category": "VALID_VISIBLE",
   "difficulty": "BOUNDARY",
   "canvas_width": 1200.0,
   "canvas_height": 800.0,
   "camera": {
     "position": {
-      "x": 182.58282691976825,
-      "y": 253.2582369784871
+      "x": 190.40272888518896,
+      "y": 233.47864240063439
     },
-    "heading_deg": 40.53706267288534,
+    "heading_deg": 15.962196304769886,
     "fov_degrees": 75.0,
-    "max_range": 1600.0
+    "max_range": 2000.0
   },
   "mirror": {
     "endpoint_a": {
-      "x": 577.8115788918233,
-      "y": 748.205454801485
+      "x": 679.7396747817215,
+      "y": 496.728045330205
     },
     "endpoint_b": {
-      "x": 715.9615966778388,
-      "y": 552.4561980500856
+      "x": 918.4638313102248,
+      "y": 318.4433942425474
     },
     "reflective_normal": {
-      "dx": -0.8170188454748794,
-      "dy": -0.576610966023796
+      "dx": -0.5983695655396395,
+      "dy": -0.8012202337908741
     }
   },
   "target": {
     "center": {
-      "x": 855.1799340902619,
-      "y": 248.97259005450704
+      "x": 800.7285274695441,
+      "y": 232.1822703355852
     },
     "radius_mm": 8.0
   },
@@ -40,22 +40,22 @@
       "obstacle_id": "O1_direct_barrier",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 511.38396450756443,
-        "y": 261.42823491035307
+        "x": 489.03883094972815,
+        "y": 227.83060865938572
       },
       "radius": null,
       "width": 35.0,
-      "height": 160.0,
-      "angle_degrees": -12.460502358287725
+      "height": 150.0,
+      "angle_degrees": 6.905720278217306
     },
     {
       "obstacle_id": "O2_clutter",
       "obstacle_type": "circle",
       "center": {
-        "x": 785.7178251340578,
-        "y": 260.72397774396575
+        "x": 707.398347276384,
+        "y": 500.11646615944335
       },
-      "radius": 18.85467253400074,
+      "radius": 20.895655022125695,
       "width": null,
       "height": null,
       "angle_degrees": 0.0
@@ -64,22 +64,22 @@
       "obstacle_id": "O3_clutter",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 284.9774935328419,
-        "y": 480.01391414540603
+        "x": 119.87233726806335,
+        "y": 611.4315771364977
       },
       "radius": null,
-      "width": 53.988451758543576,
-      "height": 40.23232753299145,
-      "angle_degrees": 3.285940878682343
+      "width": 36.10038940858207,
+      "height": 38.9729849318945,
+      "angle_degrees": 79.76038722799207
     },
     {
       "obstacle_id": "O4_clutter",
       "obstacle_type": "circle",
       "center": {
-        "x": 865.1732287585301,
-        "y": 447.2576342954199
+        "x": 169.23786343819324,
+        "y": 691.8103695446653
       },
-      "radius": 21.022581351639506,
+      "radius": 21.935405797632523,
       "width": null,
       "height": null,
       "angle_degrees": 0.0
@@ -88,42 +88,43 @@
       "obstacle_id": "O5_clutter",
       "obstacle_type": "rectangle",
       "center": {
-        "x": 258.37283004411523,
-        "y": 365.4029200269206
+        "x": 293.04491714127016,
+        "y": 222.3267149337455
       },
       "radius": null,
-      "width": 30.975493423583714,
-      "height": 42.2694675816494,
-      "angle_degrees": 77.67690999916157
-    },
-    {
-      "obstacle_id": "O6_clutter",
-      "obstacle_type": "circle",
-      "center": {
-        "x": 941.4638141931189,
-        "y": 423.5714624893202
-      },
-      "radius": 21.003674859851074,
-      "width": null,
-      "height": null,
-      "angle_degrees": 0.0
+      "width": 33.21259255402272,
+      "height": 47.44705229377698,
+      "angle_degrees": 14.677661377072548
     }
   ],
-  "ground_truth_state": "NOT_VISIBLE",
-  "ground_truth_reason": "MISSED_MIRROR",
-  "diagnostic_details": "OOD Benchmark: Ray misses finite mirror (t_mirror=2.221) | Dual Cert: Delta_R=0.00e+00mm, Fermat=0.00e+00",
+  "ground_truth_state": "VISIBLE",
+  "ground_truth_reason": "NONE",
+  "diagnostic_details": "OOD Benchmark: Unobstructed optical sightline via mirror at (799.1, 407.6) with theta_i=theta_r=37.3 deg | Dual Cert: Delta_R=1.14e-13mm, Fermat=4.44e-16",
   "reflection_point": {
-    "x": 884.579557670399,
-    "y": 313.53592088909863
+    "x": 799.1017530459732,
+    "y": 407.58571978637616
   },
   "virtual_target": {
-    "x": 955.2614273244235,
-    "y": 319.60509359402084
+    "x": 967.7494861456439,
+    "y": 455.8242789958259
   },
-  "optical_path": [],
-  "incident_angle_deg": null,
-  "reflected_angle_deg": null,
-  "total_optical_distance": null,
+  "optical_path": [
+    {
+      "x": 190.40272888518896,
+      "y": 233.47864240063439
+    },
+    {
+      "x": 799.1017530459732,
+      "y": 407.58571978637616
+    },
+    {
+      "x": 800.7285274695441,
+      "y": 232.1822703355852
+    }
+  ],
+  "incident_angle_deg": 37.28458828846144,
+  "reflected_angle_deg": 37.28458828846144,
+  "total_optical_distance": 808.5206015533963,
   "is_direct_sight_blocked": true,
   "is_boundary": false
 }

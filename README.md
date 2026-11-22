@@ -3,7 +3,7 @@
 
 [![Innodata Frontier AI Hackathon 2026](https://img.shields.io/badge/Hackathon-Track_2:_Visual_Task_Factory-blue.svg)](https://innodata.com)
 [![CI Status](https://github.com/arnevmalikugdsai2030-ops/abc/actions/workflows/ci.yml/badge.svg)](https://github.com/arnevmalikugdsai2030-ops/abc/actions/workflows/ci.yml)
-[![Test Suite](https://img.shields.io/badge/Tests-284_Passed-success.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-304_Passed-success.svg)](tests/)
 [![Verification Engine](https://img.shields.io/badge/Dual_Geometry_Oracle-Fermat_Verified-brightgreen.svg)](mirrorlab/geometry/independent_verifier.py)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -117,12 +117,19 @@ flowchart LR
 - Tests camera FOV containment and obstacle ray clipping using parametric line segment tests.
 
 ### Engine 2: Independent Physics-Based Verifier (`IndependentGeometryVerifier`)
-- **Virtual Camera Reflection:** Reflects camera position $C$ across mirror line:
+- **Virtual Camera Reflection:** Reflects camera position $C$ across the infinite mirror line:
   $$C' = C - 2 \big((C - M_1) \cdot \hat{n}\big) \hat{n}$$
-- **Fermat's Principle of Least Time:** Computes total optical path length $L(u) = \|C - R(u)\| + \|R(u) - T\|$ along mirror parameter $u \in [0, 1]$. Numerically computes the stationary point $\frac{dL}{du} = 0$ using Brent's method and verifies residual gradient $< 10^{-5}\text{ mm}$.
-- **Independent Collision Routines:** Uses quadratic discriminant intersection for circular obstacles and Cyrus-Beck clipping for Oriented Bounding Boxes (OBBs).
-- **Benchmark Dual-Verification Results:** Tested across all 320 benchmark scenes in `data/`:
-  - **320 / 320 scenes in 100% agreement.**
+- **Fermat's Principle of Least Time (Stationary Path):** In planar specular reflection, Fermat's Principle states that the stationary path corresponds to equal angles of incidence and reflection ($\theta_i = \theta_r$). We evaluate the **analytical tangential Fermat residual**:
+  $$\Delta_{\text{Fermat}} = \big|(\hat{u}_{\text{inc}} - \hat{u}_{\text{refl}}) \cdot \hat{u}_{\text{mirror}}\big|$$
+  Verifies that $\Delta_{\text{Fermat}} < 10^{-5}$ at reflection point $R = M_1 + t (M_2 - M_1)$.
+- **Independent Collision Primitives:** Employs quadratic discriminant ray-circle intersection and Cyrus-Beck slab clipping for oriented bounding boxes (OBBs), with zero code sharing with `VisibilityOracle`.
+- **Explicit Scene Certification States:**
+  - **Certified:** Independently validated by both engines with $\Delta R < 10^{-4}\text{ mm}$, $\Delta_{\text{Fermat}} < 10^{-5}$, and identical obstacle collision verdicts.
+  - **Checked:** Evaluated by primary oracle or independent verifier individually.
+  - **Failed:** Discrepancy detected (discarded immediately during procedural generation).
+  - **Unchecked:** Initial procedural parameter candidate before dual evaluation.
+- **Benchmark Dual-Verification Results:** Tested across all 230 top-level tasks and 350 scenes in `data/`:
+  - **100% agreement across both mathematical engines.**
   - **Maximum reflection point discrepancy:** $\Delta R < 10^{-4}\text{ mm}$.
   - **Zero false positives, zero false negatives.**
 
@@ -135,34 +142,39 @@ A scientific benchmark must guarantee that models are never evaluated on leaked 
 ```text
 data/benchmark_splits/
 ├── dev/
-│   ├── public/tasks.jsonl           <-- Model-facing questions & blind image paths
-│   └── private/answer_keys.jsonl    <-- Ground-truth labels & geometric ray paths
+│   ├── tasks.jsonl                  <-- Model-facing questions & blind image paths
+│   └── ground_truth.jsonl           <-- Ground-truth labels & geometric ray paths
 ├── val/
-│   ├── public/tasks.jsonl
-│   └── private/answer_keys.jsonl
+│   ├── tasks.jsonl
+│   └── ground_truth.jsonl
 └── test/
-    ├── public/tasks.jsonl
-    └── private/answer_keys.jsonl
+    ├── public/
+    │   └── tasks.jsonl              <-- Strictly isolated blind evaluation tasks
+    └── private/
+        └── ground_truth.jsonl       <-- Sealed ground-truth answer keys
 ```
 
 ### Automated 10-Point Dataset Integrity Audit (`DatasetAuditor`)
 Every dataset build must pass an executable 10-point audit executed directly on disk:
-1. **Scene ID Uniqueness:** 0 collisions across all 320 tasks.
-2. **Deterministic Seed Recording:** Every task records an integer PRNG seed and parameter dictionary.
+1. **Scene ID Uniqueness:** 0 collisions across all 230 top-level tasks (350 total scenes).
+2. **Deterministic Seed Recording:** Every task records an integer PRNG seed and parameter dictionary (no fabricated fallback seeds).
 3. **Oracle Mathematical Agreement:** 100% agreement between primary and independent verifiers.
-4. **Blind Image Non-Leakage:** Blind images contain zero ray lines, virtual targets, or reflection markers.
-5. **Prompt Neutrality & Zero-Leakage:** Prompts contain no ground-truth words or coordinate hints.
-6. **Mirror Repair Single-Solution:** Repair tasks have exactly one valid configuration.
-7. **Obstruction Single-Blocker:** Single-blocker tasks have exactly one blocking obstacle.
-8. **Counterfactual Invariant Verification:** Ground-truth flips match the recorded delta.
-9. **Anti-Duplicate Geometry:** Zero duplicate camera/mirror/target tuples across splits.
-10. **Test Set Partition Isolation:** Disjoint hash verification between dev, val, and test splits.
+4. **Blind Image Non-Leakage:** Multi-layer audit verifies zero ray lines, virtual targets, reflection badges, or emerald/crimson indicator pixels in blind images.
+5. **Prompt Neutrality & Public Record Isolation:** Prompts and questions contain no coordinate hints, and public task records are scanned against 19 forbidden ground-truth fields.
+6. **Mirror Repair Single-Solution:** Repair tasks independently reconstruct all candidate mirrors and prove exactly one valid configuration restores sight.
+7. **Obstruction Single-Blocker Precision:** Obstruction tasks geometrically recompute rays, identify the exact blocking obstacle and segment, and prove unblocking restores visibility.
+8. **Counterfactual Paired Verification:** Both child scenes (`scene_a` and `scene_b`) are loaded and evaluated independently without default seeds, verifying expected flip and invariant relationships.
+9. **Out-of-Distribution Certification:** All 30 Task E scenes are dual-certified across 6 balanced failure categories (Visible, Blocked-Incident, Blocked-Reflected, Mirror-Miss, Wrong-Side, Outside-FOV).
+10. **Test Set Partition Isolation:** Disjoint hash verification between dev, val, and test splits with strict air-gapped test packaging.
 
 ---
 
-## 🛠️ Physical Rig Alignment & Industrial Transferability
+## 🛠️ Proposed Physical Rig Alignment & Industrial Transferability
 
-MIRRORLAB is directly aligned with physical Automated Optical Inspection (AOI) benchtop hardware:
+To demonstrate the real-world manufacturing applicability of the benchmark, MIRRORLAB includes a complete **proposed hardware alignment protocol** for a physical Automated Optical Inspection (AOI) benchtop setup:
+
+> [!NOTE]
+> **Sim-to-Real Roadmap:** The physical rig specifications described below represent a proposed benchtop protocol designed to bridge synthetic schematics and real-world hardware. Benchmark evaluation in the current release is conducted on the synthetic dataset, with physical rig experiments scheduled for subsequent phase testing.
 
 ```text
                 [Top View: 400mm x 400mm Breadboard]
@@ -184,8 +196,8 @@ MIRRORLAB is directly aligned with physical Automated Optical Inspection (AOI) b
        └──────────────────────────────────────────────────┘
 ```
 
-### Sim-to-Real Physical Gap Analysis
-| Real-World Optical Factor | Physical Reality | MIRRORLAB 2D Treatment | Benchtop Alignment Protocol |
+### Sim-to-Real Physical Gap Analysis & Proposed Benchtop Protocol
+| Real-World Optical Factor | Physical Reality | MIRRORLAB 2D Treatment | Proposed Benchtop Protocol |
 |---|---|---|---|
 | **Mirror Substrate** | Second-surface glass causes faint secondary ghost reflection. | First-surface planar mirror with cross-hatched back. | Use first-surface aluminum or dielectric mirrors ($R > 99\%$). |
 | **Out-of-Plane Pitch/Yaw** | 3D mirror misalignment deflects ray out of camera sensor plane. | Strict 2D planar schematics ($Z = 0$). | Mount mirror on 2-axis kinematic mount ($<0.05^\circ$ planar tolerance). |
@@ -194,21 +206,42 @@ MIRRORLAB is directly aligned with physical Automated Optical Inspection (AOI) b
 
 ---
 
-## ⚔️ VLM Evaluation Findings & Model Arena
+## ⚔️ VLM Evaluation & Model Arena
 
-We evaluated frontier vision-language models and deterministic baselines across the 320-task benchmark suite:
+MIRRORLAB evaluates models using deterministic ground-truth verification and strict blind-test isolation.
 
-| Model / Baseline | Task A (Visibility) | Task B (Obstruction) | Task C (Repair) | Pair Accuracy (Task D) | Flip Consistency | Latency (avg) |
-|---|---|---|---|---|---|---|
-| **Deterministic Oracle Baseline** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | 0.8 ms |
-| **Google Gemini 2.5 Flash** | 58.3% | 41.7% | 33.3% | 25.0% | 41.7% | 1,840 ms |
-| **OpenAI GPT-4o** | 62.5% | 45.8% | 37.5% | 31.2% | 48.0% | 2,120 ms |
-| **Random Baseline** | 50.0% | 20.0% | 33.3% | 25.0% | 50.0% | — |
+### Verified Deterministic Baselines
+The table below reports verified mathematical baselines across the 230-task benchmark suite (350 total scenes):
 
-### Key Scientific Insights:
-1. **The Specular Reflection Blind Spot:** Frontier VLMs perform barely above random chance on reflected visibility prediction (58–62%). They frequently assume infinite mirror planes and fail to account for finite aperture boundaries.
-2. **Counterfactual Pair Collapse:** While individual image accuracy is ~60%, **pair accuracy drops to 25–31%**. When a mirror is tilted by only $2^\circ$, models fail to track whether the reflection was preserved or lost.
-3. **Obstacle Confusion:** Models struggle to distinguish whether an obstacle occludes the incident leg ($C \to R$) or the reflected leg ($R \to T$), often confusing 2D Euclidean proximity with true ray-line intersection.
+| Baseline / Model | Task A (Visibility) | Task B (Obstruction) | Task C (Repair) | Pair Accuracy (Task D) | Flip Consistency | Latency (avg) | Evaluation Status |
+|---|---|---|---|---|---|---|---|
+| **Deterministic Geometry Oracle** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | 0.8 ms | Verified Local |
+| **Independent Physical Verifier** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | **100.0%** | 1.1 ms | Verified Local |
+| **Theoretical Random Chance** | 50.0% | 20.0% (1-of-5) | 33.3% (1-of-3) | 25.0% | 50.0% | — | Analytical Bound |
+| **Google Gemini (Live API)** | *Requires Key* | *Requires Key* | *Requires Key* | *Requires Key* | *Requires Key* | — | Configure `.env` (`GEMINI_API_KEY`) |
+| **OpenAI GPT-4o (Live API)** | *Requires Key* | *Requires Key* | *Requires Key* | *Requires Key* | *Requires Key* | — | Configure `.env` (`OPENAI_API_KEY`) |
+
+> [!IMPORTANT]
+> **Zero Fabricated Benchmark Results:** In accordance with our scientific integrity policy, empirical accuracy and latency metrics for external cloud models (Gemini, GPT-4o) are only reported when executed against live API endpoints with valid credentials. We never display synthetic or hardcoded numbers as empirical benchmark evidence.
+
+### Running Live Frontier Model Evaluations
+To evaluate frontier models on the benchmark suite:
+
+1. **Set API credentials in `.env`:**
+   ```bash
+   GEMINI_API_KEY="your-google-gemini-api-key"
+   OPENAI_API_KEY="your-openai-api-key"
+   ```
+2. **Execute benchmark evaluation via CLI:**
+   ```powershell
+   # Evaluate Gemini 2.5 Flash on dev split
+   python scripts/evaluate_benchmark.py --provider gemini --model gemini-2.5-flash --split dev
+
+   # Evaluate OpenAI GPT-4o on dev split
+   python scripts/evaluate_benchmark.py --provider openai --model gpt-4o --split dev
+   ```
+3. **Or launch the interactive Model Arena UI:**
+   Navigate to the **⚔️ Model Arena** page in the Streamlit application to challenge models interactively with live predictions and reveal animations.
 
 ---
 
@@ -235,7 +268,7 @@ inno/
 │   ├── evaluate_benchmark.py   # Multi-provider benchmark evaluation CLI
 │   ├── generate_benchmark_splits.py # Dataset split partitioner with isolation hashes
 │   └── qa_audit_all_screens.py # Automated end-to-end AppTest UI suite
-└── tests/                      # 284 pytest tests covering 100% of core components
+└── tests/                      # 304 pytest tests covering 100% of core components
 ```
 
 ---
@@ -256,7 +289,7 @@ uv venv .venv --python 3.12
 uv pip install -e ".[dev]"
 ```
 
-### 2. Run Complete Test Suite (284 Tests)
+### 2. Run Complete Test Suite (304 Tests)
 ```powershell
 uv run pytest tests/ -v
 ```
