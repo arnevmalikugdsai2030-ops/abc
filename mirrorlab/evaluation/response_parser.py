@@ -472,3 +472,6 @@ class ResponseParser:
             return p_setting == gt_winner
 
         return False
+
+    # Classmethod alias for evaluate
+    evaluate = parse_and_grade
