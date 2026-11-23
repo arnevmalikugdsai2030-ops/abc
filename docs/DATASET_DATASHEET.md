@@ -90,8 +90,9 @@ Yes. 52 experimental candidate configurations with dual-mirror reflections and s
 
 ### How is the dataset distributed?
 Distributed via GitHub repository: `https://github.com/arnevmalikugdsai2030-ops/abc`
-- Public splits: `data/benchmark_splits/{train,val,test}/public/`
-- Ground truth keys: `data/benchmark_splits/{train,val,test}/private/`
+- Dev split: `data/benchmark_splits/dev/` (`tasks.jsonl`, `ground_truth.jsonl`, `diagram_blind/`, `diagram_overlay/`)
+- Val split: `data/benchmark_splits/val/` (`tasks.jsonl`, `ground_truth.jsonl`, `diagram_blind/`, `diagram_overlay/`)
+- Test split (isolated): `data/benchmark_splits/test/public/` (`tasks.jsonl`, `diagram_blind/`) with answer keys in `data/benchmark_splits/test/private/` (`ground_truth.jsonl`, `diagram_overlay/`)
 - Formats: JSON Lines (`.jsonl`), PNG images (`.png`), and HuggingFace/OpenAI SFT format.
 
 ### License:

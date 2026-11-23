@@ -215,10 +215,19 @@ class TaskExplorer:
                 rejected_rendering += 1
                 failed_probes = [
                     r.element_name
-                    for r in rendering_report.element_results
+                    for r in getattr(rendering_report, "element_results", [])
                     if not r.passed
                 ]
-                rej_key = f"REJECTED_RENDERING_PROBE_{'_'.join(failed_probes)}"
+                if not failed_probes and getattr(
+                    rendering_report, "failure_reasons", []
+                ):
+                    rej_key = (
+                        f"REJECTED_RENDERING_{rendering_report.failure_reasons[0]}"
+                    )
+                elif failed_probes:
+                    rej_key = f"REJECTED_RENDERING_PROBE_{'_'.join(failed_probes)}"
+                else:
+                    rej_key = "REJECTED_RENDERING_PROBE"
                 rejection_counts[rej_key] = rejection_counts.get(rej_key, 0) + 1
                 results.append(
                     TaskGenerationResult(

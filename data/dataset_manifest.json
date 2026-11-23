@@ -1,14 +1,19 @@
 {
   "dataset_name": "MIRRORLAB - The Missing Scratch",
-  "dataset_version": "v2.1.0-FROZEN",
-  "schema_version": "1.3.0",
-  "generator_version": "mirrorlab-generator-v1.3.0",
-  "generation_timestamp": "2026-11-23T08:00:00Z",
+  "dataset_version": "v2.2.0-PROVENANCE-VERIFIED",
+  "schema_version": "2.0.0",
+  "generator_version": "mirrorlab-inventory-v2.0.0",
+  "timestamp": "2026-11-23T14:45:00Z",
   "summary_statistics": {
     "total_model_facing_tasks": 350,
-    "total_task_directories": 230,
+    "total_private_ground_truth_records": 350,
     "total_unique_task_ids": 350,
-    "total_unique_scenes_on_disk": 110,
+    "duplicate_task_id_count": 0,
+    "total_core_task_directories": 230,
+    "total_core_scenes_on_disk": 350,
+    "total_physical_scene_json_files_all": 350,
+    "total_counterfactual_pairs": 120,
+    "total_counterfactual_child_scenes": 240,
     "total_rendered_images_on_disk": 2000,
     "total_split_blind_images": 490,
     "total_split_diagnostic_overlays": 350
@@ -16,27 +21,33 @@
   "split_distribution": {
     "dev": {
       "tasks": 70,
+      "ground_truth_records": 70,
+      "pairs": 24,
       "blind_images": 140,
       "overlays": 70
     },
     "val": {
       "tasks": 70,
+      "ground_truth_records": 70,
+      "pairs": 24,
       "blind_images": 140,
       "overlays": 70
     },
     "test": {
       "tasks": 210,
+      "ground_truth_records": 210,
+      "pairs": 0,
       "blind_images": 210,
       "overlays": 210,
       "ground_truth_isolation": "STRICT_PRIVATE_DIR"
     }
   },
   "task_family_distribution": {
-    "Task_A": 0,
-    "Task_B": 30,
-    "Task_C": 0,
-    "Task_D": 0,
-    "Task_E": 320
+    "TASK_A_VISIBILITY": 20,
+    "TASK_B_OBSTRUCTION": 30,
+    "TASK_C_REPAIR": 30,
+    "TASK_D_COUNTERFACTUAL": 240,
+    "TASK_E_OOD": 30
   },
   "task_directory_breakdown": {
     "benchmark_tasks": 20,
@@ -46,22 +57,39 @@
     "ood_tasks": 30
   },
   "cryptographic_split_hashes": {
-    "dev_ground_truth": "ab5fc327ee7a8d46012c79340cc384ced00ede2c93fa185e4e4b60c7c2cca9db",
-    "dev_tasks": "a6b5f233e45d833f9c0cd40c1fa682feee100910959eae2f3d4506ed8aeb41f6",
-    "val_ground_truth": "b88819168f7ecc7761e4d773a96d5fc45311379a420f406aaed4d7537c2e779f",
-    "val_tasks": "f25b821f8e271030909c26344788aee318bf01983227697e2a599c36d980994a",
-    "test_ground_truth": "0d3a84273cb4f11856a24e48408a2778dae42080bbcd9a3890717959fd5cfd0a",
-    "test_tasks": "8c767cf5929f138fab2181771e468f4c958e6bb24aa51ceaea5a5505dbe8b4ab"
+    "dev_tasks_sha256": "a6b5f233e45d833f9c0cd40c1fa682feee100910959eae2f3d4506ed8aeb41f6",
+    "dev_ground_truth_sha256": "ab5fc327ee7a8d46012c79340cc384ced00ede2c93fa185e4e4b60c7c2cca9db",
+    "dev_pairs_sha256": "1149b6f1a386bf58fa75a8190cc2b75b224ba9b35e1587af9c30f5904098fdcf",
+    "val_tasks_sha256": "f25b821f8e271030909c26344788aee318bf01983227697e2a599c36d980994a",
+    "val_ground_truth_sha256": "b88819168f7ecc7761e4d773a96d5fc45311379a420f406aaed4d7537c2e779f",
+    "val_pairs_sha256": "2951638722fe0ac427034ca1729cccdd0fbe1a82fe86dffa73cdc1cd03e6fa4e",
+    "test_tasks_sha256": "8c767cf5929f138fab2181771e468f4c958e6bb24aa51ceaea5a5505dbe8b4ab",
+    "test_ground_truth_sha256": "0d3a84273cb4f11856a24e48408a2778dae42080bbcd9a3890717959fd5cfd0a"
   },
-  "validation_status": {
-    "all_passed": true,
-    "total_integrity_checks": 11,
-    "isolation_verified": true,
-    "triple_verifier_consensus_rate": 100.0
+  "reconciliations": {
+    "split_tasks_equals_ground_truth": true,
+    "split_tasks_equals_family_sum": true,
+    "zero_duplicate_task_ids": true,
+    "pairs_have_two_children": true,
+    "zero_missing_pair_scenes": true,
+    "zero_missing_split_artifacts": true
   },
-  "leakage_audit_status": {
-    "ground_truth_leakage_detected": false,
-    "filename_semantic_leakage_detected": false,
-    "prompt_hint_leakage_detected": false
+  "executed_audits": {
+    "triple_verifier_consensus": {
+      "audit_executed": true,
+      "status": "PASS",
+      "state_consensus_rate_pct": 100.0,
+      "coordinate_consensus_rate_pct": 100.0,
+      "coordinate_comparisons": 306,
+      "maximum_residual_mm": 3.143e-05,
+      "tolerance_mm": 0.1
+    },
+    "dataset_integrity_11_points": {
+      "audit_executed": true,
+      "status": "PASS",
+      "total_checks": 11,
+      "isolation_verified": true,
+      "status_message": "PASSED: All 11 verification checks satisfied."
+    }
   }
 }

@@ -16,7 +16,7 @@
 |---|---|---|---|---|
 | **1** | **Visual Task Factory Architecture** | Automated, seeded, programmatic generation of diverse visual tasks | **FULL IMPLEMENTATION** — Seeded task generator producing 5 distinct task families with controlled clutter and regimes. | [`mirrorlab/experiment/task_explorer.py`](../mirrorlab/experiment/task_explorer.py), [`tests/test_task_explorer.py`](../tests/test_task_explorer.py) |
 | **2** | **Geometric Ground-Truth Rigor** | Unassailable ground truth verified across multiple independent paradigms | **FULL IMPLEMENTATION** — Closed-form Householder affine oracle, Fermat variational solver, Snell root-finder. | [`docs/SCIENTIFIC_VALIDATION_REPORT.md`](SCIENTIFIC_VALIDATION_REPORT.md), [`experiments/triple_verifier_consensus_audit.json`](../experiments/triple_verifier_consensus_audit.json) |
-| **3** | **Triple-Verifier Consensus** | Agreement across independent mathematical solvers within tolerance | **FULL IMPLEMENTATION** — 100.0% consensus across all benchmark scenes. Max residual: $2.66 \times 10^{-5}\text{ mm}$ ($\tau = 0.1\text{ mm}$). | [`scripts/audit_triple_verifiers.py`](../scripts/audit_triple_verifiers.py), [`tests/test_adversarial_geometry.py`](../tests/test_adversarial_geometry.py) |
+| **3** | **Triple-Verifier Consensus** | Agreement across independent mathematical solvers within tolerance | **FULL IMPLEMENTATION** — 100.0% state consensus (350/350), 100.0% coordinate consensus (306/306). Max residual: $3.143 \times 10^{-5}\text{ mm}$ ($\tau = 0.1\text{ mm}$). | [`scripts/audit_triple_verifiers.py`](../scripts/audit_triple_verifiers.py), [`tests/test_adversarial_geometry.py`](../tests/test_adversarial_geometry.py) |
 | **4** | **Ambiguity & Margin Rejection** | Zero borderline knife-edge cases admitted to benchmark | **FULL IMPLEMENTATION** — Clearance margin $\ge 2.0\text{ mm}$ for visible; penetration depth $\ge 1.5\text{ mm}$ for blocked. | [`mirrorlab/evaluation/ambiguity_validator.py`](../mirrorlab/evaluation/ambiguity_validator.py) |
 | **5** | **Finite Mirror & Backside Clipping** | Accurate physics for finite segments and oriented normals | **FULL IMPLEMENTATION** — Finite segment parameterization $u \in [0, 1]$ and normal vector half-space check $(C-R)\cdot \mathbf{n} > 0$. | [`mirrorlab/geometry/oracle.py`](../mirrorlab/geometry/oracle.py), [`tests/test_adversarial_geometry.py`](../tests/test_adversarial_geometry.py) |
 | **6** | **Counterfactual Minimal Pairs** | Paired scenes that penalize heuristic shortcuts | **FULL IMPLEMENTATION** — 120 minimal pairs (240 scenes) across angle flips, obstacle insertions, and irrelevant controls. | [`docs/COUNTERFACTUAL_VALIDATION_REPORT.md`](COUNTERFACTUAL_VALIDATION_REPORT.md), [`data/counterfactual_pairs/`](../data/counterfactual_pairs/) |
@@ -31,7 +31,7 @@
 | **15** | **Downstream RL Utility** | Interactive environment for agentic alignment | **FULL IMPLEMENTATION** — Gymnasium-compatible `MirrorLabEnv` with observation spaces, discrete actions, and reward signals. | [`mirrorlab/rl/gym_env.py`](../mirrorlab/rl/gym_env.py), [`tests/test_gym_env.py`](../tests/test_gym_env.py) |
 | **16** | **Interactive Observability Platform** | High-density dashboard for inspection and evaluation | **FULL IMPLEMENTATION** — 6 Streamlit views (Judge Walkthrough, Scene Lab, Arena, Analytics, Dashboard, Rig Guide). | [`mirrorlab/ui/app.py`](../mirrorlab/ui/app.py), [`tests/test_app_views.py`](../tests/test_app_views.py) |
 | **17** | **Physical Rig Metrology Protocol** | Real-world hardware inspection alignment specification | **DOCUMENTED PROTOCOL** — Complete 4-step hardware protocol, BOM, and physical optical limitation boundary. | [`docs/JUDGE_DEMO_SCRIPT.md`](JUDGE_DEMO_SCRIPT.md), [`mirrorlab/ui/app.py`](../mirrorlab/ui/app.py) |
-| **18** | **Software Quality & Multi-Python CI** | Modern Python typing, linting, packaging, and CI matrix | **FULL IMPLEMENTATION** — Python 3.11 & 3.12 support, Ruff formatting/linting, 100% passing test suite (390+ tests). | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), [`pyproject.toml`](../pyproject.toml) |
+| **18** | **Software Quality & Multi-Python CI** | Modern Python typing, linting, packaging, and CI matrix | **FULL IMPLEMENTATION** — Python 3.11 & 3.12 support, Ruff formatting/linting, 100% passing test suite (402 tests). | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), [`pyproject.toml`](../pyproject.toml) |
 
 ---
 
@@ -81,7 +81,7 @@ cd abc
 # 2. Install dependencies (Python 3.11 or 3.12)
 pip install -e ".[dev]"
 
-# 3. Run complete test suite (390+ unit and integration tests)
+# 3. Run complete test suite (402 unit and integration tests)
 pytest -v
 
 # 4. Verify triple-verifier mathematical consensus

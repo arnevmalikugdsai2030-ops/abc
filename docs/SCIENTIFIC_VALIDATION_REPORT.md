@@ -19,7 +19,7 @@ MIRRORLAB eliminates synthetic ground-truth doubt by deriving ground truth throu
 2. **Fermat's Principle of Least Time**: Continuous variational minimization of total optical path length via convex optimization.
 3. **Snell's Law / Law of Reflection Root-Finder**: Numerical root-finding matching incident and reflected angles via Brent's method.
 
-Across all 230 task directories and 240 counterfactual scenes in the benchmark, the three solvers demonstrate **100.0% consensus**, with a maximum pairwise spatial residual of **$2.66 \times 10^{-5}\text{ mm}$**—over three orders of magnitude tighter than our strict physical engineering tolerance of $\tau = 0.1\text{ mm}$.
+Across all 350 benchmark tasks, the three solvers demonstrate **100.0% state consensus (350 / 350)**. For the 306 scenes featuring a physical reflection point on the mirror segment, the solvers demonstrate **100.0% coordinate consensus (306 / 306)** with a maximum pairwise spatial residual of **$3.143 \times 10^{-5}\text{ mm}$** and a mean residual of **$9.560 \times 10^{-6}\text{ mm}$**—over three orders of magnitude tighter than our strict physical engineering tolerance of $\tau = 0.1\text{ mm}$. For the remaining 44 scenes (40 missing mirror aperture, 4 striking mirror backside), all three solvers unanimously agree that no valid physical reflection occurs (residuals reported as `null`).
 
 ---
 
@@ -122,12 +122,19 @@ In IEEE-754 double-precision arithmetic ($\varepsilon_{\text{mach}} \approx 2.22
 | **Fermat Variational** | SciPy `minimize_scalar` (Brent) | Optimization tolerance | $\le 1.49 \times 10^{-8}\text{ mm}$ |
 | **Snell Root-Finder** | SciPy `brentq` | Root bracket tolerance | $\le 1.0 \times 10^{-8}\text{ mm}$ |
 
-**Empirical Benchmark Consensus (Audit on 350 Split Tasks / 240 Scenes):**
-- Maximum pairwise spatial residual: **$2.66 \times 10^{-5}\text{ mm}$**
-- Mean pairwise spatial residual: **$4.12 \times 10^{-6}\text{ mm}$**
+**Empirical Benchmark Consensus (Audit on All 350 Split Tasks):**
+- Total scenes evaluated: **350 / 350 (0 missing)**
+- State consensus rate: **100.0% (350 / 350 scenes in unanimous agreement)**
+- Scenes with mirror reflection point: **306 scenes**
+- Scenes without mirror reflection point: **44 scenes (40 missed aperture, 4 backside; coordinate residuals `null`)**
+- Coordinate consensus rate: **100.0% (306 / 306 scenes within tolerance)**
+- Maximum pairwise spatial residual: **$3.143 \times 10^{-5}\text{ mm}$**
+- Mean pairwise spatial residual: **$9.560 \times 10^{-6}\text{ mm}$**
+- Median pairwise spatial residual: **$8.220 \times 10^{-6}\text{ mm}$**
+- 99th percentile residual: **$2.583 \times 10^{-5}\text{ mm}$**
 - Engineering Acceptance Tolerance $\tau$: **$0.10\text{ mm}$**
-- Safety Margin: **$3,759\times$ below tolerance limit**
-- Triple Consensus Rate: **100.0% (350 / 350 scenes verified)**
+- Safety Margin: **$3,181\times$ below tolerance limit**
+- All Consensus Passed: **True**
 
 ---
 
@@ -208,6 +215,14 @@ Judges and researchers can independently execute the triple-verifier consensus a
 python scripts/audit_triple_verifiers.py
 
 # Expected output:
+# [AUDIT COMPLETE]
+#   Total Scenes:                350
+#   State Consensus:             350 / 350 (100.0%)
+#   Coordinate Comparisons:      306
+#   Coordinate Consensus:        306 / 306 (100.0%)
+#   No-Reflection Scenes:        44 (40 missed mirror, 4 back-of-mirror)
+#   Max Residual Observed:       0.000031 mm (Tolerance: 0.10 mm)
+#   Mean Residual Observed:      0.000010 mm
+#   Artifact Saved:              experiments/triple_verifier_consensus_audit.json
 # [SUCCESS] Triple-Verifier Consensus: 100.0%
-# Max Residual Observed: 0.000027 mm (Tolerance: 0.10 mm)
 ```
