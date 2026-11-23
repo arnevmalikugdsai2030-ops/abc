@@ -9,7 +9,7 @@
 
 ## 1. Overview & Information Boundary Guard
 
-The **MIRRORLAB Versioned Prompt Library** ([`mirrorlab/prompts/`](file:///c:/Users/malik/Desktop/inno/mirrorlab/prompts/)) standardizes all visual-language instructional prompts presented to VLMs during blind evaluation.
+The **MIRRORLAB Versioned Prompt Library** ([`mirrorlab/prompts/`](../mirrorlab/prompts/)) standardizes all visual-language instructional prompts presented to VLMs during blind evaluation.
 
 ### Zero-Leakage Guarantee
 The model prompt receives **ONLY**:

@@ -3,7 +3,11 @@
 **Hackathon:** Innodata Frontier AI Hackathon 2026 — Track 2: Visual Task Factory  
 **Audit Date:** 2026-11-23  
 **Auditor:** Automated Benchmark & Scientific Quality Engineering  
-**Head Commit Evaluated:** `4876ec694afa980482b9b99af54185883f015af5`  
+**Head Commit Evaluated (Historical Audit):** `4876ec694afa980482b9b99af54185883f015af5`  
+**Remediation Commits:** `548632d2cd36f5090e91a42ba332f82af6ffe2c9` and current HEAD  
+
+> [!NOTE]
+> **Historical Audit Record:** Sections 1 through 7 document the baseline findings from the audit of commit `4876ec6`. Section 8 details the full remediation landed across commit `548632d` and current HEAD.  
 
 ---
 
@@ -118,3 +122,34 @@ When cloned into a fresh environment (such as GitHub Actions CI), `eval_logs/` i
    - `mirrorlab/evaluation/dataset_auditor.py` (all 11 checks are mathematically sound).
 4. **Streamlit UI Layout & Styling**:
    - `mirrorlab/ui/` design tokens, optical plots, and navigation components.
+
+---
+
+## 8. Remediation Status (Commits `548632d` and Current HEAD)
+
+Every defect identified in this historical audit has been resolved:
+
+### 8.1 Test Isolation & Fresh Environment Reliability (Commit `548632d`)
+- Created `mock_eval_logs_dir` fixture in `tests/conftest.py`, decoupling all analytics and data loader tests from developer-local `eval_logs/`.
+- Resolved all 6 previously failing CI tests in `tests/test_analytics.py` and `tests/test_data_loader.py`.
+- Added edge-case test coverage verifying graceful degradation for non-existent log roots, empty directories, malformed JSON, and truncated CSVs.
+- Implemented `_generate_random()` on `MockVisionAdapter` to support randomized multimodal ablation baselines.
+
+### 8.2 Strict Provenance Typing & Interface Contracts (Current HEAD)
+- Made `is_mock`, `evaluation_type`, and `provenance_status` abstract properties on `BaseVisionAdapter`, preventing subclasses from accidentally inheriting live provenance.
+- Updated `ModelResponse` with safe conservative defaults (`is_mock: True`, `evaluation_type: 'mock'`, `provenance_status: 'UNVERIFIED_DEFAULT'`).
+- Explicitly marked all live API error branches (missing keys, client failures, API exceptions) as `FAILED_LIVE_API`.
+- Implemented `TestProvenanceAndIntegrityContracts` in `tests/test_vision_adapter.py` verifying abstract instantiation guards, live adapter properties, and mock provenance states.
+
+### 8.3 Ground-Truth Side-Channel Elimination (Current HEAD)
+- Removed universal `set_ground_truth` injection from `ShortcutEvaluator` and comparison scripts.
+- Verified that live vision adapters (`GeminiVisionAdapter`, `OpenAIVisionAdapter`, `AnthropicVisionAdapter`) never expose `set_ground_truth`.
+- Restricted ground-truth injection exclusively to offline synthetic oracles (`MockStrategy.ORACLE`).
+
+### 8.4 Documentation, Metric Rigor & Link Portability (Current HEAD)
+- Replaced numerical self-awarded rubric scores in `docs/submission_guide.md` with a transparent evidence status matrix.
+- Labeled all 10 tabletop optical scenarios in `docs/real_world_validation.md` as proposed validation scenarios, explicitly noting hardware experiments have not yet been completed, and added a detailed section on synthetic 2D optical model limitations.
+- Relabeled `docs/model_evaluation_report.md` and `docs/bias_and_shortcut_audit.md` as `CALIBRATED SIMULATION BASELINE — NOT LIVE MODEL EVIDENCE`.
+- Removed `VNR +37% Certified` badge from `README.md` and reconciled test counts.
+- Replaced all local machine `file:///c:/Users/...` paths across all documentation with portable repository-relative links.
+

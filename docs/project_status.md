@@ -13,19 +13,19 @@
 | Verification Dimension | Current Status | Empirical Evidence |
 |---|---|---|
 | **CI / CD Pipeline** | **GREEN (PASSING)** | Verified across Python 3.11 and Python 3.12 |
-| **Automated Test Suite** | **342 / 342 PASSED (100%)** | 0 failed, 0 skipped across all modules |
+| **Automated Test Suite** | **348 / 348 PASSED (100%)** | 0 failed, 0 skipped across all modules |
 | **Code Formatting** | **100% CLEAN** | `ruff format --check .` (0 files unformatted) |
 | **Code Linting** | **0 LINT ERRORS** | `ruff check .` (0 warnings, 0 errors) |
 | **Mathematical Dataset Audit** | **11 / 11 CHECKS PASSED** | Certified by `DatasetAuditor.audit_all()` |
 | **Blind Test Isolation** | **CONFIRMED AIR-GAPPED** | 0 leakage failures; non-semantic hash naming |
-| **Visual Necessity (VNR)** | **+37.14% [CERTIFIED]** | 8-condition ablation suite confirms vision necessity |
+| **Visual Necessity (VNR)** | **+37.14% [SIMULATED BASELINE]** | 8-condition ablation suite confirms vision necessity |
 | **Geometric Verifiers** | **TRIPLE-REDUNDANT** | Virtual Target + Fermat Path + Direct Snell Vector |
 | **Interactive Dashboard** | **100% FUNCTIONAL** | Streamlit UI: Scene Lab, Model Arena, Analytics |
-| **Physical Optical Metrology**| **DOCUMENTED** | 10 tabletop test scenarios with homography transforms |
+| **Physical Optical Metrology**| **PROPOSED PROTOCOL** | 10 tabletop test scenarios with homography transforms (hardware pending) |
 
 ---
 
-## 2. Test Suite Breakdown (342 Passing Tests)
+## 2. Test Suite Breakdown (348 Passing Tests)
 
 ```
   AUTOMATED TEST DISTRIBUTION ACROSS SUBSYSTEMS
@@ -43,7 +43,7 @@
 - **`tests/test_shortcut_evaluator.py`:** 4/4 passed (Verifies 8-condition multimodal ablations, Wilson CIs, and leak detection).
 - **`tests/test_full_pipeline_integration.py`:** 20/20 passed (Covers all 14 deliberate corruption checks and pipeline determinism).
 - **`tests/test_dataset_auditor.py`:** 6/6 passed (Verifies live benchmark isolation, prompt neutrality, and hash naming).
-- **`tests/test_vision_adapter.py`:** 20/20 passed (Verifies Gemini, OpenAI, and Anthropic adapter lifecycles, error retries, and token pricing).
+- **`tests/test_vision_adapter.py`:** 28/28 passed (Verifies Gemini, OpenAI, and Anthropic adapter lifecycles, error retries, token pricing, abstract contracts, and strict provenance typing).
 - **`tests/test_scoring_engine.py`:** 25/25 passed (Verifies joint pair scoring, Wilson score confidence intervals, and reason code metrics).
 - **`tests/test_analytics.py` & `tests/test_arena.py`:** 8/8 passed (Verifies dashboard data loaders, prediction hash-locks, and filter aggregations).
 

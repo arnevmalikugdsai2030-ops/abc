@@ -1,20 +1,24 @@
 # MIRRORLAB: Real-World Physical Optical Experiment & Validation Protocol
 ## Bridging Synthetic Geometric Optics and Physical Industrial Inspection
 
-**Document Version:** 1.0.0  
-**Status:** Authoritative Engineering Protocol  
+**Document Version:** 1.1.0  
+**Status:** Proposed Experimental Design & Hardware Metrology Protocol  
 **Hackathon:** Innodata Frontier AI Hackathon 2026 | Track 2: Visual Task Factory  
-**Authors:** MIRRORLAB Scientific Core & Optical Metrology Team  
+**Authors:** MIRRORLAB Research & Design Team  
 
 ---
 
 ## 1. Executive Summary & Objective
 
+> [!IMPORTANT]
+> **EXPERIMENTAL STATUS NOTICE:**
+> The physical hardware experiments described in this document represent a **proposed tabletop validation protocol and metrology design**, NOT completed laboratory trials. Hardware components have been specified, error budgets quantified, and alignment procedures formalized, but physical capture on physical optical breadboards has NOT yet been executed. All empirical evaluations reported in the benchmark derive from the mathematically verified synthetic geometric simulation.
+
 MIRRORLAB evaluates Vision-Language Models on 2D specular reflection geometry through an industrial cavity inspection metaphor: can a fixed camera inspect a hidden target defect (the red-X scratch) via a finite planar mirror in the presence of opaque obstacles?
 
 While synthetic vector ray-tracing guarantees mathematically exact ground truth ($10^{-7}$ root tolerance via Brent's method and Fermat stationary paths), physical inspection systems operate under real-world optical phenomena: finite beam widths, lens barrel distortion, surface roughness (BRDF), ambient illumination scattering, and mechanical tolerance limits.
 
-This protocol establishes the physical metrology, coordinate registration, error budget, and 10 benchmarked real-world test scenarios required to transfer MIRRORLAB tasks from synthetic diagrams to physical optical test benches with zero ground-truth ambiguity.
+This protocol establishes the physical metrology, coordinate registration, error budget, and 10 proposed real-world test scenarios required to transfer MIRRORLAB tasks from synthetic diagrams to physical optical test benches with zero ground-truth ambiguity.
 
 ```
                     PHYSICAL OPTICAL METROLOGY WORKFLOW
@@ -114,14 +118,36 @@ To ensure physical micrometer positioning errors ($\pm 0.5\text{ mm}$) can never
 $$\text{Distractor Clearance} \ge 15.0\text{ mm} \gg 3 \cdot \sigma_{\text{pos}} = 1.5\text{ mm}$$
 This provides a safety margin $> 10\times$ the physical mechanical tolerance.
 
+### 4.2 Synthetic 2D Model Limitations & Sim-to-Real Discrepancies
+The synthetic 2D ray-tracing engine models an idealized planar optical world. While this enables exact mathematical ground truth with zero annotation ambiguity, real-world inspection engineers must account for several fundamental physical differences:
+
+1. **3D Beam Geometry & Out-of-Plane Divergence:**
+   - *Synthetic Model:* Zero-thickness, infinite-depth 2D planar rays.
+   - *Physical Reality:* Real optical rays are 3D cones with finite numerical aperture ($NA$). Any out-of-plane mirror tilt ($\Delta \phi_z \ne 0$) or camera height mismatch ($\Delta Z$) directs the reflected cone above or below the target scratch.
+2. **Lens Optical Distortion:**
+   - *Synthetic Model:* Perfect pinhole orthographic projection with rectilinear ray paths.
+   - *Physical Reality:* Physical lenses exhibit non-linear radial (barrel/pincushion) and tangential distortion ($k_1, k_2, p_1, p_2$). Uncorrected distortion curves straight optical corridors by up to several pixels near image perimeters.
+3. **Mirror Surface Imperfections & Flatness:**
+   - *Synthetic Model:* Perfectly flat mathematical line segment with uniform 100% specular reflectance across all angles.
+   - *Physical Reality:* Commercial float glass mirrors exhibit micro-waviness ($\approx \lambda/2$ to $\lambda/4$ per inch), edge roll-off near physical cut boundaries, and potential micro-scratches that cause local beam scatter.
+4. **Surface Roughness & Non-Ideal BRDF:**
+   - *Synthetic Model:* Ideal Dirac-delta specular reflection ($\theta_r = \theta_i$).
+   - *Physical Reality:* Real metallic surfaces scatter light according to a bidirectional reflectance distribution function (BRDF), creating a specular lobe with angular half-width $\approx 0.5^\circ - 2.0^\circ$ rather than an infinitesimal line.
+5. **Illumination, Ambient Shadows & Inter-Reflections:**
+   - *Synthetic Model:* Constant high-contrast diagram rendering without optical shadows or multiple reflections.
+   - *Physical Reality:* Ambient shopfloor lighting ($300-1000\text{ lux}$) creates diffuse background glare, obstacle cast shadows, and subtle secondary reflections from matte barriers.
+6. **Hardware Calibration & Mounting Tolerances:**
+   - *Synthetic Model:* Exact continuous coordinates $(X, Y)$ known to 64-bit floating point precision.
+   - *Physical Reality:* Mechanical mounts introduce placement tolerances ($\pm 0.5\text{ mm}$ translation, $\pm 0.1^\circ$ rotation). High clearance margins ($\ge 15.0\text{ mm}$) are strictly required to keep boundary cases unambiguous.
+
 ---
 
-## 5. Ten Benchmarked Real-World Test Scenarios
+## 5. Ten Proposed Tabletop Validation Scenarios
 
-The following 10 physical scenarios have been calibrated on the optical breadboard, matching the benchmark categories:
+The following 10 proposed physical scenarios have been designed with exact metrological parameters to correspond to benchmark categories for prospective physical hardware testing:
 
 ```
-  SCENARIOS 1-10 METROLOGICAL PARAMETERS TABLE
+  PROPOSED SCENARIOS 1-10 METROLOGICAL PARAMETERS TABLE
 ```
 
 | ID | Category | Mirror $[A \to B]$ (mm) | Camera $(X, Y, \theta)$ | Target $(X_T, Y_T)$ | Physical Obstacles | Expected Physical State |
@@ -168,7 +194,7 @@ To execute physical verification on the bench:
 
 > [!NOTE]
 > **Honest Scientific Disclosure:**
-> MIRRORLAB's headline benchmark (230 packages, 350 model-facing tasks) is generated synthetically via triple-verified vector geometry. The 10 physical scenarios described above define the exact tabletop hardware setup and transfer protocol developed to validate that synthetic tasks correspond to physical optics. The physical validation confirms that the simulation's mathematical assumptions (specular reflection, ray straightness, boundary occlusions) accurately describe physical reality when built with optical components.
+> MIRRORLAB's benchmark (230 packages, 350 model-facing tasks) is generated synthetically via triple-verified vector geometry. Physical experiments on an optical breadboard have NOT yet been conducted. The protocol, error budgets, and 10 proposed tabletop scenarios above provide the formal bridge and calibration framework for prospective physical verification, detailing the exact specifications and error limits under which 2D synthetic optics generalize to physical hardware.
 
 ---
-*Protocol verified by MIRRORLAB Optical Metrology Team.*
+*Protocol designed for prospective hardware validation by MIRRORLAB.*

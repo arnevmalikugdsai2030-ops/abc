@@ -184,7 +184,10 @@ def evaluate_single_provider(
             img_path = img_dir / img_file
             ref_gt = all_gt.get(tid, {})
 
-            if isinstance(adapter, MockVisionAdapter):
+            if (
+                isinstance(adapter, MockVisionAdapter)
+                and getattr(adapter, "strategy", None) == MockStrategy.ORACLE
+            ):
                 adapter.set_ground_truth(ref_gt, task_id=tid)
 
             # Blind Model Query

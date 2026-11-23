@@ -1,18 +1,26 @@
 # MIRRORLAB: Visual Necessity & Shortcut-Resistance Audit Report
+## CALIBRATED SIMULATION BASELINE — NOT LIVE MODEL EVIDENCE
 **Evaluation Date:** 2026-11-23T06:21:53.925173+00:00  
 **Evaluated Model / Strategy:** `mock-realistic-gpt4o-simulation`  
 **Provenance:** `CALIBRATED_SIMULATION` (mock)  
 **Split:** `dev` (N = 70 tasks)  
 
 > [!WARNING]
-> **EVALUATION PROVENANCE:** This audit was performed using an offline **CALIBRATED SIMULATION BASELINE (MOCK RUNNER)**. The metrics represent simulated behavioral baselines and are **NOT** live API responses from frontier models.
+> **EVALUATION PROVENANCE:** This audit was performed using an offline **CALIBRATED SIMULATION BASELINE (MOCK RUNNER)**. The metrics represent simulated behavioral baselines and are **NOT** live API responses from proprietary frontier models.
 
+### Simulation Scope & Interpretability Limits:
+- **What this simulation establishes:**
+  - Evaluates the design of the task suite against language-only and filename-only shortcuts; removing diagram pixels drops simulated accuracy from 75.7% to 38.6% (VNR = +37.14%).
+  - Confirms that non-semantic hash identifiers yield 50.0% accuracy (pure chance), preventing answer leakage.
+  - Verifies that the evaluation harness calculates VNR, LPB, CIS, and GS deterministically without manual intervention.
+- **What this simulation CANNOT establish:**
+  - It does NOT constitute empirical performance claims about live commercial frontier model APIs. Those require live API execution with registered credentials.
 
 ## 1. Executive Summary & Verification Verdict
 
 | Metric | Value | Reference Standard | Empirical Verdict |
 |---|---|---|---|
-| **Visual Necessity Ratio (VNR)** | `+37.14%` | ≥ +15.0% | [CERTIFIED VISION-NECESSARY] |
+| **Visual Necessity Ratio (VNR)** | `+37.14%` | ≥ +15.0% | [SIMULATED BASELINE PASS] |
 | **Language Prior Bias (LPB)** | `-11.43%` | ±5.0% of chance | [TEXTUAL HEURISTIC DETECTED] |
 | **Cosmetic Invariance Score (CIS)** | `100.00%` | ≥ 90.0% | [ROBUST TO STYLING] |
 | **Geometric Sensitivity (GS)** | `+31.42%` | ≥ +20.0% drop | [GEOMETRY-CRITICAL] |
@@ -44,7 +52,7 @@ This confirms that prompt language alone contains zero exploitable shortcuts, re
 
 ### B. Zero Identifier Leakage
 Evaluating models on public task IDs and image filenames (`filename_only`) yields `50.0%` accuracy, which is indistinguishable from random guessing.
-This empirically proves the non-semantic hash identifiers completely eliminate answer leakage.
+This confirms that the non-semantic hash identifiers eliminate detectable answer leakage under blind evaluation.
 
 ### C. Spatial vs Cosmetic Decoupling
 - **Cosmetic Invariance:** Inverting color palettes or applying visual styling yields a minimal accuracy delta of `+0.0%`.

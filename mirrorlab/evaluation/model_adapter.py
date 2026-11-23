@@ -73,14 +73,14 @@ class ModelResponse(BaseModel):
     finish_reason: str | None = None
     timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     error: str | None = None
-    is_mock: bool = False
+    is_mock: bool = True
     evaluation_type: str = Field(
         default="mock",
         description="One of: 'mock', 'live_api', 'human', 'synthetic_baseline'",
     )
     provenance_status: str = Field(
-        default="SIMULATED",
-        description="Clear provenance: 'VERIFIED_LIVE_API', 'CALIBRATED_SIMULATION', 'SYNTHETIC_ORACLE'",
+        default="UNVERIFIED_DEFAULT",
+        description="Clear provenance: 'VERIFIED_LIVE_API', 'CALIBRATED_SIMULATION', 'SYNTHETIC_ORACLE', 'FAILED_LIVE_API', 'UNVERIFIED_DEFAULT'",
     )
     raw_metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -154,19 +154,19 @@ class BaseVisionAdapter(ABC):
         return self.settings.temperature
 
     @property
+    @abstractmethod
     def is_mock(self) -> bool:
         """Indicates whether this adapter runs simulated/mock responses."""
-        return False
 
     @property
+    @abstractmethod
     def evaluation_type(self) -> str:
         """One of 'mock', 'live_api', 'human', 'synthetic_baseline'."""
-        return "live_api"
 
     @property
+    @abstractmethod
     def provenance_status(self) -> str:
         """Detailed provenance status string."""
-        return "VERIFIED_LIVE_API"
 
     def validate_image(self, image_path: Path | str) -> Path:
         """Validates that the image file exists and is a readable file."""
@@ -238,6 +238,18 @@ class GeminiVisionAdapter(BaseVisionAdapter):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
         self._client: Any = None
 
+    @property
+    def is_mock(self) -> bool:
+        return False
+
+    @property
+    def evaluation_type(self) -> str:
+        return "live_api"
+
+    @property
+    def provenance_status(self) -> str:
+        return "VERIFIED_LIVE_API"
+
     def _get_client(self) -> Any:
         if self._client is None:
             if not self.api_key:
@@ -293,6 +305,8 @@ class GeminiVisionAdapter(BaseVisionAdapter):
                 latency_sec=latency,
                 error="GEMINI_API_KEY is not set. Provide api_key or set environment variable.",
                 is_mock=False,
+                evaluation_type="live_api",
+                provenance_status="FAILED_LIVE_API",
             )
 
         try:
@@ -317,6 +331,8 @@ class GeminiVisionAdapter(BaseVisionAdapter):
                 latency_sec=latency,
                 error=f"Client initialization error: {e}",
                 is_mock=False,
+                evaluation_type="live_api",
+                provenance_status="FAILED_LIVE_API",
             )
 
         # Retry loop with exponential backoff
@@ -371,6 +387,8 @@ class GeminiVisionAdapter(BaseVisionAdapter):
                     retry_count=retries,
                     finish_reason=finish_reason,
                     is_mock=False,
+                    evaluation_type="live_api",
+                    provenance_status="VERIFIED_LIVE_API",
                     raw_metadata=raw_meta,
                 )
 
@@ -391,6 +409,8 @@ class GeminiVisionAdapter(BaseVisionAdapter):
             retry_count=retries,
             error=last_error_msg or "Unknown generation error",
             is_mock=False,
+            evaluation_type="live_api",
+            provenance_status="FAILED_LIVE_API",
         )
 
 
@@ -418,6 +438,18 @@ class AnthropicVisionAdapter(BaseVisionAdapter):
         self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
         self._client: Any = None
 
+    @property
+    def is_mock(self) -> bool:
+        return False
+
+    @property
+    def evaluation_type(self) -> str:
+        return "live_api"
+
+    @property
+    def provenance_status(self) -> str:
+        return "VERIFIED_LIVE_API"
+
     def _get_client(self) -> Any:
         if self._client is None:
             if not self.api_key:
@@ -439,6 +471,20 @@ class AnthropicVisionAdapter(BaseVisionAdapter):
         **kwargs: Any,
     ) -> ModelResponse:
         img_p = self.validate_image(image_path)
+        t0 = time.perf_counter()
+
+        if not self.api_key:
+            latency = time.perf_counter() - t0
+            return ModelResponse(
+                raw_text="",
+                model_name=self.model_name,
+                latency_sec=latency,
+                error="ANTHROPIC_API_KEY is not set. Provide api_key or set environment variable.",
+                is_mock=False,
+                evaluation_type="live_api",
+                provenance_status="FAILED_LIVE_API",
+            )
+
         with open(img_p, "rb") as f:
             b64_data = base64.b64encode(f.read()).decode("utf-8")
 
@@ -459,7 +505,6 @@ class AnthropicVisionAdapter(BaseVisionAdapter):
             }
         ]
 
-        t0 = time.perf_counter()
         try:
             client = self._get_client()
             res = client.messages.create(
@@ -481,6 +526,8 @@ class AnthropicVisionAdapter(BaseVisionAdapter):
                 ),
                 latency_sec=latency,
                 is_mock=False,
+                evaluation_type="live_api",
+                provenance_status="VERIFIED_LIVE_API",
             )
         except Exception as e:  # noqa: BLE001
             latency = time.perf_counter() - t0
@@ -490,6 +537,8 @@ class AnthropicVisionAdapter(BaseVisionAdapter):
                 latency_sec=latency,
                 error=str(e),
                 is_mock=False,
+                evaluation_type="live_api",
+                provenance_status="FAILED_LIVE_API",
             )
 
 
@@ -518,6 +567,18 @@ class OpenAIVisionAdapter(BaseVisionAdapter):
         super().__init__(model_name=model_name, settings=settings)
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self._client: Any = None
+
+    @property
+    def is_mock(self) -> bool:
+        return False
+
+    @property
+    def evaluation_type(self) -> str:
+        return "live_api"
+
+    @property
+    def provenance_status(self) -> str:
+        return "VERIFIED_LIVE_API"
 
     def _get_client(self) -> Any:
         if self._client is None:
@@ -573,6 +634,8 @@ class OpenAIVisionAdapter(BaseVisionAdapter):
                 latency_sec=latency,
                 error="OPENAI_API_KEY is not set. Provide api_key or set environment variable.",
                 is_mock=False,
+                evaluation_type="live_api",
+                provenance_status="FAILED_LIVE_API",
             )
 
         with open(img_p, "rb") as f:
@@ -638,6 +701,8 @@ class OpenAIVisionAdapter(BaseVisionAdapter):
                     retry_count=retries,
                     finish_reason=str(finish_reason),
                     is_mock=False,
+                    evaluation_type="live_api",
+                    provenance_status="VERIFIED_LIVE_API",
                 )
             except Exception as e:  # noqa: BLE001
                 last_error_msg = str(e)
@@ -656,6 +721,8 @@ class OpenAIVisionAdapter(BaseVisionAdapter):
             retry_count=retries,
             error=last_error_msg or "Unknown generation error",
             is_mock=False,
+            evaluation_type="live_api",
+            provenance_status="FAILED_LIVE_API",
         )
 
 
@@ -844,11 +911,13 @@ class MockVisionAdapter(BaseVisionAdapter):
             retry_count=0,
             finish_reason="STOP",
             is_mock=True,
+            evaluation_type=self.evaluation_type,
+            provenance_status=self.provenance_status,
             raw_metadata={
                 "strategy": self.strategy.value,
                 "task_id": task_id,
                 "is_simulated": True,
-                "provenance": "SIMULATED — NOT AN ACTUAL MODEL API RESULT",
+                "provenance": f"SIMULATED — {self.provenance_status} — NOT AN ACTUAL MODEL API RESULT",
             },
         )
 

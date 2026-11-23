@@ -3,10 +3,9 @@
 
 [![Innodata Frontier AI Hackathon 2026](https://img.shields.io/badge/Hackathon-Track_2:_Visual_Task_Factory-blue.svg)](https://innodata.com)
 [![CI Status](https://github.com/arnevmalikugdsai2030-ops/abc/actions/workflows/ci.yml/badge.svg)](https://github.com/arnevmalikugdsai2030-ops/abc/actions/workflows/ci.yml)
-[![Test Suite](https://img.shields.io/badge/Tests-342_Passed-success.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-348_Passed-success.svg)](tests/)
 [![Verification Engine](https://img.shields.io/badge/Triple_Geometry_Oracle-Consensus_Verified-brightgreen.svg)](mirrorlab/geometry/ray_march_verifier.py)
 [![Dataset Audit](https://img.shields.io/badge/Dataset_Audit-11%2F11_Passed-brightgreen.svg)](docs/benchmark_audit_report.md)
-[![Visual Necessity](https://img.shields.io/badge/Visual_Necessity-VNR_+37%25_Certified-blue.svg)](docs/bias_and_shortcut_audit.md)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -185,12 +184,15 @@ Every dataset build must pass an executable 11-point audit executed directly on 
 
 Does the benchmark genuinely require visual image inspection, or can models exploit language priors, prompt phrasing, or filename hints?
 
+> [!NOTE]
+> **Ablation Provenance Notice:** The ablation metrics below reflect the offline calibrated simulation baseline (`shortcut_evaluator.py`). They establish that the benchmark design and non-semantic IDs eliminate text-only and filename shortcuts under controlled conditions. Live model evaluations require execution with valid API keys.
+
 MIRRORLAB evaluates benchmark resilience across **8 controlled multimodal ablation conditions** (`mirrorlab/evaluation/shortcut_evaluator.py`):
 
 | # | Condition | Sample (k/N) | Accuracy (95% CI) | Δ vs Multimodal | Verification Verdict |
 |---|---|---|---|---|---|
 | 1 | `image_plus_question` | 53/70 | **75.7%** [64.5%, 84.2%] | Baseline | Standard Multimodal Baseline |
-| 2 | `question_only` (Blank canvas) | 27/70 | **38.6%** [28.1%, 50.3%] | **-37.1%** | **VNR = +37.14% [Vision Necessary]** |
+| 2 | `question_only` (Blank canvas) | 27/70 | **38.6%** [28.1%, 50.3%] | **-37.1%** | **VNR = +37.14% [Simulation Baseline]** |
 | 3 | `metadata_only` (Text layout) | 33/70 | **47.1%** [35.9%, 58.7%] | **-28.6%** | Zero Prompt Metadata Leakage |
 | 4 | `filename_only` (Public IDs) | 35/70 | **50.0%** [38.6%, 61.4%] | **-25.7%** | Zero Identifier Leakage (Random Chance) |
 | 5 | `critical_geometry_ablated` | 21/70 | **30.0%** [20.5%, 41.5%] | **-45.7%** | Mirror Aperture is Indispensable |
@@ -321,18 +323,18 @@ inno/
 
 The complete engineering, mathematical, and empirical specifications are documented across 12 comprehensive master documents:
 
-1. [**README.md**](file:///c:/Users/malik/Desktop/inno/README.md) — Master Repository Hub & Overview
-2. [**docs/architecture.md**](file:///c:/Users/malik/Desktop/inno/docs/architecture.md) — System Architecture & Modular Pipeline Specification
-3. [**docs/methodology.md**](file:///c:/Users/malik/Desktop/inno/docs/methodology.md) — Mathematical Foundations & Physical Optics Proofs
-4. [**docs/dataset_card.md**](file:///c:/Users/malik/Desktop/inno/docs/dataset_card.md) — Dataset Card & Inventory (230 packages, 350 tasks, 700 images)
-5. [**docs/benchmark_audit_report.md**](file:///c:/Users/malik/Desktop/inno/docs/benchmark_audit_report.md) — Mathematical Audit Report (11/11 Checks Passed)
-6. [**docs/model_evaluation_report.md**](file:///c:/Users/malik/Desktop/inno/docs/model_evaluation_report.md) — Multi-Model Frontier Evaluation & Failure Taxonomy
-7. [**docs/counterfactual_report.md**](file:///c:/Users/malik/Desktop/inno/docs/counterfactual_report.md) — Counterfactual Sensitivity & OOD Stress Analysis
-8. [**docs/bias_and_shortcut_audit.md**](file:///c:/Users/malik/Desktop/inno/docs/bias_and_shortcut_audit.md) — 8-Condition Visual Necessity & Leakage Audit ($VNR = +37.14\%$)
-9. [**docs/real_world_validation.md**](file:///c:/Users/malik/Desktop/inno/docs/real_world_validation.md) — Tabletop Optical Rig Metrology & 10 Physical Scenarios
-10. [**docs/reproducibility.md**](file:///c:/Users/malik/Desktop/inno/docs/reproducibility.md) — Single-Command Reproduction & Offline Verification Guide
-11. [**docs/project_status.md**](file:///c:/Users/malik/Desktop/inno/docs/project_status.md) — Production Health, Test Distribution (342 Passed), & CI Status
-12. [**docs/submission_guide.md**](file:///c:/Users/malik/Desktop/inno/docs/submission_guide.md) — Hackathon Judge Walkthrough & Rubric Assessment (98/100)
+1. [**README.md**](README.md) — Master Repository Hub & Overview
+2. [**docs/architecture.md**](docs/architecture.md) — System Architecture & Modular Pipeline Specification
+3. [**docs/methodology.md**](docs/methodology.md) — Mathematical Foundations & Physical Optics Proofs
+4. [**docs/dataset_card.md**](docs/dataset_card.md) — Dataset Card & Inventory (230 packages, 350 tasks, 700 images)
+5. [**docs/benchmark_audit_report.md**](docs/benchmark_audit_report.md) — Mathematical Audit Report (11/11 Checks Passed)
+6. [**docs/model_evaluation_report.md**](docs/model_evaluation_report.md) — Multi-Model Frontier Evaluation & Failure Taxonomy
+7. [**docs/counterfactual_report.md**](docs/counterfactual_report.md) — Counterfactual Sensitivity & OOD Stress Analysis
+8. [**docs/bias_and_shortcut_audit.md**](docs/bias_and_shortcut_audit.md) — 8-Condition Visual Necessity & Leakage Audit
+9. [**docs/real_world_validation.md**](docs/real_world_validation.md) — Tabletop Optical Rig Metrology & 10 Physical Scenarios
+10. [**docs/reproducibility.md**](docs/reproducibility.md) — Single-Command Reproduction & Offline Verification Guide
+11. [**docs/project_status.md**](docs/project_status.md) — Production Health, Test Distribution, & CI Status
+12. [**docs/submission_guide.md**](docs/submission_guide.md) — Hackathon Judge Walkthrough & Evidence-Based Rubric Assessment
 
 ---
 

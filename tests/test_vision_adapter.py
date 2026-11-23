@@ -21,9 +21,12 @@ from pydantic import ValidationError
 
 from mirrorlab.evaluation.model_adapter import (
     PROVIDER_PRICING,
+    AnthropicVisionAdapter,
+    BaseVisionAdapter,
     GeminiVisionAdapter,
     MockStrategy,
     MockVisionAdapter,
+    ModelResponse,
     ModelSettings,
     OpenAIVisionAdapter,
     get_model_adapter,
@@ -318,3 +321,86 @@ class TestRealisticBaselinesAndPricing:
         adapter = get_model_adapter("mock-gpt4o")
         assert isinstance(adapter, MockVisionAdapter)
         assert adapter.strategy == MockStrategy.REALISTIC_GPT4O_BASELINE
+
+
+class TestProvenanceAndIntegrityContracts:
+    """Verifies strict provenance typing and absence of ground-truth leakage channels."""
+
+    def test_base_adapter_cannot_be_instantiated_directly(self):
+        with pytest.raises(TypeError):
+            BaseVisionAdapter("test-model")  # type: ignore
+
+    def test_incomplete_subclass_fails_instantiation(self):
+        class IncompleteAdapter(BaseVisionAdapter):
+            def ask(self, image_path, question, **kwargs):
+                return ModelResponse(raw_text="", model_name="incomplete")
+
+        with pytest.raises(TypeError) as excinfo:
+            IncompleteAdapter("incomplete-model")
+        assert "is_mock" in str(excinfo.value) or "evaluation_type" in str(
+            excinfo.value
+        )
+
+    def test_model_response_safe_defaults(self):
+        resp = ModelResponse(raw_text="{}", model_name="dummy")
+        assert resp.is_mock is True
+        assert resp.evaluation_type == "mock"
+        assert resp.provenance_status == "UNVERIFIED_DEFAULT"
+
+    def test_live_adapters_do_not_expose_set_ground_truth(self):
+        gemini = GeminiVisionAdapter(model_name="gemini-2.5-flash", api_key="dummy")
+        openai = OpenAIVisionAdapter(model_name="gpt-4o", api_key="dummy")
+        anthropic = AnthropicVisionAdapter(
+            model_name="claude-3-7-sonnet", api_key="dummy"
+        )
+
+        for adapter in (gemini, openai, anthropic):
+            assert not hasattr(adapter, "set_ground_truth")
+            assert adapter.is_mock is False
+            assert adapter.evaluation_type == "live_api"
+            assert adapter.provenance_status == "VERIFIED_LIVE_API"
+
+    def test_live_adapter_failures_record_failed_live_api_provenance(
+        self, sample_image: Path
+    ):
+        with patch.dict("os.environ", {}, clear=True):
+            gemini = GeminiVisionAdapter(model_name="gemini-2.5-flash", api_key="")
+            resp = gemini.ask(sample_image, "Test question")
+            assert resp.is_mock is False
+            assert resp.evaluation_type == "live_api"
+            assert resp.provenance_status == "FAILED_LIVE_API"
+
+            openai = OpenAIVisionAdapter(model_name="gpt-4o", api_key="")
+            resp_oa = openai.ask(sample_image, "Test question")
+            assert resp_oa.is_mock is False
+            assert resp_oa.evaluation_type == "live_api"
+            assert resp_oa.provenance_status == "FAILED_LIVE_API"
+
+            anthropic = AnthropicVisionAdapter(
+                model_name="claude-3-7-sonnet", api_key=""
+            )
+            resp_ant = anthropic.ask(sample_image, "Test question")
+            assert resp_ant.is_mock is False
+            assert resp_ant.evaluation_type == "live_api"
+            assert resp_ant.provenance_status == "FAILED_LIVE_API"
+
+    def test_mock_adapter_provenance_states(self, sample_image: Path):
+        oracle = MockVisionAdapter(strategy=MockStrategy.ORACLE)
+        assert oracle.is_mock is True
+        assert oracle.evaluation_type == "synthetic_baseline"
+        assert oracle.provenance_status == "SYNTHETIC_ORACLE"
+
+        oracle.set_ground_truth({"can_see": True}, task_id="t1")
+        resp = oracle.ask(sample_image, "Prompt", task_id="t1")
+        assert resp.is_mock is True
+        assert resp.evaluation_type == "synthetic_baseline"
+        assert resp.provenance_status == "SYNTHETIC_ORACLE"
+
+        sim = MockVisionAdapter(strategy=MockStrategy.REALISTIC_GEMINI_BASELINE)
+        assert sim.is_mock is True
+        assert sim.evaluation_type == "mock"
+        assert sim.provenance_status == "CALIBRATED_SIMULATION"
+        resp_sim = sim.ask(sample_image, "Prompt", task_id="t2")
+        assert resp_sim.is_mock is True
+        assert resp_sim.evaluation_type == "mock"
+        assert resp_sim.provenance_status == "CALIBRATED_SIMULATION"

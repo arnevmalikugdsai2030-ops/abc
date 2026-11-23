@@ -36,6 +36,7 @@ from pydantic import BaseModel, Field
 
 from mirrorlab.evaluation.model_adapter import (
     BaseVisionAdapter,
+    MockStrategy,
 )
 from mirrorlab.evaluation.structured_parser import StructuredParser
 
@@ -284,8 +285,13 @@ class ShortcutEvaluator:
                     )
 
                 task_family = task.get("task_type", "TASK_A_VISIBILITY")
-                # If adapter is mock, ensure it has the ground truth and knows the task_id
-                if hasattr(adapter, "set_ground_truth"):
+                # Strictly isolate ground truth: only offline synthetic mock adapters operating in ORACLE mode
+                # may receive ground truth. Live API adapters or other baseline adapters must NEVER receive private ground truth.
+                if (
+                    getattr(adapter, "is_mock", False)
+                    and getattr(adapter, "strategy", None) == MockStrategy.ORACLE
+                    and hasattr(adapter, "set_ground_truth")
+                ):
                     adapter.set_ground_truth(gt=gt, task_id=task_id)
 
                 try:

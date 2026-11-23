@@ -300,8 +300,11 @@ def run_development_evaluation(
             img_path = img_dir / img_file
             ref_gt = all_gt.get(tid, {})
 
-            # Set ground truth in mock adapter if offline runner
-            if isinstance(adapter, MockVisionAdapter):
+            # Set ground truth in mock adapter if offline oracle runner
+            if (
+                isinstance(adapter, MockVisionAdapter)
+                and getattr(adapter, "strategy", None) == MockStrategy.ORACLE
+            ):
                 adapter.set_ground_truth(ref_gt)
 
             # Blind Model Query
