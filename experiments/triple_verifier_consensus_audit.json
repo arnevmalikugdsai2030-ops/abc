@@ -7,487 +7,2146 @@
   "records": [
     {
       "task_id": "ml_dev_0001",
+      "scene_id": "task_vis_10015",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 0.0,
-      "residual_fermat_vs_snell_mm": 0.0
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BACK_OF_MIRROR",
+          "reflection_point": null
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BACK_OF_MIRROR",
+      "reflection_coordinates": null,
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 0.0,
+        "fermat_vs_snell_mm": 0.0
+      },
+      "maximum_residual_mm": 0.0,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0002",
+      "scene_id": "task_vis_10009",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 8.17e-06,
-      "residual_fermat_vs_snell_mm": 8.17e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_REFLECTED",
+          "reflection_point": [
+            504.84576849485984,
+            732.4483012988497
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            504.84576849485984,
+            732.4483012988497
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            504.84577666965214,
+            732.4483012988497
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_REFLECTED",
+      "reflection_coordinates": [
+        504.84576849485984,
+        732.4483012988497
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 8.17e-06,
+        "fermat_vs_snell_mm": 8.17e-06
+      },
+      "maximum_residual_mm": 8.17e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0003",
+      "scene_id": "task_vis_10014",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.913e-05,
-      "residual_fermat_vs_snell_mm": 1.913e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            572.2434653494048,
+            697.592429101292
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            572.2434653494048,
+            697.5924291012919
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            572.2434836206442,
+            697.592434763894
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        572.2434653494048,
+        697.592429101292
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.913e-05,
+        "fermat_vs_snell_mm": 1.913e-05
+      },
+      "maximum_residual_mm": 1.913e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0004",
+      "scene_id": "task_vis_10007",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.38e-06,
-      "residual_fermat_vs_snell_mm": 2.38e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_INCIDENT",
+          "reflection_point": [
+            380.40603514494785,
+            703.838976184972
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            380.4060351449478,
+            703.838976184972
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            380.406032815826,
+            703.8389756985822
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_INCIDENT",
+      "reflection_coordinates": [
+        380.40603514494785,
+        703.838976184972
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.38e-06,
+        "fermat_vs_snell_mm": 2.38e-06
+      },
+      "maximum_residual_mm": 2.38e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0005",
+      "scene_id": "task_obs_25006",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.744e-05,
-      "residual_fermat_vs_snell_mm": 1.744e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_INCIDENT",
+          "reflection_point": [
+            438.3245650963739,
+            715.872299799488
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            438.3245650963738,
+            715.872299799488
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            438.3245476543018,
+            715.872299799488
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_INCIDENT",
+      "reflection_coordinates": [
+        438.3245650963739,
+        715.872299799488
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.744e-05,
+        "fermat_vs_snell_mm": 1.744e-05
+      },
+      "maximum_residual_mm": 1.744e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0006",
+      "scene_id": "task_obs_25029",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.66e-06,
-      "residual_fermat_vs_snell_mm": 1.66e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            399.10440054335197,
+            668.1796000437973
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            399.104400543352,
+            668.1796000437973
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            399.10440219325244,
+            668.1796002232952
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        399.10440054335197,
+        668.1796000437973
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.66e-06,
+        "fermat_vs_snell_mm": 1.66e-06
+      },
+      "maximum_residual_mm": 1.66e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0007",
+      "scene_id": "task_obs_25008",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.816e-05,
-      "residual_fermat_vs_snell_mm": 1.816e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            569.6566604641091,
+            661.8766599505057
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            569.6566604641091,
+            661.8766599505057
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            569.6566428439511,
+            661.8766555411707
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        569.6566604641091,
+        661.8766599505057
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.816e-05,
+        "fermat_vs_snell_mm": 1.816e-05
+      },
+      "maximum_residual_mm": 1.816e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0008",
+      "scene_id": "task_obs_25024",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 4.93e-06,
-      "residual_fermat_vs_snell_mm": 4.93e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_INCIDENT",
+          "reflection_point": [
+            477.7621190106115,
+            729.1912676941192
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            477.76211901061157,
+            729.1912676941192
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            477.76211407957686,
+            729.1912676941192
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_INCIDENT",
+      "reflection_coordinates": [
+        477.7621190106115,
+        729.1912676941192
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 4.93e-06,
+        "fermat_vs_snell_mm": 4.93e-06
+      },
+      "maximum_residual_mm": 4.93e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0009",
+      "scene_id": "task_obs_25027",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.106e-05,
-      "residual_fermat_vs_snell_mm": 2.106e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_INCIDENT",
+          "reflection_point": [
+            608.9072062004842,
+            759.5534529469072
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            608.9072062004842,
+            759.5534529469072
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            608.907227257273,
+            759.5534529469072
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_INCIDENT",
+      "reflection_coordinates": [
+        608.9072062004842,
+        759.5534529469072
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.106e-05,
+        "fermat_vs_snell_mm": 2.106e-05
+      },
+      "maximum_residual_mm": 2.106e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0010",
+      "scene_id": "task_obs_25005",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.383e-05,
-      "residual_fermat_vs_snell_mm": 2.383e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            454.92461224860676,
+            775.4905895769609
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            454.9246122486068,
+            775.4905895769609
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            454.92458872817923,
+            775.4905857353177
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        454.92461224860676,
+        775.4905895769609
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.383e-05,
+        "fermat_vs_snell_mm": 2.383e-05
+      },
+      "maximum_residual_mm": 2.383e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0011",
+      "scene_id": "base_task_repair_30013",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 7.01e-06,
-      "residual_fermat_vs_snell_mm": 7.01e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            534.9785701518124,
+            679.0515561656432
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            534.9785701518124,
+            679.0515561656432
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            534.9785631727071,
+            679.0515568658278
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        534.9785701518124,
+        679.0515561656432
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 7.01e-06,
+        "fermat_vs_snell_mm": 7.01e-06
+      },
+      "maximum_residual_mm": 7.01e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0012",
+      "scene_id": "base_task_repair_30028",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.661e-05,
-      "residual_fermat_vs_snell_mm": 2.661e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            491.3068371796428,
+            768.475571381344
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            491.3068371796429,
+            768.4755713813441
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            491.3068636943017,
+            768.475569188115
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        491.3068371796428,
+        768.475571381344
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.661e-05,
+        "fermat_vs_snell_mm": 2.661e-05
+      },
+      "maximum_residual_mm": 2.661e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0013",
+      "scene_id": "base_task_repair_30018",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 8.17e-06,
-      "residual_fermat_vs_snell_mm": 8.17e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            576.375697083989,
+            676.6677627310289
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            576.375697083989,
+            676.6677627310289
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            576.3757052547367,
+            676.6677627310289
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        576.375697083989,
+        676.6677627310289
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 8.17e-06,
+        "fermat_vs_snell_mm": 8.17e-06
+      },
+      "maximum_residual_mm": 8.17e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0014",
+      "scene_id": "base_task_repair_30025",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.246e-05,
-      "residual_fermat_vs_snell_mm": 1.246e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            469.26500927130957,
+            693.9056352511604
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            469.26500927130957,
+            693.9056352511604
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            469.2650211127179,
+            693.9056313705462
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        469.26500927130957,
+        693.9056352511604
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.246e-05,
+        "fermat_vs_snell_mm": 1.246e-05
+      },
+      "maximum_residual_mm": 1.246e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0015",
+      "scene_id": "base_task_repair_30020",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.653e-05,
-      "residual_fermat_vs_snell_mm": 1.653e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            517.2061121199906,
+            695.1607719562933
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            517.2061121199906,
+            695.1607719562933
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            517.2061286433553,
+            695.1607714188619
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        517.2061121199906,
+        695.1607719562933
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.653e-05,
+        "fermat_vs_snell_mm": 1.653e-05
+      },
+      "maximum_residual_mm": 1.653e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0016",
+      "scene_id": "base_task_repair_30015",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.253e-05,
-      "residual_fermat_vs_snell_mm": 1.253e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            395.48966093901595,
+            730.6500635106429
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            395.4896609390159,
+            730.6500635106429
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            395.48964840830706,
+            730.6500635106429
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        395.48966093901595,
+        730.6500635106429
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.253e-05,
+        "fermat_vs_snell_mm": 1.253e-05
+      },
+      "maximum_residual_mm": 1.253e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0065",
+      "scene_id": "task_ood_80019",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 6.63e-06,
-      "residual_fermat_vs_snell_mm": 6.63e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_INCIDENT",
+          "reflection_point": [
+            71.78668827737226,
+            638.999967253821
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            71.78668827737238,
+            638.999967253821
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            71.78668331621076,
+            638.999962853243
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_INCIDENT",
+      "reflection_coordinates": [
+        71.78668827737226,
+        638.999967253821
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 6.63e-06,
+        "fermat_vs_snell_mm": 6.63e-06
+      },
+      "maximum_residual_mm": 6.63e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0066",
+      "scene_id": "task_ood_80004",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 0.0,
-      "residual_fermat_vs_snell_mm": 0.0
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BACK_OF_MIRROR",
+          "reflection_point": null
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BACK_OF_MIRROR",
+      "reflection_coordinates": null,
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 0.0,
+        "fermat_vs_snell_mm": 0.0
+      },
+      "maximum_residual_mm": 0.0,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0067",
+      "scene_id": "task_ood_80006",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 8.88e-06,
-      "residual_fermat_vs_snell_mm": 8.88e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            799.1017530459732,
+            407.58571978637616
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            799.1017530459733,
+            407.58571978637616
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            799.1017459314389,
+            407.58572509967286
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        799.1017530459732,
+        407.58571978637616
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 8.88e-06,
+        "fermat_vs_snell_mm": 8.88e-06
+      },
+      "maximum_residual_mm": 8.88e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0068",
+      "scene_id": "task_ood_80010",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 0.0,
-      "residual_fermat_vs_snell_mm": 0.0
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BACK_OF_MIRROR",
+          "reflection_point": null
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BACK_OF_MIRROR",
+      "reflection_coordinates": null,
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 0.0,
+        "fermat_vs_snell_mm": 0.0
+      },
+      "maximum_residual_mm": 0.0,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0069",
+      "scene_id": "task_ood_80009",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 0.0,
-      "residual_fermat_vs_snell_mm": 0.0
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "MISSED_MIRROR",
+          "reflection_point": [
+            null,
+            null
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            null,
+            null
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "MISSED_MIRROR",
+      "reflection_coordinates": [
+        null,
+        null
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 0.0,
+        "fermat_vs_snell_mm": 0.0
+      },
+      "maximum_residual_mm": 0.0,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_dev_0070",
+      "scene_id": "task_ood_80012",
       "split": "dev",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 8.74e-06,
-      "residual_fermat_vs_snell_mm": 8.74e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            896.0840846495671,
+            380.01843640270897
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            896.0840846495669,
+            380.01843640270886
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            896.0840788143528,
+            380.0184429036106
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        896.0840846495671,
+        380.01843640270897
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 8.74e-06,
+        "fermat_vs_snell_mm": 8.74e-06
+      },
+      "maximum_residual_mm": 8.74e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0001",
+      "scene_id": "task_vis_10012",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.82e-06,
-      "residual_fermat_vs_snell_mm": 2.82e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            373.78042754724555,
+            762.1718219933952
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            373.78042754724555,
+            762.1718219933953
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            373.7804303705823,
+            762.1718219933953
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        373.78042754724555,
+        762.1718219933952
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.82e-06,
+        "fermat_vs_snell_mm": 2.82e-06
+      },
+      "maximum_residual_mm": 2.82e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0002",
+      "scene_id": "task_vis_10010",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.12e-06,
-      "residual_fermat_vs_snell_mm": 2.12e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            446.7544122656996,
+            767.5700108731442
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            446.75441226569967,
+            767.5700108731442
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            446.75441027244176,
+            767.5700101559122
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        446.7544122656996,
+        767.5700108731442
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.12e-06,
+        "fermat_vs_snell_mm": 2.12e-06
+      },
+      "maximum_residual_mm": 2.12e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0003",
+      "scene_id": "task_vis_10006",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.81e-06,
-      "residual_fermat_vs_snell_mm": 1.81e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            585.1848978418423,
+            709.537302256479
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            585.1848978418423,
+            709.537302256479
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            585.1848960309014,
+            709.537302256479
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        585.1848978418423,
+        709.537302256479
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.81e-06,
+        "fermat_vs_snell_mm": 1.81e-06
+      },
+      "maximum_residual_mm": 1.81e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0004",
+      "scene_id": "task_vis_10019",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.745e-05,
-      "residual_fermat_vs_snell_mm": 1.745e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_REFLECTED",
+          "reflection_point": [
+            549.3189937456627,
+            678.0265984455277
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            549.3189937456627,
+            678.0265984455277
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            549.3189768836495,
+            678.0266029422008
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_REFLECTED",
+      "reflection_coordinates": [
+        549.3189937456627,
+        678.0265984455277
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.745e-05,
+        "fermat_vs_snell_mm": 1.745e-05
+      },
+      "maximum_residual_mm": 1.745e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0005",
+      "scene_id": "task_obs_25001",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 7.35e-06,
-      "residual_fermat_vs_snell_mm": 7.35e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_REFLECTED",
+          "reflection_point": [
+            553.7349674540708,
+            725.4683420108129
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            553.7349674540707,
+            725.4683420108128
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            553.7349747205451,
+            725.4683431227927
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_REFLECTED",
+      "reflection_coordinates": [
+        553.7349674540708,
+        725.4683420108129
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 7.35e-06,
+        "fermat_vs_snell_mm": 7.35e-06
+      },
+      "maximum_residual_mm": 7.35e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0006",
+      "scene_id": "task_obs_25011",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.624e-05,
-      "residual_fermat_vs_snell_mm": 1.624e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            388.8275133521038,
+            687.4989606802837
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            388.82751335210384,
+            687.4989606802837
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            388.8275295203865,
+            687.4989591571908
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        388.8275133521038,
+        687.4989606802837
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.624e-05,
+        "fermat_vs_snell_mm": 1.624e-05
+      },
+      "maximum_residual_mm": 1.624e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0007",
+      "scene_id": "task_obs_25004",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.25e-06,
-      "residual_fermat_vs_snell_mm": 2.25e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_REFLECTED",
+          "reflection_point": [
+            682.0684430661164,
+            780.6061085139436
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            682.0684430661165,
+            780.6061085139437
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            682.0684408174537,
+            780.6061084559378
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_REFLECTED",
+      "reflection_coordinates": [
+        682.0684430661164,
+        780.6061085139436
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.25e-06,
+        "fermat_vs_snell_mm": 2.25e-06
+      },
+      "maximum_residual_mm": 2.25e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0008",
+      "scene_id": "task_obs_25025",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.166e-05,
-      "residual_fermat_vs_snell_mm": 1.166e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_REFLECTED",
+          "reflection_point": [
+            553.6443831631024,
+            772.1380257015161
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            553.6443831631024,
+            772.1380257015161
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            553.6443715205378,
+            772.1380263542982
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_REFLECTED",
+      "reflection_coordinates": [
+        553.6443831631024,
+        772.1380257015161
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.166e-05,
+        "fermat_vs_snell_mm": 1.166e-05
+      },
+      "maximum_residual_mm": 1.166e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0009",
+      "scene_id": "task_obs_25000",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.717e-05,
-      "residual_fermat_vs_snell_mm": 1.717e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_INCIDENT",
+          "reflection_point": [
+            600.5605284182192,
+            763.402452971822
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            600.5605284182192,
+            763.402452971822
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            600.560545584294,
+            763.402452971822
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_INCIDENT",
+      "reflection_coordinates": [
+        600.5605284182192,
+        763.402452971822
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.717e-05,
+        "fermat_vs_snell_mm": 1.717e-05
+      },
+      "maximum_residual_mm": 1.717e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0010",
+      "scene_id": "task_obs_25007",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.317e-05,
-      "residual_fermat_vs_snell_mm": 2.317e-05
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_REFLECTED",
+          "reflection_point": [
+            425.0963955525792,
+            768.3290014175632
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            425.0963955525792,
+            768.3290014175633
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            425.0963726860501,
+            768.3290051730282
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_REFLECTED",
+      "reflection_coordinates": [
+        425.0963955525792,
+        768.3290014175632
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.317e-05,
+        "fermat_vs_snell_mm": 2.317e-05
+      },
+      "maximum_residual_mm": 2.317e-05,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0011",
+      "scene_id": "base_task_repair_30000",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 1.83e-06,
-      "residual_fermat_vs_snell_mm": 1.83e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            391.75564229406456,
+            767.8658775973743
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            391.7556422940646,
+            767.8658775973744
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            391.7556404594953,
+            767.8658775973744
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        391.75564229406456,
+        767.8658775973743
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 1.83e-06,
+        "fermat_vs_snell_mm": 1.83e-06
+      },
+      "maximum_residual_mm": 1.83e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0012",
+      "scene_id": "base_task_repair_30006",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 4.09e-06,
-      "residual_fermat_vs_snell_mm": 4.09e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            422.07328493906914,
+            753.8249104801445
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            422.0732849390692,
+            753.8249104801445
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            422.0732808467147,
+            753.8249104801445
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        422.07328493906914,
+        753.8249104801445
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 4.09e-06,
+        "fermat_vs_snell_mm": 4.09e-06
+      },
+      "maximum_residual_mm": 4.09e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0013",
+      "scene_id": "base_task_repair_30019",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.35e-06,
-      "residual_fermat_vs_snell_mm": 2.35e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            339.60379434509116,
+            752.5799443563443
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            339.6037943450912,
+            752.5799443563443
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            339.60379204700286,
+            752.5799438877115
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        339.60379434509116,
+        752.5799443563443
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.35e-06,
+        "fermat_vs_snell_mm": 2.35e-06
+      },
+      "maximum_residual_mm": 2.35e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0014",
+      "scene_id": "base_task_repair_30029",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 6.93e-06,
-      "residual_fermat_vs_snell_mm": 6.93e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            574.3822982316242,
+            677.3754701354675
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            574.3822982316241,
+            677.3754701354675
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            574.3823050931619,
+            677.3754711357503
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        574.3822982316242,
+        677.3754701354675
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 6.93e-06,
+        "fermat_vs_snell_mm": 6.93e-06
+      },
+      "maximum_residual_mm": 6.93e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0015",
+      "scene_id": "base_task_repair_30022",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 9.8e-06,
-      "residual_fermat_vs_snell_mm": 9.8e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            653.8832068233924,
+            685.8115239053369
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            653.8832068233924,
+            685.8115239053369
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            653.8832162289609,
+            685.8115211466626
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        653.8832068233924,
+        685.8115239053369
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 9.8e-06,
+        "fermat_vs_snell_mm": 9.8e-06
+      },
+      "maximum_residual_mm": 9.8e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0016",
+      "scene_id": "base_task_repair_30014",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "VISIBLE",
-      "fermat_state": "VISIBLE",
-      "snell_state": "VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 2.29e-06,
-      "residual_fermat_vs_snell_mm": 2.29e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "VISIBLE",
+          "reason": "NONE",
+          "reflection_point": [
+            468.1144441049295,
+            660.5705624879242
+          ]
+        },
+        "fermat": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            468.1144441049295,
+            660.5705624879242
+          ]
+        },
+        "snell": {
+          "state": "VISIBLE",
+          "reflection_point": [
+            468.1144418873702,
+            660.5705619240166
+          ]
+        }
+      },
+      "visibility_decision": "VISIBLE",
+      "obstruction_classification": "NONE",
+      "reflection_coordinates": [
+        468.1144441049295,
+        660.5705624879242
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 2.29e-06,
+        "fermat_vs_snell_mm": 2.29e-06
+      },
+      "maximum_residual_mm": 2.29e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0065",
+      "scene_id": "task_ood_80003",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 0.0,
-      "residual_fermat_vs_snell_mm": 0.0
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "MISSED_MIRROR",
+          "reflection_point": [
+            null,
+            null
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            null,
+            null
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "MISSED_MIRROR",
+      "reflection_coordinates": [
+        null,
+        null
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 0.0,
+        "fermat_vs_snell_mm": 0.0
+      },
+      "maximum_residual_mm": 0.0,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0066",
+      "scene_id": "task_ood_80021",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 0.0,
-      "residual_fermat_vs_snell_mm": 0.0
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "MISSED_MIRROR",
+          "reflection_point": [
+            null,
+            null
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            null,
+            null
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "MISSED_MIRROR",
+      "reflection_coordinates": [
+        null,
+        null
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 0.0,
+        "fermat_vs_snell_mm": 0.0
+      },
+      "maximum_residual_mm": 0.0,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0067",
+      "scene_id": "task_ood_80005",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 7.53e-06,
-      "residual_fermat_vs_snell_mm": 7.53e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "OUT_OF_FOV",
+          "reflection_point": [
+            105.88785284948528,
+            321.02051280707997
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            105.8878528494853,
+            321.02051280707997
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            105.88784798617463,
+            321.0205070568581
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "OUT_OF_FOV",
+      "reflection_coordinates": [
+        105.88785284948528,
+        321.02051280707997
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 7.53e-06,
+        "fermat_vs_snell_mm": 7.53e-06
+      },
+      "maximum_residual_mm": 7.53e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0068",
+      "scene_id": "task_ood_80022",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 0.0,
-      "residual_fermat_vs_snell_mm": 0.0
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BACK_OF_MIRROR",
+          "reflection_point": null
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": null
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BACK_OF_MIRROR",
+      "reflection_coordinates": null,
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 0.0,
+        "fermat_vs_snell_mm": 0.0
+      },
+      "maximum_residual_mm": 0.0,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0069",
+      "scene_id": "task_ood_80002",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 7.06e-06,
-      "residual_fermat_vs_snell_mm": 7.06e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_REFLECTED",
+          "reflection_point": [
+            805.1359186086039,
+            538.5631422506673
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            805.135918608604,
+            538.5631422506672
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            805.1359130860632,
+            538.5631466511954
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_REFLECTED",
+      "reflection_coordinates": [
+        805.1359186086039,
+        538.5631422506673
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 7.06e-06,
+        "fermat_vs_snell_mm": 7.06e-06
+      },
+      "maximum_residual_mm": 7.06e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     },
     {
       "task_id": "ml_val_0070",
+      "scene_id": "task_ood_80013",
       "split": "val",
-      "consensus_achieved": true,
-      "oracle_state": "NOT_VISIBLE",
-      "fermat_state": "NOT_VISIBLE",
-      "snell_state": "NOT_VISIBLE",
-      "residual_oracle_vs_fermat_mm": 0.0,
-      "residual_oracle_vs_snell_mm": 7.94e-06,
-      "residual_fermat_vs_snell_mm": 7.94e-06
+      "timestamp": "2026-11-23T08:00:00Z",
+      "solver_versions": {
+        "oracle": "householder-v1.0",
+        "fermat": "variational-v1.0",
+        "snell": "brent-root-v1.0"
+      },
+      "solver_outputs": {
+        "oracle": {
+          "state": "NOT_VISIBLE",
+          "reason": "BLOCKED_INCIDENT",
+          "reflection_point": [
+            65.36485422643665,
+            547.8042042490954
+          ]
+        },
+        "fermat": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            65.36485422643656,
+            547.8042042490955
+          ]
+        },
+        "snell": {
+          "state": "NOT_VISIBLE",
+          "reflection_point": [
+            65.36484888092032,
+            547.8041983718537
+          ]
+        }
+      },
+      "visibility_decision": "NOT_VISIBLE",
+      "obstruction_classification": "BLOCKED_INCIDENT",
+      "reflection_coordinates": [
+        65.36485422643665,
+        547.8042042490954
+      ],
+      "pairwise_residuals": {
+        "oracle_vs_fermat_mm": 0.0,
+        "oracle_vs_snell_mm": 7.94e-06,
+        "fermat_vs_snell_mm": 7.94e-06
+      },
+      "maximum_residual_mm": 7.94e-06,
+      "tolerance_mm": 0.0001,
+      "agreement_status": "AGREED",
+      "validation_result": "PASS"
     }
   ]
 }

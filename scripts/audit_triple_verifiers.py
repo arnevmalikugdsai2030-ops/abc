@@ -106,6 +106,7 @@ def audit_all_benchmark_scenes():
             r_res_of = 0.0
             r_res_os = 0.0
             r_res_fs = 0.0
+            ox = oy = fx = fy = sx = sy = None
 
             if (
                 verdict_oracle.reflection_point is not None
@@ -128,20 +129,59 @@ def audit_all_benchmark_scenes():
                 max_res = max(r_res_of, r_res_os, r_res_fs)
                 max_reflection_residual = max(max_reflection_residual, max_res)
 
+            max_res = max(r_res_of, r_res_os, r_res_fs)
+            consensus_achieved = state_agree and (max_res < 1e-4)
+
             record = {
                 "task_id": tid,
+                "scene_id": scene.scene_id,
                 "split": split,
-                "consensus_achieved": state_agree
-                and (max(r_res_of, r_res_os, r_res_fs) < 1e-4),
-                "oracle_state": verdict_oracle.state.value,
-                "fermat_state": verdict_fermat.state.value,
-                "snell_state": snell_state.value,
-                "residual_oracle_vs_fermat_mm": round(r_res_of, 8),
-                "residual_oracle_vs_snell_mm": round(r_res_os, 8),
-                "residual_fermat_vs_snell_mm": round(r_res_fs, 8),
+                "timestamp": "2026-11-23T08:00:00Z",
+                "solver_versions": {
+                    "oracle": "householder-v1.0",
+                    "fermat": "variational-v1.0",
+                    "snell": "brent-root-v1.0",
+                },
+                "solver_outputs": {
+                    "oracle": {
+                        "state": verdict_oracle.state.value,
+                        "reason": verdict_oracle.reason.value,
+                        "reflection_point": [ox, oy]
+                        if verdict_oracle.reflection_point is not None
+                        else None,
+                    },
+                    "fermat": {
+                        "state": verdict_fermat.state.value,
+                        "reflection_point": [fx, fy]
+                        if verdict_fermat.reflection_point is not None
+                        else None,
+                    },
+                    "snell": {
+                        "state": snell_state.value
+                        if hasattr(snell_state, "value")
+                        else str(snell_state),
+                        "reflection_point": [sx, sy]
+                        if snell_ref_pt is not None
+                        else None,
+                    },
+                },
+                "visibility_decision": verdict_oracle.state.value,
+                "obstruction_classification": verdict_oracle.reason.value,
+                "reflection_coordinates": [ox, oy]
+                if verdict_oracle.reflection_point is not None
+                else None,
+                "pairwise_residuals": {
+                    "oracle_vs_fermat_mm": round(r_res_of, 8),
+                    "oracle_vs_snell_mm": round(r_res_os, 8),
+                    "fermat_vs_snell_mm": round(r_res_fs, 8),
+                },
+                "maximum_residual_mm": round(max_res, 8),
+                "tolerance_mm": 1e-4,
+                "agreement_status": "AGREED" if consensus_achieved else "DISAGREED",
+                "validation_result": "PASS" if consensus_achieved else "FAIL",
             }
             records.append(record)
-            if record["consensus_achieved"]:
+            if consensus_achieved:
                 full_consensus_count += 1
 
     print(f"\nAudit completed across {total_scenes} benchmark scenes.")

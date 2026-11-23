@@ -73,9 +73,28 @@ class RenderingConsistencyValidator:
             )
 
         with Image.open(img_p) as pil_img:
-            img = pil_img.convert("RGB")
-            w, h = img.size
-            img_arr = np.array(img)
+            return RenderingConsistencyValidator.validate_image(
+                scene=scene,
+                pil_image=pil_img,
+                image_name=str(img_p),
+                margin=margin,
+                is_blind_image=is_blind_image,
+            )
+
+    @staticmethod
+    def validate_image(
+        scene: InspectionScene,
+        pil_image: Image.Image,
+        image_name: str = "in_memory",
+        margin: float = 60.0,
+        is_blind_image: bool = True,
+    ) -> RenderingValidationReport:
+        """
+        Validates an in-memory PIL Image against scene geometry.
+        """
+        img = pil_image.convert("RGB")
+        w, h = img.size
+        img_arr = np.array(img)
 
         transform = ViewportTransform.create(
             canvas_width=scene.canvas_width,
@@ -243,7 +262,7 @@ class RenderingConsistencyValidator:
         )
 
         return RenderingValidationReport(
-            image_path=str(img_p),
+            image_path=image_name,
             image_width=w,
             image_height=h,
             all_passed=all_passed,

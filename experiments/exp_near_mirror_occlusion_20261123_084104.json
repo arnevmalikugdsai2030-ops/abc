@@ -1,0 +1,1132 @@
+{
+  "experiment_id": "exp_near_mirror_occlusion_20261123_084104",
+  "date": "2026-11-23T08:41:04.551408+00:00",
+  "generator_version": "mirrorlab-v1.3.0",
+  "random_seed": 100,
+  "condition": {
+    "condition_id": "near_mirror_occlusion",
+    "geometry": "single_planar",
+    "occlusion": "near_mirror_blocker",
+    "clutter": "clean",
+    "reasoning": "task_b_obstruction",
+    "sample_size": 10,
+    "seed_offset": 1000
+  },
+  "total_attempted": 10,
+  "total_valid": 10,
+  "total_rejected": 0,
+  "total_rejected_ambiguous": 0,
+  "total_rejected_rendering": 0,
+  "total_rejected_geometry": 0,
+  "total_rejected_distractor": 0,
+  "difficulty_distribution": {
+    "EASY": 10,
+    "MEDIUM": 0,
+    "HARD": 0,
+    "EXPERT": 0
+  },
+  "runtime_seconds": 0.132,
+  "rejection_summary": {},
+  "tasks": [
+    {
+      "task_id": "exp_near_mirror_occlusion_1100",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 185.06,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 18.01,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1100",
+        "seed": 1100,
+        "category": "VALID_VISIBLE",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 191.6623065199362,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 169.12686944775305,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 658.3249705677001,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 500.465253911378,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 346.0637802156571,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "VISIBLE",
+        "ground_truth_reason": "NONE",
+        "diagnostic_details": "Unobstructed optical sightline via mirror at (354.2, 700.0) with theta_i=theta_r=18.0 deg",
+        "reflection_point": {
+          "x": 354.1901735680634,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 500.465253911378,
+          "y": 1150.0
+        },
+        "optical_path": [
+          {
+            "x": 191.6623065199362,
+            "y": 200.0
+          },
+          {
+            "x": 354.1901735680634,
+            "y": 700.0
+          },
+          {
+            "x": 500.465253911378,
+            "y": 250.0
+          }
+        ],
+        "incident_angle_deg": 18.00704981500039,
+        "reflected_angle_deg": 18.007049815000432,
+        "total_optical_distance": 998.9290566990438,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": true,
+        "reason": "NONE",
+        "reflection_point": [
+          354.1901735680634,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1101",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 206.5,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 17.22,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1101",
+        "seed": 1101,
+        "category": "VALID_VISIBLE",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 195.89761925107774,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 144.32912135627976,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 669.972432674929,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 490.26892807130275,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 343.0832736611902,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "VISIBLE",
+        "ground_truth_reason": "NONE",
+        "diagnostic_details": "Unobstructed optical sightline via mirror at (350.8, 700.0) with theta_i=theta_r=17.2 deg",
+        "reflection_point": {
+          "x": 350.8298870511961,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 490.26892807130275,
+          "y": 1150.0
+        },
+        "optical_path": [
+          {
+            "x": 195.89761925107774,
+            "y": 200.0
+          },
+          {
+            "x": 350.8298870511961,
+            "y": 700.0
+          },
+          {
+            "x": 490.26892807130275,
+            "y": 250.0
+          }
+        ],
+        "incident_angle_deg": 17.216354870345118,
+        "reflected_angle_deg": 17.21635487034514,
+        "total_optical_distance": 994.5624502546495,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": true,
+        "reason": "NONE",
+        "reflection_point": [
+          350.8298870511961,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1102",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 207.51,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 45.0,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1102",
+        "seed": 1102,
+        "category": "BLOCKED_INCIDENT",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 205.68283236074205,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 159.21877544138823,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 635.2754836246833,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 511.67547858978054,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 358.67915547526127,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "NOT_VISIBLE",
+        "ground_truth_reason": "BLOCKED_INCIDENT",
+        "diagnostic_details": "Incident ray C->R blocked by obstacle 'O2_near_mirror' at (336.3, 605.5)",
+        "reflection_point": {
+          "x": 366.7315935339202,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 511.67547858978054,
+          "y": 1150.0
+        },
+        "optical_path": [],
+        "incident_angle_deg": null,
+        "reflected_angle_deg": null,
+        "total_optical_distance": null,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": false,
+        "reason": "BLOCKED_INCIDENT",
+        "reflection_point": [
+          366.7315935339202,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1103",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 218.67,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 45.0,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1103",
+        "seed": 1103,
+        "category": "BLOCKED_INCIDENT",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 199.05005540953553,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 146.05086435611588,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 648.9802288073872,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 513.8244803568682,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 356.43726788320186,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "NOT_VISIBLE",
+        "ground_truth_reason": "BLOCKED_INCIDENT",
+        "diagnostic_details": "Incident ray C->R blocked by obstacle 'O2_near_mirror' at (334.2, 607.8)",
+        "reflection_point": {
+          "x": 364.7208053818159,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 513.8244803568682,
+          "y": 1150.0
+        },
+        "optical_path": [],
+        "incident_angle_deg": null,
+        "reflected_angle_deg": null,
+        "total_optical_distance": null,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": false,
+        "reason": "BLOCKED_INCIDENT",
+        "reflection_point": [
+          364.7208053818159,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1104",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 217.26,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 45.0,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1104",
+        "seed": 1104,
+        "category": "BLOCKED_INCIDENT",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 188.13080428474595,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 140.1552645263691,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 667.7926657587336,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 509.77994760883155,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 348.95537594678876,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "NOT_VISIBLE",
+        "ground_truth_reason": "BLOCKED_INCIDENT",
+        "diagnostic_details": "Incident ray C->R blocked by obstacle 'O2_near_mirror' at (330.0, 619.1)",
+        "reflection_point": {
+          "x": 357.41982708689625,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 509.77994760883155,
+          "y": 1150.0
+        },
+        "optical_path": [],
+        "incident_angle_deg": null,
+        "reflected_angle_deg": null,
+        "total_optical_distance": null,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": false,
+        "reason": "BLOCKED_INCIDENT",
+        "reflection_point": [
+          357.41982708689625,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1105",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 191.74,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 16.85,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1105",
+        "seed": 1105,
+        "category": "VALID_VISIBLE",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 200.86716150823057,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 160.5653631752672,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 633.5061542021247,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 488.60647007934466,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 344.7368157937876,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "VISIBLE",
+        "ground_truth_reason": "NONE",
+        "diagnostic_details": "Unobstructed optical sightline via mirror at (352.3, 700.0) with theta_i=theta_r=16.9 deg",
+        "reflection_point": {
+          "x": 352.3089028614485,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 488.60647007934466,
+          "y": 1150.0
+        },
+        "optical_path": [
+          {
+            "x": 200.86716150823057,
+            "y": 200.0
+          },
+          {
+            "x": 352.3089028614485,
+            "y": 700.0
+          },
+          {
+            "x": 488.60647007934466,
+            "y": 250.0
+          }
+        ],
+        "incident_angle_deg": 16.850693769741472,
+        "reflected_angle_deg": 16.850693769741472,
+        "total_optical_distance": 992.6197205863798,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": true,
+        "reason": "NONE",
+        "reflection_point": [
+          352.3089028614485,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1106",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 223.94,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 45.0,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1106",
+        "seed": 1106,
+        "category": "BLOCKED_INCIDENT",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 214.80270469974295,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 148.2805560255913,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 643.3109751523532,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 513.9017345317138,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 364.35221961572836,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "NOT_VISIBLE",
+        "ground_truth_reason": "BLOCKED_INCIDENT",
+        "diagnostic_details": "Incident ray C->R blocked by obstacle 'O2_near_mirror' at (341.4, 602.0)",
+        "reflection_point": {
+          "x": 372.22324671656975,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 513.9017345317138,
+          "y": 1150.0
+        },
+        "optical_path": [],
+        "incident_angle_deg": null,
+        "reflected_angle_deg": null,
+        "total_optical_distance": null,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": false,
+        "reason": "BLOCKED_INCIDENT",
+        "reflection_point": [
+          372.22324671656975,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1107",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 203.45,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 45.0,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1107",
+        "seed": 1107,
+        "category": "BLOCKED_INCIDENT",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 197.6460431476221,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 156.4876937169914,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 661.2778401791383,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 506.0095186961535,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 351.8277809218878,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "NOT_VISIBLE",
+        "ground_truth_reason": "BLOCKED_INCIDENT",
+        "diagnostic_details": "Incident ray C->R blocked by obstacle 'O2_near_mirror' at (331.5, 612.4)",
+        "reflection_point": {
+          "x": 359.94260922579656,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 506.0095186961535,
+          "y": 1150.0
+        },
+        "optical_path": [],
+        "incident_angle_deg": null,
+        "reflected_angle_deg": null,
+        "total_optical_distance": null,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": false,
+        "reason": "BLOCKED_INCIDENT",
+        "reflection_point": [
+          359.94260922579656,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1108",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 224.18,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 45.0,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1108",
+        "seed": 1108,
+        "category": "BLOCKED_INCIDENT",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 201.5627940643385,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 139.79222499075868,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 655.2931489457246,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 510.1409823427761,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 355.85188820355734,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "NOT_VISIBLE",
+        "ground_truth_reason": "BLOCKED_INCIDENT",
+        "diagnostic_details": "Incident ray C->R blocked by obstacle 'O2_near_mirror' at (334.1, 607.9)",
+        "reflection_point": {
+          "x": 363.97236684246354,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 510.1409823427761,
+          "y": 1150.0
+        },
+        "optical_path": [],
+        "incident_angle_deg": null,
+        "reflected_angle_deg": null,
+        "total_optical_distance": null,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": false,
+        "reason": "BLOCKED_INCIDENT",
+        "reflection_point": [
+          363.97236684246354,
+          700.0
+        ]
+      }
+    },
+    {
+      "task_id": "exp_near_mirror_occlusion_1109",
+      "condition_id": "near_mirror_occlusion",
+      "is_valid": true,
+      "rejection_reason": null,
+      "difficulty": {
+        "aperture_margin_mm": 215.75,
+        "obstacle_clearance_mm": 35.0,
+        "incidence_angle_deg": 45.0,
+        "num_obstacles": 2,
+        "num_optical_legs": 2,
+        "is_counterfactual_pair": false,
+        "perturbation_magnitude": null,
+        "composite_difficulty_score": 8.8,
+        "calibrated_tier": "EASY"
+      },
+      "scene_data": {
+        "scene_id": "scene_1109",
+        "seed": 1109,
+        "category": "BLOCKED_INCIDENT",
+        "difficulty": "MEDIUM",
+        "canvas_width": 1000.0,
+        "canvas_height": 1000.0,
+        "camera": {
+          "position": {
+            "x": 203.8119382582736,
+            "y": 200.0
+          },
+          "heading_deg": 65.0,
+          "fov_degrees": 65.0,
+          "max_range": 1500.0
+        },
+        "mirror": {
+          "endpoint_a": {
+            "x": 145.51313402628426,
+            "y": 700.0
+          },
+          "endpoint_b": {
+            "x": 668.6161379464575,
+            "y": 700.0
+          },
+          "reflective_normal": {
+            "dx": 0.0,
+            "dy": -1.0
+          }
+        },
+        "target": {
+          "center": {
+            "x": 502.97361952205637,
+            "y": 250.0
+          },
+          "radius_mm": 8.0
+        },
+        "obstacles": [
+          {
+            "obstacle_id": "O1_partition",
+            "obstacle_type": "rectangle",
+            "center": {
+              "x": 353.392778890165,
+              "y": 225.0
+            },
+            "radius": null,
+            "width": 50.0,
+            "height": 150.0,
+            "angle_degrees": 0.0
+          },
+          {
+            "obstacle_id": "O2_near_mirror",
+            "obstacle_type": "circle",
+            "center": {
+              "x": 350.0,
+              "y": 620.0
+            },
+            "radius": 20.0,
+            "width": null,
+            "height": null,
+            "angle_degrees": 0.0
+          }
+        ],
+        "ground_truth_state": "NOT_VISIBLE",
+        "ground_truth_reason": "BLOCKED_INCIDENT",
+        "diagnostic_details": "Incident ray C->R blocked by obstacle 'O2_near_mirror' at (332.8, 609.7)",
+        "reflection_point": {
+          "x": 361.2654547128961,
+          "y": 700.0
+        },
+        "virtual_target": {
+          "x": 502.97361952205637,
+          "y": 1150.0
+        },
+        "optical_path": [],
+        "incident_angle_deg": null,
+        "reflected_angle_deg": null,
+        "total_optical_distance": null,
+        "is_direct_sight_blocked": true,
+        "is_boundary": false
+      },
+      "ground_truth": {
+        "visible": false,
+        "reason": "BLOCKED_INCIDENT",
+        "reflection_point": [
+          361.2654547128961,
+          700.0
+        ]
+      }
+    }
+  ],
+  "conclusion": "Generated 10/10 valid tasks. Yield: 100.0%. Rejections: 0 (Ambiguity: 0, Rendering: 0, Geometry: 0, Distractor: 0)."
+}

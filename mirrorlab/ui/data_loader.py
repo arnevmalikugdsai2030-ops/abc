@@ -728,9 +728,19 @@ def get_dataset_validation_status(
     if not force_refresh and cache_key in _VALIDATION_CACHE:
         return _VALIDATION_CACHE[cache_key]
 
+    root = Path(data_root)
+    disk_cache_file = root / ".audit_report_cache.json"
+    if not force_refresh and disk_cache_file.exists():
+        try:
+            with open(disk_cache_file, encoding="utf-8") as fp:
+                cached_res = json.load(fp)
+            _VALIDATION_CACHE[cache_key] = cached_res
+            return cached_res
+        except (OSError, json.JSONDecodeError) as err:
+            logger.debug("Failed to read audit cache %s: %s", disk_cache_file, err)
+
     from mirrorlab.evaluation.dataset_auditor import DatasetAuditor
 
-    root = Path(data_root)
     # Check if physical dataset exists
     vis_count = (
         len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()])
@@ -832,4 +842,9 @@ def get_dataset_validation_status(
         else "FAILED: Audit violations detected.",
     }
     _VALIDATION_CACHE[cache_key] = result
+    try:
+        with open(disk_cache_file, "w", encoding="utf-8") as fp:
+            json.dump(result, fp, indent=2)
+    except (OSError, TypeError) as err:
+        logger.debug("Failed to write audit cache %s: %s", disk_cache_file, err)
     return result

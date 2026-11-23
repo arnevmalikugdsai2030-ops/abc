@@ -109,3 +109,26 @@ class TestSFTExporter:
             assert len(lines) == 1
             data = json.loads(lines[0])
             assert data["id"] == "sft_test_scene_01"
+
+    def test_sft_round_trip_and_non_leakage(
+        self, sample_sft_scene: InspectionScene, tmp_path: Path
+    ):
+        """Verifies round-trip fidelity and strict non-leakage in user prompt."""
+        example = SFTDatasetExporter.export_scene(sample_sft_scene)
+
+        # 1. User message non-leakage
+        user_msg = next(m for m in example.messages if m.role == "user")
+        assert (
+            "visible" not in user_msg.content.lower()
+            or "determine whether" in user_msg.content.lower()
+        )
+        assert "step 1" not in user_msg.content.lower()
+        assert "reflection point" not in user_msg.content.lower()
+
+        # 2. Assistant message Step 7 JSON validity
+        assistant_msg = next(m for m in example.messages if m.role == "assistant")
+        assert "```json" in assistant_msg.content
+        json_str = assistant_msg.content.split("```json")[1].split("```")[0].strip()
+        parsed_verdict = json.loads(json_str)
+        assert parsed_verdict["visibility_state"] == "VISIBLE"
+        assert parsed_verdict["obstruction_reason"] == "NONE"

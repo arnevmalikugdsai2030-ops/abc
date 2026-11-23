@@ -27,16 +27,14 @@ Each instance represents an industrial surface inspection cell schematic contain
 - Ground-truth specular ray paths computed via three independent mathematical solvers.
 
 ### How many instances are there in total?
-The standard benchmark suite comprises **1,500 core evaluation tasks** partitioned into 5 task families:
-- **Task A (Visibility Determination)**: 500 tasks (balanced 50% visible, 50% obstructed across 5 sub-categories: `valid_visible`, `blocked_incident`, `blocked_reflected`, `mirror_miss`, `wrong_side`, `outside_fov`).
-- **Task B (Obstruction Attribution)**: 300 tasks requiring models to name the exact blocking obstacle and ray leg (`camera_to_mirror` vs `mirror_to_target`).
-- **Task C (Mirror Repair & Alignment)**: 250 tasks requiring models to select the unique mirror translation/rotation that restores defect visibility without introducing secondary collisions.
-- **Task D (Counterfactual Pairs)**: 300 paired scenes (600 tasks total) testing invariance under 4 minimal perturbations:
-  1. *Mirror Angle Flip*: Minimal $\pm 1.5^\circ$ rotation flipping visibility from visible to occluded.
-  2. *Cosmetic Control*: Perturbing background themes and obstacle colors while holding ray physics invariant.
-  3. *Obstacle Insertion*: Adding an obstacle directly into the ray corridor.
-  4. *Irrelevant Obstacle*: Adding an obstacle far outside the optical corridor.
-- **Task E (Out-of-Distribution / High Clutter)**: 150 tasks with extreme grazing incidence ($>75^\circ$), narrow apertures ($<5\text{ mm}$ clearance), and high clutter ($>5$ obstacles).
+The authoritative frozen benchmark dataset committed to disk comprises **350 model-facing tasks** partitioned across three splits, verified in `data/dataset_manifest.json`:
+- **`dev` split**: 70 tasks (70 blind images, 70 diagnostic overlays).
+- **`val` split**: 70 tasks (70 blind images, 70 diagnostic overlays).
+- **`test` split**: 210 blind tasks (210 blind images, 210 diagnostic overlays sealed in `private/overlays`).
+
+In addition, `data/` contains **230 core task directories** across the 5 task families (20 Task A, 30 Task B, 30 Task C, 120 Task D counterfactual pairs, 30 Task E OOD), with **2,000 total rendered PNG images** on disk.
+
+*(Note: Prior design documents referenced an aspirational 1,500-instance scaling throughput capacity for the synthetic procedural generator; the authoritative frozen competition evaluation benchmark consists of the 350 partitioned tasks).*
 
 ### What data does each instance consist of?
 1. **Public Blind Image (`.png`)**: A 1024×1024 high-DPI engineering schematic displaying only the camera, mirror, obstacles, and target scratch. Zero ray paths, zero answers, and zero diagnostic annotations are present.

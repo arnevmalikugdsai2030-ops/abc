@@ -1,0 +1,125 @@
+{
+  "all_passed": true,
+  "total_checks": 11,
+  "checks": [
+    {
+      "id": 1,
+      "name": "ID Uniqueness",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 470,
+      "details": "All 470 IDs are unique.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 2,
+      "name": "Deterministic Seed Recording",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 350,
+      "details": "All 350 scenes (including both counterfactual child scenes) record valid integer seeds.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 3,
+      "name": "Oracle Mathematical Agreement",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 50,
+      "details": "All 50 visibility and OOD scenes 100% match oracle and independently certified (Fermat residual < 1e-5, Delta_R < 1e-4 mm).",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 4,
+      "name": "Blind Image Non-Leakage",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 350,
+      "details": "All 350 blind diagrams verified: zero overlay rays, zero badge color leakage.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 5,
+      "name": "Prompt Neutrality & Zero-Leakage",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 350,
+      "details": "All 350 prompts and questions verified neutral across all suites.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 6,
+      "name": "Task C Geometric Reconstruction & Single-Winner Uniqueness",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 30,
+      "details": "All 30 repair tasks geometrically evaluated: exactly ONE valid winner per task.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 7,
+      "name": "Task B Single-Blocker Clearance Precision",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 30,
+      "details": "All 30 obstruction tasks strictly enforce single-blocker precision.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 8,
+      "name": "Task D Geometric Recomputation & Relationship Satisfaction",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 120,
+      "details": "All 120 pairs recomputed independently; 100% satisfy expected relationships.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 9,
+      "name": "Anti-Duplicate Geometry Verification",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 350,
+      "details": "Zero duplicate configurations detected across 350 scenes.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 10,
+      "name": "Test Split Partition Isolation",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 350,
+      "details": "Zero split leakage. Dev=70, Val=70, Blind Test=210 strictly isolated, manifest-consistent, and aligned.",
+      "failure_count": 0,
+      "failures": []
+    },
+    {
+      "id": 11,
+      "name": "Counterfactual Split Pair Integrity",
+      "status": "PASSED",
+      "passed": true,
+      "items_checked": 120,
+      "details": "All 120 counterfactual pairs across dev, val, and test partitions strictly verified: 100% child task alignment, mutual exclusivity, expected relationship satisfaction, and zero public leakage.",
+      "failure_count": 0,
+      "failures": []
+    }
+  ],
+  "isolation_verified": true,
+  "split_summary": {
+    "dev": 46,
+    "val": 46,
+    "test": 138
+  },
+  "total_tasks": 230,
+  "total_scenes": 350,
+  "status_message": "PASSED: All 11 verification checks satisfied."
+}

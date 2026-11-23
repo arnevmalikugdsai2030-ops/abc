@@ -84,6 +84,22 @@ class ModelResponse(BaseModel):
     )
     raw_metadata: dict[str, Any] = Field(default_factory=dict)
 
+    @property
+    def provenance_classification(self) -> str:
+        """
+        Maps response provenance to standard taxonomy:
+        'LIVE_PROVIDER', 'SIMULATED', 'MOCK_ORACLE', 'HUMAN', 'UNKNOWN'.
+        """
+        if self.is_mock:
+            if "ORACLE" in self.provenance_status:
+                return "MOCK_ORACLE"
+            return "SIMULATED"
+        if "LIVE" in self.provenance_status and not self.error:
+            return "LIVE_PROVIDER"
+        if "HUMAN" in self.provenance_status:
+            return "HUMAN"
+        return "UNKNOWN"
+
 
 class MockStrategy(str, Enum):
     """Supported simulation strategies for offline mock runner."""

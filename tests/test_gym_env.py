@@ -75,3 +75,29 @@ class TestMirrorLabEnv:
         env.reset()
         _, _reward, terminated, _, _info = env.step(MirrorLabEnv.ACTION_COMMIT)
         assert terminated is True
+
+    def test_seed_reproducibility(self):
+        """Verifies that reset with identical seed yields bit-for-bit identical observations."""
+        env1 = MirrorLabEnv(max_steps=10)
+        env2 = MirrorLabEnv(max_steps=10)
+
+        obs1, info1 = env1.reset(seed=999)
+        obs2, info2 = env2.reset(seed=999)
+
+        np.testing.assert_array_equal(obs1, obs2)
+        assert info1["visibility_state"] == info2["visibility_state"]
+
+        # Run identical sequence of actions
+        actions = [
+            MirrorLabEnv.ACTION_ROTATE_CW,
+            MirrorLabEnv.ACTION_TRANSLATE_POS,
+            MirrorLabEnv.ACTION_ROTATE_CCW,
+        ]
+        for a in actions:
+            o1, r1, t1, tr1, i1 = env1.step(a)
+            o2, r2, t2, tr2, i2 = env2.step(a)
+            np.testing.assert_array_equal(o1, o2)
+            assert r1 == pytest.approx(r2)
+            assert t1 == t2
+            assert tr1 == tr2
+            assert i1["step_count"] == i2["step_count"]
