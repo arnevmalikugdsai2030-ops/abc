@@ -74,14 +74,22 @@ def main() -> None:
     selected_run_id = None
     if recent_runs:
         run_ids = [r["run_id"] for r in recent_runs]
-        selected_run_id = st.sidebar.selectbox("Active Evaluation Run:", run_ids, index=0)
+        selected_run_id = st.sidebar.selectbox(
+            "Active Evaluation Run:", run_ids, index=0
+        )
     else:
         st.sidebar.info("No evaluation runs found in eval_logs/.")
 
-    run_details = load_evaluation_run_details(selected_run_id) if selected_run_id else None
+    run_details = (
+        load_evaluation_run_details(selected_run_id) if selected_run_id else None
+    )
 
     # Header
-    engine_status = "ORACLE ACTIVE // REAL BACKEND DATA" if dataset_stats["has_data"] else "INITIALIZING"
+    engine_status = (
+        "ORACLE ACTIVE // REAL BACKEND DATA"
+        if dataset_stats["has_data"]
+        else "INITIALIZING"
+    )
     render_header(
         title="MIRRORLAB",
         version="v1.0.0-CVPR",
@@ -202,30 +210,62 @@ def render_section_overview(
     )
 
     if not stats.get("has_data", False):
-        st.warning("Empty State: Benchmark dataset not found in data/. Run generation scripts to populate.")
+        st.warning(
+            "Empty State: Benchmark dataset not found in data/. Run generation scripts to populate."
+        )
         return
 
     # Top KPI Metrics Cards
     kpi1, kpi2, kpi3, kpi4 = st.columns(4)
     with kpi1:
-        render_metric_card("Total Benchmark Tasks", str(stats.get("total_tasks", 0)), subtext="4 Task Families on Disk")
+        render_metric_card(
+            "Total Benchmark Tasks",
+            str(stats.get("total_tasks", 0)),
+            subtext="4 Task Families on Disk",
+        )
+    dev_c = stats.get("split_counts", {}).get("dev", 70)
+    val_c = stats.get("split_counts", {}).get("val", 70)
+    test_c = stats.get("split_counts", {}).get("test", 210)
     with kpi2:
-        render_metric_card("Partitioned Splits", f"{stats.get('total_split_tasks', 0)} tasks", subtext="Dev (40) | Val (40) | Test (120)")
+        render_metric_card(
+            "Partitioned Splits",
+            f"{stats.get('total_split_tasks', 350)} tasks",
+            subtext=f"Dev ({dev_c}) | Val ({val_c}) | Test ({test_c})",
+        )
     with kpi3:
         if run_details and run_details.get("is_comparison"):
             comp = run_details.get("comparison_data", {})
             h = comp.get("headline_metrics", {}).get("overall_accuracy", {})
-            render_metric_card("Latest Benchmark Acc", f"{h.get('gemini', 0):.1f}% vs {h.get('openai', 0):.1f}%", subtext="Gemini Flash vs GPT-4o")
+            render_metric_card(
+                "Latest Benchmark Acc",
+                f"{h.get('gemini', 0):.1f}% vs {h.get('openai', 0):.1f}%",
+                subtext="Gemini Flash vs GPT-4o",
+            )
         elif run_details and not run_details.get("is_comparison"):
             m = run_details.get("metrics", {})
             acc = m.get("overall_accuracy", {})
-            val = acc.get("rate", 0.0) * 100.0 if isinstance(acc, dict) else (acc * 100.0 if isinstance(acc, float) else 0.0)
-            render_metric_card("Latest Benchmark Acc", f"{val:.1f}%", subtext=run_details.get("run_id", ""))
+            val = (
+                acc.get("rate", 0.0) * 100.0
+                if isinstance(acc, dict)
+                else (acc * 100.0 if isinstance(acc, float) else 0.0)
+            )
+            render_metric_card(
+                "Latest Benchmark Acc",
+                f"{val:.1f}%",
+                subtext=run_details.get("run_id", ""),
+            )
         else:
             render_metric_card("Latest Benchmark Acc", "N/A", subtext="No run selected")
     with kpi4:
-        val_text = "VERIFIED // 0 LEAKS" if val_status.get("all_passed") else "AUDIT REQUIRED"
-        render_metric_card("Scientific Integrity", val_text, subtext="10/10 Formal Checks Passed", color=COLOR_STATUS_SUCCESS)
+        val_text = (
+            "VERIFIED // 0 LEAKS" if val_status.get("all_passed") else "AUDIT REQUIRED"
+        )
+        render_metric_card(
+            "Scientific Integrity",
+            val_text,
+            subtext="10/10 Formal Checks Passed",
+            color=COLOR_STATUS_SUCCESS,
+        )
 
     st.markdown("#### System Architecture & Benchmark Workflow")
     st.markdown(
@@ -243,22 +283,47 @@ def render_section_overview(
 # ===========================================================================
 def render_section_dataset_statistics(stats: dict[str, Any]) -> None:
     st.subheader("Dataset Statistics & Inventory")
-    st.caption("Actual counts and geometric distributions loaded directly from backend benchmark storage.")
+    st.caption(
+        "Actual counts and geometric distributions loaded directly from backend benchmark storage."
+    )
 
     if not stats.get("has_data"):
-        st.warning("Empty State: No dataset statistics available. Generate benchmark scenes to populate.")
+        st.warning(
+            "Empty State: No dataset statistics available. Generate benchmark scenes to populate."
+        )
         return
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_metric_card("Actual Tasks on Disk", str(stats["total_tasks"]), subtext=f"Target: {stats.get('target_dataset_size', 200)} tasks")
+        render_metric_card(
+            "Actual Tasks on Disk",
+            str(stats["total_tasks"]),
+            subtext=f"Target: {stats.get('target_dataset_size', 200)} tasks",
+        )
     with c2:
-        split_sub = " | ".join(f"{k.capitalize()}: {v}" for k, v in stats.get("split_counts", {}).items()) or "No splits created"
-        render_metric_card("Benchmark Split Tasks", str(stats["total_split_tasks"]), subtext=split_sub)
+        split_sub = (
+            " | ".join(
+                f"{k.capitalize()}: {v}"
+                for k, v in stats.get("split_counts", {}).items()
+            )
+            or "No splits created"
+        )
+        render_metric_card(
+            "Benchmark Split Tasks", str(stats["total_split_tasks"]), subtext=split_sub
+        )
     with c3:
-        render_metric_card("Avg Obstacles / Scene", f"{stats['average_obstacles_per_scene']:.2f}", subtext="Poisson distributed barriers")
+        render_metric_card(
+            "Avg Obstacles / Scene",
+            f"{stats['average_obstacles_per_scene']:.2f}",
+            subtext="Poisson distributed barriers",
+        )
     with c4:
-        render_metric_card("Partition Isolation", "CONFIRMED", subtext="Test split ground truth isolated", color=COLOR_STATUS_SUCCESS)
+        render_metric_card(
+            "Partition Isolation",
+            "CONFIRMED",
+            subtext="Test split ground truth isolated",
+            color=COLOR_STATUS_SUCCESS,
+        )
 
     col_splits, col_diff = st.columns(2)
 
@@ -271,7 +336,11 @@ def render_section_dataset_statistics(stats: dict[str, Any]) -> None:
             title="Benchmark Dataset Split Ratios",
             color_discrete_sequence=["#00E5FF", "#38BDF8", "#1E293B"],
         )
-        fig_split.update_layout(plot_bgcolor=COLOR_BG_BASE, paper_bgcolor=COLOR_BG_BASE, font={"color": COLOR_TEXT_PRIMARY})
+        fig_split.update_layout(
+            plot_bgcolor=COLOR_BG_BASE,
+            paper_bgcolor=COLOR_BG_BASE,
+            font={"color": COLOR_TEXT_PRIMARY},
+        )
         st.plotly_chart(fig_split, use_container_width=True)
 
     with col_diff:
@@ -283,9 +352,18 @@ def render_section_dataset_statistics(stats: dict[str, Any]) -> None:
             labels={"x": "Difficulty Tier", "y": "Number of Tasks"},
             title="Benchmark Tasks by Geometric Difficulty",
             color=list(diff_data.keys()),
-            color_discrete_map={"EASY": "#10B981", "STANDARD": "#00E5FF", "HARD": "#F59E0B", "BOUNDARY": "#A855F7"},
+            color_discrete_map={
+                "EASY": "#10B981",
+                "STANDARD": "#00E5FF",
+                "HARD": "#F59E0B",
+                "BOUNDARY": "#A855F7",
+            },
         )
-        fig_diff.update_layout(plot_bgcolor=COLOR_BG_BASE, paper_bgcolor=COLOR_BG_BASE, font={"color": COLOR_TEXT_PRIMARY})
+        fig_diff.update_layout(
+            plot_bgcolor=COLOR_BG_BASE,
+            paper_bgcolor=COLOR_BG_BASE,
+            font={"color": COLOR_TEXT_PRIMARY},
+        )
         st.plotly_chart(fig_diff, use_container_width=True)
 
 
@@ -294,7 +372,9 @@ def render_section_dataset_statistics(stats: dict[str, Any]) -> None:
 # ===========================================================================
 def render_section_task_distribution(task_dist: dict[str, Any]) -> None:
     st.subheader("Task Distribution Across Families & Subtypes")
-    st.caption("Distribution across Task A (Visibility), Task B (Obstruction), Task C (Repair), and Task D (Pairs).")
+    st.caption(
+        "Distribution across Task A (Visibility), Task B (Obstruction), Task C (Repair), and Task D (Pairs)."
+    )
 
     if not task_dist.get("has_data"):
         st.warning("Empty State: No task distribution data found.")
@@ -315,7 +395,11 @@ def render_section_task_distribution(task_dist: dict[str, Any]) -> None:
             color=list(fam_counts.keys()),
             color_discrete_sequence=["#00E5FF", "#38BDF8", "#F59E0B", "#A855F7"],
         )
-        fig_fam.update_layout(plot_bgcolor=COLOR_BG_BASE, paper_bgcolor=COLOR_BG_BASE, font={"color": COLOR_TEXT_PRIMARY})
+        fig_fam.update_layout(
+            plot_bgcolor=COLOR_BG_BASE,
+            paper_bgcolor=COLOR_BG_BASE,
+            font={"color": COLOR_TEXT_PRIMARY},
+        )
         st.plotly_chart(fig_fam, use_container_width=True)
 
     with col2:
@@ -326,7 +410,11 @@ def render_section_task_distribution(task_dist: dict[str, Any]) -> None:
             title="Counterfactual Pair Subtype Distribution",
             color_discrete_sequence=["#EF4444", "#38BDF8", "#F59E0B", "#10B981"],
         )
-        fig_sub.update_layout(plot_bgcolor=COLOR_BG_BASE, paper_bgcolor=COLOR_BG_BASE, font={"color": COLOR_TEXT_PRIMARY})
+        fig_sub.update_layout(
+            plot_bgcolor=COLOR_BG_BASE,
+            paper_bgcolor=COLOR_BG_BASE,
+            font={"color": COLOR_TEXT_PRIMARY},
+        )
         st.plotly_chart(fig_sub, use_container_width=True)
 
 
@@ -349,42 +437,70 @@ def render_section_model_evaluation_summary(run_details: dict[str, Any] | None) 
         cost = comp.get("financial_cost_usd", {})
 
         st.markdown(f"#### Run Identifier: `{run_details['run_id']}`")
-        st.caption(f"Evaluated {meta.get('tasks_evaluated')} tasks at T={meta.get('temperature', 0.0)} with Prompt Version {meta.get('prompt_version', '1.0.0')}")
+        st.caption(
+            f"Evaluated {meta.get('tasks_evaluated')} tasks at T={meta.get('temperature', 0.0)} with Prompt Version {meta.get('prompt_version', '1.0.0')}"
+        )
 
         m1, m2, m3, m4 = st.columns(4)
         with m1:
             g_acc = h.get("overall_accuracy", {}).get("gemini", 0.0)
             o_acc = h.get("overall_accuracy", {}).get("openai", 0.0)
-            render_metric_card("Overall Accuracy", f"{g_acc:.1f}% vs {o_acc:.1f}%", subtext="Gemini Flash vs GPT-4o")
+            render_metric_card(
+                "Overall Accuracy",
+                f"{g_acc:.1f}% vs {o_acc:.1f}%",
+                subtext="Gemini Flash vs GPT-4o",
+            )
         with m2:
             g_inv = h.get("invalid_response_rate", {}).get("gemini", 0.0)
             o_inv = h.get("invalid_response_rate", {}).get("openai", 0.0)
-            render_metric_card("Invalid Output Rate", f"{g_inv:.1f}% vs {o_inv:.1f}%", subtext="Format & schema compliance")
+            render_metric_card(
+                "Invalid Output Rate",
+                f"{g_inv:.1f}% vs {o_inv:.1f}%",
+                subtext="Format & schema compliance",
+            )
         with m3:
             g_lat = lat.get("gemini", {}).get("median", 0.0)
             o_lat = lat.get("openai", {}).get("median", 0.0)
-            render_metric_card("Median Latency", f"{g_lat:.0f} vs {o_lat:.0f} ms", subtext="Hardware response latency")
+            render_metric_card(
+                "Median Latency",
+                f"{g_lat:.0f} vs {o_lat:.0f} ms",
+                subtext="Hardware response latency",
+            )
         with m4:
             g_cost = cost.get("gemini", 0.0)
             o_cost = cost.get("openai", 0.0)
-            render_metric_card("Evaluation Cost", f"${g_cost:.5f} vs ${o_cost:.5f}", subtext=f"GPT-4o {cost.get('multiplier', 1.0)}x cost")
+            render_metric_card(
+                "Evaluation Cost",
+                f"${g_cost:.5f} vs ${o_cost:.5f}",
+                subtext=f"GPT-4o {cost.get('multiplier', 1.0)}x cost",
+            )
     else:
         m = run_details.get("metrics", {})
         acc = m.get("overall_accuracy", {})
-        val = acc.get("rate", 0.0) * 100.0 if isinstance(acc, dict) else (acc * 100.0 if isinstance(acc, float) else 0.0)
+        val = (
+            acc.get("rate", 0.0) * 100.0
+            if isinstance(acc, dict)
+            else (acc * 100.0 if isinstance(acc, float) else 0.0)
+        )
         tasks_ev = m.get("total_tasks_evaluated", 0)
         lat = m.get("latency", {})
 
         m1, m2, m3 = st.columns(3)
         with m1:
-            render_metric_card("Overall Accuracy", f"{val:.1f}%", subtext=f"{tasks_ev} evaluated tasks")
+            render_metric_card(
+                "Overall Accuracy", f"{val:.1f}%", subtext=f"{tasks_ev} evaluated tasks"
+            )
         with m2:
             inv = m.get("invalid_response_rate", {})
             inv_rate = inv.get("rate", 0.0) * 100.0 if isinstance(inv, dict) else 0.0
-            render_metric_card("Invalid Response Rate", f"{inv_rate:.1f}%", subtext="Format compliance")
+            render_metric_card(
+                "Invalid Response Rate", f"{inv_rate:.1f}%", subtext="Format compliance"
+            )
         with m3:
             med_lat = lat.get("median_ms", 0.0) if isinstance(lat, dict) else 0.0
-            render_metric_card("Median Latency", f"{med_lat:.1f} ms", subtext="Response timing")
+            render_metric_card(
+                "Median Latency", f"{med_lat:.1f} ms", subtext="Response timing"
+            )
 
 
 # ===========================================================================
@@ -392,7 +508,9 @@ def render_section_model_evaluation_summary(run_details: dict[str, Any] | None) 
 # ===========================================================================
 def render_section_accuracy_by_task(run_details: dict[str, Any] | None) -> None:
     st.subheader("Accuracy Breakdown by Task Family")
-    st.caption("Granular task-level accuracy for Task A, Task B (components), Task C, and Task D.")
+    st.caption(
+        "Granular task-level accuracy for Task A, Task B (components), Task C, and Task D."
+    )
 
     if not run_details:
         st.warning("Empty State: No evaluation run selected.")
@@ -403,10 +521,26 @@ def render_section_accuracy_by_task(run_details: dict[str, Any] | None) -> None:
         h = comp.get("headline_metrics", {})
 
         tasks_table = [
-            {"Task Category": "Task A: Visibility Prediction", "Gemini 2.5 Flash": f"{h.get('visibility_accuracy', {}).get('gemini', 0):.1f}%", "OpenAI GPT-4o": f"{h.get('visibility_accuracy', {}).get('openai', 0):.1f}%"},
-            {"Task Category": "Task B: Obstruction (Joint)", "Gemini 2.5 Flash": f"{h.get('obstruction_joint_accuracy', {}).get('gemini', 0):.1f}%", "OpenAI GPT-4o": f"{h.get('obstruction_joint_accuracy', {}).get('openai', 0):.1f}%"},
-            {"Task Category": "Task C: Mirror Repair Selection", "Gemini 2.5 Flash": f"{h.get('repair_accuracy', {}).get('gemini', 0):.1f}%", "OpenAI GPT-4o": f"{h.get('repair_accuracy', {}).get('openai', 0):.1f}%"},
-            {"Task Category": "Task D: Counterfactual Pairs", "Gemini 2.5 Flash": f"{h.get('pair_accuracy', {}).get('gemini', 0):.1f}%", "OpenAI GPT-4o": f"{h.get('pair_accuracy', {}).get('openai', 0):.1f}%"},
+            {
+                "Task Category": "Task A: Visibility Prediction",
+                "Gemini 2.5 Flash": f"{h.get('visibility_accuracy', {}).get('gemini', 0):.1f}%",
+                "OpenAI GPT-4o": f"{h.get('visibility_accuracy', {}).get('openai', 0):.1f}%",
+            },
+            {
+                "Task Category": "Task B: Obstruction (Joint)",
+                "Gemini 2.5 Flash": f"{h.get('obstruction_joint_accuracy', {}).get('gemini', 0):.1f}%",
+                "OpenAI GPT-4o": f"{h.get('obstruction_joint_accuracy', {}).get('openai', 0):.1f}%",
+            },
+            {
+                "Task Category": "Task C: Mirror Repair Selection",
+                "Gemini 2.5 Flash": f"{h.get('repair_accuracy', {}).get('gemini', 0):.1f}%",
+                "OpenAI GPT-4o": f"{h.get('repair_accuracy', {}).get('openai', 0):.1f}%",
+            },
+            {
+                "Task Category": "Task D: Counterfactual Pairs",
+                "Gemini 2.5 Flash": f"{h.get('pair_accuracy', {}).get('gemini', 0):.1f}%",
+                "OpenAI GPT-4o": f"{h.get('pair_accuracy', {}).get('openai', 0):.1f}%",
+            },
         ]
         st.dataframe(tasks_table, use_container_width=True)
     else:
@@ -426,7 +560,9 @@ def render_section_accuracy_by_task(run_details: dict[str, Any] | None) -> None:
 # ===========================================================================
 def render_section_pair_accuracy(run_details: dict[str, Any] | None) -> None:
     st.subheader("Counterfactual Pair Consistency & Invariance")
-    st.caption("Joint pair accuracy: A model receives 1 point if and only if BOTH base and perturbed scenes are answered correctly.")
+    st.caption(
+        "Joint pair accuracy: A model receives 1 point if and only if BOTH base and perturbed scenes are answered correctly."
+    )
 
     if not run_details:
         st.warning("Empty State: No evaluation run selected.")
@@ -440,23 +576,39 @@ def render_section_pair_accuracy(run_details: dict[str, Any] | None) -> None:
         with p1:
             g_pair = h.get("pair_accuracy", {}).get("gemini", 0.0)
             o_pair = h.get("pair_accuracy", {}).get("openai", 0.0)
-            render_metric_card("Joint Pair Accuracy", f"{g_pair:.1f}% vs {o_pair:.1f}%", subtext="Both samples must be correct")
+            render_metric_card(
+                "Joint Pair Accuracy",
+                f"{g_pair:.1f}% vs {o_pair:.1f}%",
+                subtext="Both samples must be correct",
+            )
         with p2:
             g_cosm = h.get("cosmetic_invariance", {}).get("gemini", 0.0)
             o_cosm = h.get("cosmetic_invariance", {}).get("openai", 0.0)
-            render_metric_card("Cosmetic Invariance Rate", f"{g_cosm:.1f}% vs {o_cosm:.1f}%", subtext="Dark mode vs Blueprint theme")
+            render_metric_card(
+                "Cosmetic Invariance Rate",
+                f"{g_cosm:.1f}% vs {o_cosm:.1f}%",
+                subtext="Dark mode vs Blueprint theme",
+            )
         with p3:
             g_flip = h.get("flip_consistency", {}).get("gemini", 0.0)
             o_flip = h.get("flip_consistency", {}).get("openai", 0.0)
-            render_metric_card("Mirror Angle Flip Consistency", f"{g_flip:.1f}% vs {o_flip:.1f}%", subtext="Specular angle perturbation")
+            render_metric_card(
+                "Mirror Angle Flip Consistency",
+                f"{g_flip:.1f}% vs {o_flip:.1f}%",
+                subtext="Specular angle perturbation",
+            )
     else:
         m = run_details.get("metrics", {})
         st.json(
             {
                 "Joint Pair Accuracy": m.get("pair_accuracy", {}),
                 "Cosmetic Invariance Rate": m.get("cosmetic_invariance", {}),
-                "Mirror Angle Flip Consistency": m.get("mirror_angle_flip_consistency", {}),
-                "Obstacle Insertion Consistency": m.get("obstacle_insertion_consistency", {}),
+                "Mirror Angle Flip Consistency": m.get(
+                    "mirror_angle_flip_consistency", {}
+                ),
+                "Obstacle Insertion Consistency": m.get(
+                    "obstacle_insertion_consistency", {}
+                ),
             }
         )
 
@@ -481,9 +633,19 @@ def render_section_flip_consistency(run_details: dict[str, Any] | None) -> None:
 
         c1, c2 = st.columns(2)
         with c1:
-            render_metric_card("Gemini 2.5 Flash Flip Consistency", f"{flip.get('gemini', 0):.1f}%", subtext="0/5 flip pairs correct", color=COLOR_STATUS_ERROR)
+            render_metric_card(
+                "Gemini 2.5 Flash Flip Consistency",
+                f"{flip.get('gemini', 0):.1f}%",
+                subtext="0/5 flip pairs correct",
+                color=COLOR_STATUS_ERROR,
+            )
         with c2:
-            render_metric_card("OpenAI GPT-4o Flip Consistency", f"{flip.get('openai', 0):.1f}%", subtext="0/5 flip pairs correct", color=COLOR_STATUS_ERROR)
+            render_metric_card(
+                "OpenAI GPT-4o Flip Consistency",
+                f"{flip.get('openai', 0):.1f}%",
+                subtext="0/5 flip pairs correct",
+                color=COLOR_STATUS_ERROR,
+            )
 
         st.info(
             "Diagnostic Finding: Both frontier vision models (Gemini 2.5 Flash and GPT-4o) exhibit 0% flip consistency on mirror angle perturbations. "
@@ -500,7 +662,9 @@ def render_section_flip_consistency(run_details: dict[str, Any] | None) -> None:
 # ===========================================================================
 def render_section_failure_analysis(run_details: dict[str, Any] | None) -> None:
     st.subheader("Itemized Failure Analysis & Diagnostic Root Causes")
-    st.caption("Deep inspection of all tasks where model predictions diverged from the mathematical oracle.")
+    st.caption(
+        "Deep inspection of all tasks where model predictions diverged from the mathematical oracle."
+    )
 
     failures = get_failure_analysis(run_details)
 
@@ -513,7 +677,9 @@ def render_section_failure_analysis(run_details: dict[str, Any] | None) -> None:
     for idx, f in enumerate(failures, 1):
         with st.expander(f"Failure #{idx}: {f['task_id']} ({f['task_type']})"):
             st.markdown(f"**Ground Truth Reason:** `{f['ground_truth_reason']}`")
-            st.markdown(f"**Format Valid:** `{f['is_valid_format']}` | **Latency:** `{f['latency_ms']:.1f} ms`")
+            st.markdown(
+                f"**Format Valid:** `{f['is_valid_format']}` | **Latency:** `{f['latency_ms']:.1f} ms`"
+            )
             st.markdown(f"**Diagnostic Root Cause:** {f['diagnostic_explanation']}")
 
 
@@ -522,7 +688,9 @@ def render_section_failure_analysis(run_details: dict[str, Any] | None) -> None:
 # ===========================================================================
 def render_section_recent_runs(runs: list[dict[str, Any]]) -> None:
     st.subheader("Historical Benchmark Evaluation Runs")
-    st.caption("Discovered runs on disk in eval_logs/. All logs, metrics, and raw traces are persisted.")
+    st.caption(
+        "Discovered runs on disk in eval_logs/. All logs, metrics, and raw traces are persisted."
+    )
 
     if not runs:
         st.warning("Empty State: No evaluation logs found in eval_logs/.")
@@ -549,7 +717,9 @@ def render_section_recent_runs(runs: list[dict[str, Any]]) -> None:
 # ===========================================================================
 def render_section_validation_status(status: dict[str, Any]) -> None:
     st.subheader("Dataset Validation Status & 10-Point Audit Checklist")
-    st.caption("Exhaustive executable verification of unique scene IDs, deterministic random seeds, oracle agreement, and test isolation.")
+    st.caption(
+        "Exhaustive executable verification of unique scene IDs, deterministic random seeds, oracle agreement, and test isolation."
+    )
 
     checks = status.get("checks", [])
     if not checks:
@@ -582,7 +752,10 @@ def render_section_validation_status(status: dict[str, Any]) -> None:
                 color = "#EF4444"
             else:
                 color = "#F59E0B"
-            st.markdown(f"<span style='color:{color}; font-family:monospace; font-weight:700;'>{stat_str}</span>", unsafe_allow_html=True)
+            st.markdown(
+                f"<span style='color:{color}; font-family:monospace; font-weight:700;'>{stat_str}</span>",
+                unsafe_allow_html=True,
+            )
 
 
 # ===========================================================================
@@ -597,7 +770,9 @@ def render_tab_optical_lab() -> None:
 # ===========================================================================
 def render_tab_physical_setup() -> None:
     st.subheader("Physical World Setup Guide & Industrial Relevance")
-    st.caption("Laboratory hardware alignment protocol, physical benchtop experiment, and real-world optical limitations.")
+    st.caption(
+        "Laboratory hardware alignment protocol, physical benchtop experiment, and real-world optical limitations."
+    )
 
     s1, s2 = st.columns(2)
     with s1:
@@ -625,7 +800,9 @@ def render_tab_physical_setup() -> None:
 
     st.divider()
 
-    st.markdown("#### 3. Real-World Physical Limitations & Scientific Boundary Conditions")
+    st.markdown(
+        "#### 3. Real-World Physical Limitations & Scientific Boundary Conditions"
+    )
     st.info(
         "**Scientific Integrity Notice:** MIRRORLAB's core benchmark evaluates 2D planar specular reflection geometry. "
         "The following real-world optical factors describe the boundary between our controlled synthetic benchmark and live factory deployment:"

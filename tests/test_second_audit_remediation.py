@@ -52,7 +52,11 @@ class TestOracleMockStrictness:
             ground_truth_map={"task_001": {"can_see": True, "answer": "YES"}},
         )
         with pytest.raises(ValueError, match="task_id is required"):
-            adapter.ask(dummy_image, "Can the camera see the scratch?", task_type="TASK_A_VISIBILITY")
+            adapter.ask(
+                dummy_image,
+                "Can the camera see the scratch?",
+                task_type="TASK_A_VISIBILITY",
+            )
 
     def test_unknown_task_id_raises_key_error(self, dummy_image: Path):
         """Oracle strategy must raise KeyError when task_id is not in ground_truth_map."""
@@ -62,7 +66,10 @@ class TestOracleMockStrictness:
             strategy=MockStrategy.ORACLE,
             ground_truth_map={"task_001": {"can_see": True, "answer": "YES"}},
         )
-        with pytest.raises(KeyError, match="Task-specific ground truth not found for task_id='task_999'"):
+        with pytest.raises(
+            KeyError,
+            match="Task-specific ground truth not found for task_id='task_999'",
+        ):
             adapter.ask(
                 dummy_image,
                 "Can the camera see the scratch?",
@@ -109,8 +116,15 @@ class TestOracleMockStrictness:
         """Sequential requests return the exact ground truth for each specific task ID."""
         gt_map = {
             "task_visible": {"can_see": True, "answer": "YES", "reason_code": "CLEAR"},
-            "task_blocked": {"can_see": False, "answer": "NO", "reason_code": "BLOCKED_INCIDENT"},
-            "task_repair": {"correct_candidate": "B", "selection_reason": "Candidate B restores view."},
+            "task_blocked": {
+                "can_see": False,
+                "answer": "NO",
+                "reason_code": "BLOCKED_INCIDENT",
+            },
+            "task_repair": {
+                "correct_candidate": "B",
+                "selection_reason": "Candidate B restores view.",
+            },
         }
         adapter = MockVisionAdapter(
             model_name="mock-oracle",
@@ -119,18 +133,30 @@ class TestOracleMockStrictness:
             ground_truth_map=gt_map,
         )
 
-        resp1 = adapter.ask(dummy_image, "Q1", task_id="task_visible", task_type=TaskType.TASK_A_VISIBILITY)
+        resp1 = adapter.ask(
+            dummy_image,
+            "Q1",
+            task_id="task_visible",
+            task_type=TaskType.TASK_A_VISIBILITY,
+        )
         data1 = json.loads(resp1.raw_text)
         assert data1["can_see"] is True
         assert data1["answer"] == "YES"
 
-        resp2 = adapter.ask(dummy_image, "Q2", task_id="task_blocked", task_type=TaskType.TASK_A_VISIBILITY)
+        resp2 = adapter.ask(
+            dummy_image,
+            "Q2",
+            task_id="task_blocked",
+            task_type=TaskType.TASK_A_VISIBILITY,
+        )
         data2 = json.loads(resp2.raw_text)
         assert data2["can_see"] is False
         assert data2["answer"] == "NO"
         assert data2["reason"] == "BLOCKED_CAMERA_TO_MIRROR"
 
-        resp3 = adapter.ask(dummy_image, "Q3", task_id="task_repair", task_type=TaskType.TASK_C_REPAIR)
+        resp3 = adapter.ask(
+            dummy_image, "Q3", task_id="task_repair", task_type=TaskType.TASK_C_REPAIR
+        )
         data3 = json.loads(resp3.raw_text)
         assert data3["selected_candidate"] == "B"
         assert data3["answer"] == "B"
@@ -139,7 +165,9 @@ class TestOracleMockStrictness:
 class TestLeakageAndValidationAuditor:
     """Verifies that DatasetAuditor detects deliberate leakages and invalid data."""
 
-    def test_blind_image_with_deliberately_injected_badge_fails_audit(self, tmp_path: Path):
+    def test_blind_image_with_deliberately_injected_badge_fails_audit(
+        self, tmp_path: Path
+    ):
         """Auditor must catch and reject a blind image that contains answer badge colors."""
         blind_file = tmp_path / "diagram_blind.png"
         overlay_file = tmp_path / "diagram_overlay.png"
@@ -182,12 +210,16 @@ class TestLeakageAndValidationAuditor:
             "ground_truth_reason": "CLEAR",
             "image": "diagram_overlay.png",
         }
-        ok2, leaks2 = DatasetAuditor.check_public_record_non_leakage(contaminated_record)
+        ok2, leaks2 = DatasetAuditor.check_public_record_non_leakage(
+            contaminated_record
+        )
         assert ok2 is False
         assert any("can_see" in lk for lk in leaks2)
         assert any("overlay" in lk for lk in leaks2)
 
-    def test_counterfactual_child_seeds_validated_without_defaults(self, tmp_path: Path):
+    def test_counterfactual_child_seeds_validated_without_defaults(
+        self, tmp_path: Path
+    ):
         """Auditor must fail when child scenes lack valid seeds."""
         pair_dir = tmp_path / "pair_test_000"
         pair_dir.mkdir(parents=True)
@@ -201,25 +233,37 @@ class TestLeakageAndValidationAuditor:
             json.dump({"scene_id": "scene_b"}, f)  # Missing seed!
 
         with open(pair_dir / "pair.json", "w", encoding="utf-8") as f:
-            json.dump({
-                "pair_id": "pair_test_000",
-                "expected_relationship": "FLIPPED_OUTCOME",
-                "child_scene_ids": ["scene_a", "scene_b"],
-                "ground_truth_outcomes": {},
-            }, f)
+            json.dump(
+                {
+                    "pair_id": "pair_test_000",
+                    "expected_relationship": "FLIPPED_OUTCOME",
+                    "child_scene_ids": ["scene_a", "scene_b"],
+                    "ground_truth_outcomes": {},
+                },
+                f,
+            )
 
         # Artifacts
         for sub in ["scene_a", "scene_b"]:
-            for req in ["diagram_blind.png", "question.json", "ground_truth.json", "diagram_overlay.png"]:
+            for req in [
+                "diagram_blind.png",
+                "question.json",
+                "ground_truth.json",
+                "diagram_overlay.png",
+            ]:
                 fpath = pair_dir / sub / req
                 fpath.write_text("{}", encoding="utf-8")
 
         auditor = DatasetAuditor(data_root=tmp_path)
         checks = auditor.audit_counterfactual_pairs(tmp_path)
-        seed_check = next((c for c in checks if "Child Scene Seed Validity" in c.name), None)
+        seed_check = next(
+            (c for c in checks if "Child Scene Seed Validity" in c.name), None
+        )
         assert seed_check is not None
         assert seed_check.passed is False
-        assert any("scene_b missing valid integer seed" in f for f in seed_check.failures)
+        assert any(
+            "scene_b missing valid integer seed" in f for f in seed_check.failures
+        )
 
 
 class TestSplitRecordsLoading:
@@ -232,7 +276,9 @@ class TestSplitRecordsLoading:
         gt = data.get("ground_truth", [])
 
         assert len(tasks) > 0, "Test tasks should be loaded from public/tasks.jsonl"
-        assert len(gt) > 0, "Test ground truth should be loaded from private/ground_truth.jsonl"
+        assert len(gt) > 0, (
+            "Test ground truth should be loaded from private/ground_truth.jsonl"
+        )
         assert len(tasks) == len(gt)
 
 
@@ -251,8 +297,12 @@ class TestOODDistributionCertification:
         cat_dist = manifest.get("category_distribution", {})
 
         # Must have at least 5 visible cases
-        assert cat_dist.get("VISIBLE", 0) >= 5, "OOD suite must contain at least 5 visible cases"
+        assert cat_dist.get("VISIBLE", 0) >= 5, (
+            "OOD suite must contain at least 5 visible cases"
+        )
         # Must have multiple failure reasons represented
-        assert len(cat_dist) >= 4, f"OOD suite must have at least 4 categories, got {len(cat_dist)}"
+        assert len(cat_dist) >= 4, (
+            f"OOD suite must have at least 4 categories, got {len(cat_dist)}"
+        )
         # Verify total count equals 30
         assert sum(cat_dist.values()) == 30

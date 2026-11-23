@@ -372,12 +372,22 @@ class CounterfactualPairRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     pair_id: str = Field(..., description="Unique counterfactual pair identifier")
-    pair_type: CounterfactualPairType = Field(..., description="Specific type of counterfactual pair")
+    pair_type: CounterfactualPairType = Field(
+        ..., description="Specific type of counterfactual pair"
+    )
     parent_scene_id: str = Field(..., description="Base reference scene identifier")
-    child_scene_ids: list[str] = Field(..., description="List of [scene_a_id, scene_b_id]")
-    changed_parameter: str = Field(..., description="Name of the parameter modified between scenes")
-    original_values: dict[str, Any] = Field(..., description="Original parameter values in Scene A")
-    new_values: dict[str, Any] = Field(..., description="Modified parameter values in Scene B")
+    child_scene_ids: list[str] = Field(
+        ..., description="List of [scene_a_id, scene_b_id]"
+    )
+    changed_parameter: str = Field(
+        ..., description="Name of the parameter modified between scenes"
+    )
+    original_values: dict[str, Any] = Field(
+        ..., description="Original parameter values in Scene A"
+    )
+    new_values: dict[str, Any] = Field(
+        ..., description="Modified parameter values in Scene B"
+    )
     ground_truth_outcomes: dict[str, CounterfactualSceneOutcome] = Field(
         ..., description="Ground truth outcome records for each child scene"
     )
@@ -385,10 +395,12 @@ class CounterfactualPairRecord(BaseModel):
         ..., description="Expected relationship: FLIPPED_OUTCOME or INVARIANT_OUTCOME"
     )
     relationship_verified: bool = Field(
-        default=True, description="Whether the oracle verified the expected relationship"
+        default=True,
+        description="Whether the oracle verified the expected relationship",
     )
     difference_summary: str = Field(
-        ..., description="Human-readable summary of what changed and its physical optical effect"
+        ...,
+        description="Human-readable summary of what changed and its physical optical effect",
     )
 
 
@@ -402,4 +414,3 @@ class CounterfactualPairBundle(BaseModel):
     pair_record: CounterfactualPairRecord
     scene_a_bundle: VisibilityTaskBundle
     scene_b_bundle: VisibilityTaskBundle
-

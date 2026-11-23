@@ -33,13 +33,30 @@ load_dotenv()
 class ModelSettings(BaseModel):
     """Configurable model hyperparameters and execution settings."""
 
-    temperature: float = Field(default=0.0, ge=0.0, le=2.0, description="Sampling temperature (0.0 for deterministic benchmark)")
-    max_output_tokens: int = Field(default=2048, ge=1, description="Maximum completion tokens")
-    timeout_seconds: float = Field(default=30.0, gt=0.0, description="HTTP/API call timeout in seconds")
-    max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts on transient failures")
-    initial_backoff_seconds: float = Field(default=1.0, gt=0.0, description="Initial backoff delay in seconds")
-    backoff_multiplier: float = Field(default=2.0, ge=1.0, description="Multiplier for exponential backoff")
-    system_instruction: str | None = Field(default=None, description="Optional system prompt")
+    temperature: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=2.0,
+        description="Sampling temperature (0.0 for deterministic benchmark)",
+    )
+    max_output_tokens: int = Field(
+        default=2048, ge=1, description="Maximum completion tokens"
+    )
+    timeout_seconds: float = Field(
+        default=30.0, gt=0.0, description="HTTP/API call timeout in seconds"
+    )
+    max_retries: int = Field(
+        default=3, ge=0, description="Maximum retry attempts on transient failures"
+    )
+    initial_backoff_seconds: float = Field(
+        default=1.0, gt=0.0, description="Initial backoff delay in seconds"
+    )
+    backoff_multiplier: float = Field(
+        default=2.0, ge=1.0, description="Multiplier for exponential backoff"
+    )
+    system_instruction: str | None = Field(
+        default=None, description="Optional system prompt"
+    )
 
 
 class ModelResponse(BaseModel):
@@ -54,9 +71,7 @@ class ModelResponse(BaseModel):
     latency_sec: float = 0.0
     retry_count: int = 0
     finish_reason: str | None = None
-    timestamp: str = Field(
-        default_factory=lambda: datetime.now(UTC).isoformat()
-    )
+    timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     error: str | None = None
     is_mock: bool = False
     raw_metadata: dict[str, Any] = Field(default_factory=dict)
@@ -70,10 +85,16 @@ class MockStrategy(str, Enum):
     ALL_NO = "all_no"  # Predicts NO/blocked for all tasks
     RANDOM = "random"  # Seeded pseudo-random guesser
     NOISY_WRAPPER = "noisy_wrapper"  # Surrounds correct answer with conversational commentary & markdown
-    FORMAT_ERROR = "format_error"  # Returns invalid/non-JSON text to test parser resilience
+    FORMAT_ERROR = (
+        "format_error"  # Returns invalid/non-JSON text to test parser resilience
+    )
     REALISTIC_VLM_BASELINE = "realistic_vlm_baseline"  # Realistic SOTA VLM behavioral simulation on geometric optics
-    REALISTIC_GEMINI_BASELINE = "realistic_gemini_baseline"  # Calibrated Gemini 2.5 Flash VLM simulation
-    REALISTIC_GPT4O_BASELINE = "realistic_gpt4o_baseline"  # Calibrated OpenAI GPT-4o VLM simulation
+    REALISTIC_GEMINI_BASELINE = (
+        "realistic_gemini_baseline"  # Calibrated Gemini 2.5 Flash VLM simulation
+    )
+    REALISTIC_GPT4O_BASELINE = (
+        "realistic_gpt4o_baseline"  # Calibrated OpenAI GPT-4o VLM simulation
+    )
 
 
 # Provider pricing specifications (USD per 1,000,000 tokens)
@@ -210,9 +231,18 @@ class GeminiVisionAdapter(BaseVisionAdapter):
         """Identifies transient network and server errors that warrant a retry."""
         err_msg = str(err).lower()
         retryable_keywords = [
-            "429", "rate limit", "quota", "resource exhausted",
-            "503", "unavailable", "500", "internal server error",
-            "timeout", "deadline exceeded", "connection reset", "econnreset"
+            "429",
+            "rate limit",
+            "quota",
+            "resource exhausted",
+            "503",
+            "unavailable",
+            "500",
+            "internal server error",
+            "timeout",
+            "deadline exceeded",
+            "connection reset",
+            "econnreset",
         ]
         return any(kw in err_msg for kw in retryable_keywords)
 
@@ -303,7 +333,9 @@ class GeminiVisionAdapter(BaseVisionAdapter):
                     finish_reason = str(getattr(first_cand, "finish_reason", "STOP"))
                     raw_meta["finish_reason"] = finish_reason
 
-                model_version = getattr(response, "model_version", None) or self.model_name
+                model_version = (
+                    getattr(response, "model_version", None) or self.model_name
+                )
 
                 return ModelResponse(
                     raw_text=raw_text,
@@ -485,9 +517,17 @@ class OpenAIVisionAdapter(BaseVisionAdapter):
         """Identifies transient network and server errors that warrant a retry."""
         err_msg = str(err).lower()
         retryable_keywords = [
-            "429", "rate limit", "rate_limit_exceeded",
-            "503", "500", "internal server error", "server error",
-            "timeout", "timed out", "connection error", "econnreset",
+            "429",
+            "rate limit",
+            "rate_limit_exceeded",
+            "503",
+            "500",
+            "internal server error",
+            "server error",
+            "timeout",
+            "timed out",
+            "connection error",
+            "econnreset",
             "service unavailable",
         ]
         return any(kw in err_msg for kw in retryable_keywords)
@@ -542,11 +582,27 @@ class OpenAIVisionAdapter(BaseVisionAdapter):
                 latency = time.perf_counter() - t0
                 first_choice = res.choices[0] if res.choices else None
                 raw_text = first_choice.message.content or "" if first_choice else ""
-                finish_reason = getattr(first_choice, "finish_reason", "stop") if first_choice else None
+                finish_reason = (
+                    getattr(first_choice, "finish_reason", "stop")
+                    if first_choice
+                    else None
+                )
 
-                p_toks = getattr(res.usage, "prompt_tokens", None) if hasattr(res, "usage") else None
-                c_toks = getattr(res.usage, "completion_tokens", None) if hasattr(res, "usage") else None
-                t_toks = getattr(res.usage, "total_tokens", None) if hasattr(res, "usage") else None
+                p_toks = (
+                    getattr(res.usage, "prompt_tokens", None)
+                    if hasattr(res, "usage")
+                    else None
+                )
+                c_toks = (
+                    getattr(res.usage, "completion_tokens", None)
+                    if hasattr(res, "usage")
+                    else None
+                )
+                t_toks = (
+                    getattr(res.usage, "total_tokens", None)
+                    if hasattr(res, "usage")
+                    else None
+                )
 
                 return ModelResponse(
                     raw_text=raw_text,
@@ -630,11 +686,17 @@ class MockVisionAdapter(BaseVisionAdapter):
         t0 = time.perf_counter()
         task_id = kwargs.get("task_id", "")
         task_type_raw = kwargs.get("task_type", "TASK_A_VISIBILITY")
-        task_type = task_type_raw.value if hasattr(task_type_raw, "value") else str(task_type_raw)
+        task_type = (
+            task_type_raw.value
+            if hasattr(task_type_raw, "value")
+            else str(task_type_raw)
+        )
 
         if self.strategy == MockStrategy.ORACLE:
             if not task_id:
-                raise ValueError("task_id is required when querying MockVisionAdapter with ORACLE strategy.")
+                raise ValueError(
+                    "task_id is required when querying MockVisionAdapter with ORACLE strategy."
+                )
             if task_id not in self.ground_truth_map:
                 raise KeyError(
                     f"Task-specific ground truth not found for task_id='{task_id}'. "
@@ -650,7 +712,9 @@ class MockVisionAdapter(BaseVisionAdapter):
             text = self._generate_random(task_type)
         elif self.strategy == MockStrategy.NOISY_WRAPPER:
             if not task_id or task_id not in self.ground_truth_map:
-                raise KeyError(f"Task ID '{task_id}' not found in ground_truth_map for NOISY_WRAPPER.")
+                raise KeyError(
+                    f"Task ID '{task_id}' not found in ground_truth_map for NOISY_WRAPPER."
+                )
             gt = self.ground_truth_map[task_id]
             base_json = self._generate_oracle(task_type, gt, task_id=task_id)
             text = (
@@ -664,7 +728,10 @@ class MockVisionAdapter(BaseVisionAdapter):
                 "Sorry, I cannot determine the exact specular reflection angle. "
                 "The diagram has too many obstacles and I cannot answer."
             )
-        elif self.strategy in (MockStrategy.REALISTIC_VLM_BASELINE, MockStrategy.REALISTIC_GEMINI_BASELINE):
+        elif self.strategy in (
+            MockStrategy.REALISTIC_VLM_BASELINE,
+            MockStrategy.REALISTIC_GEMINI_BASELINE,
+        ):
             gt = self.ground_truth_map.get(task_id, {})
             text = self._generate_realistic_vlm(task_type, gt, task_id)
         elif self.strategy == MockStrategy.REALISTIC_GPT4O_BASELINE:
@@ -683,7 +750,10 @@ class MockVisionAdapter(BaseVisionAdapter):
             p_toks = 340
             c_toks = 58
             latency = simulated_latency
-        elif self.strategy in (MockStrategy.REALISTIC_VLM_BASELINE, MockStrategy.REALISTIC_GEMINI_BASELINE):
+        elif self.strategy in (
+            MockStrategy.REALISTIC_VLM_BASELINE,
+            MockStrategy.REALISTIC_GEMINI_BASELINE,
+        ):
             simulated_latency = 0.285 + ((self._counter * 17) % 31) * 0.011
             p_toks = 290
             c_toks = 65
@@ -727,8 +797,14 @@ class MockVisionAdapter(BaseVisionAdapter):
                     f"Ground truth for task_id='{task_id}' has non-boolean visibility: {can_see}"
                 )
             ans = gt.get("answer", "YES" if can_see else "NO")
-            raw_reason = gt.get("reason_code") or gt.get("ground_truth_reason") or ("CLEAR" if can_see else "OUTSIDE_FOV")
-            raw_str = raw_reason.value if hasattr(raw_reason, "value") else str(raw_reason)
+            raw_reason = (
+                gt.get("reason_code")
+                or gt.get("ground_truth_reason")
+                or ("CLEAR" if can_see else "OUTSIDE_FOV")
+            )
+            raw_str = (
+                raw_reason.value if hasattr(raw_reason, "value") else str(raw_reason)
+            )
             reason_map = {
                 "BLOCKED_INCIDENT": "BLOCKED_CAMERA_TO_MIRROR",
                 "BLOCKED_REFLECTED": "BLOCKED_MIRROR_TO_TARGET",
@@ -756,8 +832,14 @@ class MockVisionAdapter(BaseVisionAdapter):
                     f"Ground truth for task_id='{task_id}' has non-boolean is_blocked: {is_blocked}"
                 )
             ans = "YES" if is_blocked else "NO"
-            blocker = gt.get("blocking_obstacle_label") or gt.get("blocker_label") or ("O1" if is_blocked else "NONE")
-            segment = gt.get("blocked_segment") or ("CAMERA_TO_MIRROR" if is_blocked else "NONE")
+            blocker = (
+                gt.get("blocking_obstacle_label")
+                or gt.get("blocker_label")
+                or ("O1" if is_blocked else "NONE")
+            )
+            segment = gt.get("blocked_segment") or (
+                "CAMERA_TO_MIRROR" if is_blocked else "NONE"
+            )
             data = {
                 "is_blocked": is_blocked,
                 "answer": ans,
@@ -835,7 +917,9 @@ class MockVisionAdapter(BaseVisionAdapter):
             data = {"answer": "NO"}
         return json.dumps(data, indent=2)
 
-    def _generate_realistic_vlm(self, task_type: str, gt: dict[str, Any], task_id: str) -> str:
+    def _generate_realistic_vlm(
+        self, task_type: str, gt: dict[str, Any], task_id: str
+    ) -> str:
         """
         Simulate realistic empirical Vision-Language Model behavior on geometric optics:
         - Accurately identifies clean direct reflections and large incident obstacles.
@@ -932,11 +1016,17 @@ class MockVisionAdapter(BaseVisionAdapter):
                 }
             else:
                 # SOTA Failure Mode: Correctly detects blocked=True, but may guess wrong obstacle ID or leg
-                gt_blocker = gt.get("blocking_obstacle_label") or gt.get("blocker_label") or "O1"
+                gt_blocker = (
+                    gt.get("blocking_obstacle_label") or gt.get("blocker_label") or "O1"
+                )
                 gt_leg = gt.get("blocked_segment") or "CAMERA_TO_MIRROR"
 
                 # If counter is odd, confuse the leg
-                pred_leg = "MIRROR_TO_TARGET" if (self._counter % 2 == 1 and gt_leg == "CAMERA_TO_MIRROR") else gt_leg
+                pred_leg = (
+                    "MIRROR_TO_TARGET"
+                    if (self._counter % 2 == 1 and gt_leg == "CAMERA_TO_MIRROR")
+                    else gt_leg
+                )
                 pred_blocker = gt_blocker
 
                 data = {
@@ -968,7 +1058,9 @@ class MockVisionAdapter(BaseVisionAdapter):
 
         return json.dumps(data, indent=2)
 
-    def _generate_realistic_gpt4o(self, task_type: str, gt: dict[str, Any], task_id: str) -> str:
+    def _generate_realistic_gpt4o(
+        self, task_type: str, gt: dict[str, Any], task_id: str
+    ) -> str:
         """
         Simulate empirical OpenAI GPT-4o behavior on geometric optics benchmarks:
         - 100% adherence to valid JSON schemas (0% format errors).
@@ -1055,10 +1147,16 @@ class MockVisionAdapter(BaseVisionAdapter):
                     "explanation": "Specular path is clear of obstacles.",
                 }
             else:
-                gt_blocker = gt.get("blocking_obstacle_label") or gt.get("blocker_label") or "O1"
+                gt_blocker = (
+                    gt.get("blocking_obstacle_label") or gt.get("blocker_label") or "O1"
+                )
                 gt_leg = gt.get("blocked_segment") or "CAMERA_TO_MIRROR"
                 # GPT-4o OCR is high accuracy on label, with 25% error on blocked leg
-                pred_leg = "MIRROR_TO_TARGET" if (self._counter % 4 == 1 and gt_leg == "CAMERA_TO_MIRROR") else gt_leg
+                pred_leg = (
+                    "MIRROR_TO_TARGET"
+                    if (self._counter % 4 == 1 and gt_leg == "CAMERA_TO_MIRROR")
+                    else gt_leg
+                )
                 data = {
                     "is_blocked": True,
                     "answer": "YES",

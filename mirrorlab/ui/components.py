@@ -73,7 +73,11 @@ def render_verdict_badge(
     """
     code_upper = str(reason_code).upper().strip()
 
-    if "CLEAR" in code_upper or is_visible is True or code_upper in ("VISIBLE", "YES", "PASS"):
+    if (
+        "CLEAR" in code_upper
+        or is_visible is True
+        or code_upper in ("VISIBLE", "YES", "PASS")
+    ):
         chip_class = "chip-visible"
         label = "VISIBLE // CLEAR"
     elif "BLOCK" in code_upper:

@@ -179,5 +179,7 @@ prompt_v1 = get_prompt(TaskType.TASK_C_REPAIR, version="1.0.0")
 print(f"Prompt ID: {prompt_v1.metadata.prompt_id}, Hash: {prompt_v1.version_hash}")
 
 # 4. Validate model response
-is_valid, error_msg = prompt_v1.validate_response({"setting": "A", "answer": "A", "explanation": "..."})
+is_valid, error_msg = prompt_v1.validate_response(
+    {"setting": "A", "answer": "A", "explanation": "..."}
+)
 ```

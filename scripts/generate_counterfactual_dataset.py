@@ -37,7 +37,9 @@ def main():
     )
     elapsed = time.time() - t0
 
-    print(f"\nSuccessfully generated {len(bundles)} counterfactual pairs in {elapsed:.2f}s!")
+    print(
+        f"\nSuccessfully generated {len(bundles)} counterfactual pairs in {elapsed:.2f}s!"
+    )
     print("Manifests generated:")
     print(f"  - {out_dir / 'pairs.jsonl'}")
     print(f"  - {out_dir / 'tasks.jsonl'}")

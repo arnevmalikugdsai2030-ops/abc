@@ -1,0 +1,103 @@
+{
+  "timestamp": "2026-11-23T04:44:09.398194+00:00",
+  "model_name": "mock-realistic_gpt4o_baseline",
+  "split_name": "dev",
+  "sample_count": 70,
+  "conditions": {
+    "image_plus_question": {
+      "condition": "image_plus_question",
+      "description": "Multimodal baseline (Full diagram + query)",
+      "total_evaluated": 70,
+      "correct_count": 53,
+      "accuracy": 0.7571,
+      "ci_lower": 0.645,
+      "ci_upper": 0.8425,
+      "delta_vs_multimodal": 0.0,
+      "interpretation": "Standard multimodal benchmark performance baseline"
+    },
+    "question_only": {
+      "condition": "question_only",
+      "description": "Language blind (Blank canvas + query)",
+      "total_evaluated": 70,
+      "correct_count": 39,
+      "accuracy": 0.5571,
+      "ci_lower": 0.4408,
+      "ci_upper": 0.6675,
+      "delta_vs_multimodal": -0.2,
+      "interpretation": "Measures blind language priors (target: ~50% random guessing)"
+    },
+    "metadata_only": {
+      "condition": "metadata_only",
+      "description": "Abstract prompt structure without pixels",
+      "total_evaluated": 70,
+      "correct_count": 22,
+      "accuracy": 0.3143,
+      "ci_lower": 0.2176,
+      "ci_upper": 0.4303,
+      "delta_vs_multimodal": -0.4429,
+      "interpretation": "Verifies prompt metadata contains no statistical leak"
+    },
+    "filename_only": {
+      "condition": "filename_only",
+      "description": "Neutral image filename / task ID prompt",
+      "total_evaluated": 70,
+      "correct_count": 30,
+      "accuracy": 0.4286,
+      "ci_lower": 0.3194,
+      "ci_upper": 0.5452,
+      "delta_vs_multimodal": -0.3286,
+      "interpretation": "Verifies filenames and public IDs leak zero ground truth"
+    },
+    "critical_geometry_ablated": {
+      "condition": "critical_geometry_ablated",
+      "description": "Mirror aperture masked with gray occlusion",
+      "total_evaluated": 70,
+      "correct_count": 21,
+      "accuracy": 0.3,
+      "ci_lower": 0.2054,
+      "ci_upper": 0.4154,
+      "delta_vs_multimodal": -0.4571,
+      "interpretation": "Validates that specular reflection aperture is indispensable"
+    },
+    "cosmetic_perturbations": {
+      "condition": "cosmetic_perturbations",
+      "description": "Inverted color palette with preserved geometry",
+      "total_evaluated": 70,
+      "correct_count": 53,
+      "accuracy": 0.7571,
+      "ci_lower": 0.645,
+      "ci_upper": 0.8425,
+      "delta_vs_multimodal": 0.0,
+      "interpretation": "Confirms performance is invariant to cosmetic styling"
+    },
+    "altered_geometry": {
+      "condition": "altered_geometry",
+      "description": "180-degree rotation destroying ray alignment",
+      "total_evaluated": 70,
+      "correct_count": 29,
+      "accuracy": 0.4143,
+      "ci_lower": 0.3063,
+      "ci_upper": 0.5312,
+      "delta_vs_multimodal": -0.3429,
+      "interpretation": "Tests sensitivity to angular and spatial ray misalignment"
+    },
+    "randomized_background": {
+      "condition": "randomized_background",
+      "description": "Gaussian noise injected into background grid",
+      "total_evaluated": 70,
+      "correct_count": 53,
+      "accuracy": 0.7571,
+      "ci_lower": 0.645,
+      "ci_upper": 0.8425,
+      "delta_vs_multimodal": 0.0,
+      "interpretation": "Confirms model is not distracted by grid/ruler noise"
+    }
+  },
+  "visual_necessity_ratio": 0.2,
+  "language_prior_bias": 0.0571,
+  "cosmetic_invariance_score": 1.0,
+  "geometric_sensitivity": 0.3428,
+  "filename_leakage_detected": false,
+  "metadata_leakage_detected": false,
+  "is_genuinely_vision_necessary": true
+}

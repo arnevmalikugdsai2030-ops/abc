@@ -41,9 +41,15 @@ def sample_task_data() -> tuple[str, str, dict]:
 
 def test_prediction_lock_hash() -> None:
     """Verify that lock hash is deterministic, tamper-evident, and uppercase."""
-    h1 = _compute_prediction_lock_hash("task_1", "gemini-2.5-flash", '{"can_see": true}')
-    h2 = _compute_prediction_lock_hash("task_1", "gemini-2.5-flash", '{"can_see": true}')
-    h3 = _compute_prediction_lock_hash("task_1", "gemini-2.5-flash", '{"can_see": false}')
+    h1 = _compute_prediction_lock_hash(
+        "task_1", "gemini-2.5-flash", '{"can_see": true}'
+    )
+    h2 = _compute_prediction_lock_hash(
+        "task_1", "gemini-2.5-flash", '{"can_see": true}'
+    )
+    h3 = _compute_prediction_lock_hash(
+        "task_1", "gemini-2.5-flash", '{"can_see": false}'
+    )
 
     assert h1 == h2
     assert h1 != h3
@@ -51,13 +57,17 @@ def test_prediction_lock_hash() -> None:
     assert h1.isupper()
 
 
-def test_execute_model_challenge_oracle(sample_task_data: tuple[str, str, dict], tmp_path: Path) -> None:
+def test_execute_model_challenge_oracle(
+    sample_task_data: tuple[str, str, dict], tmp_path: Path
+) -> None:
     """Verify challenge execution with mock-oracle produces valid, correct evaluation."""
     task_id, prompt, gt = sample_task_data
 
     # Create dummy image file for validation
     dummy_img = tmp_path / "diagram_blind.png"
-    dummy_img.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+    dummy_img.write_bytes(
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
 
     resp, record = _execute_model_challenge(
         model_name="mock-oracle",
@@ -76,12 +86,16 @@ def test_execute_model_challenge_oracle(sample_task_data: tuple[str, str, dict],
     assert parsed.get("can_see") is True
 
 
-def test_execute_model_challenge_incorrect(sample_task_data: tuple[str, str, dict], tmp_path: Path) -> None:
+def test_execute_model_challenge_incorrect(
+    sample_task_data: tuple[str, str, dict], tmp_path: Path
+) -> None:
     """Verify challenge execution with mock-all-no grades as incorrect (0.0)."""
     task_id, prompt, gt = sample_task_data
 
     dummy_img = tmp_path / "diagram_blind.png"
-    dummy_img.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+    dummy_img.write_bytes(
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
 
     _resp, record = _execute_model_challenge(
         model_name="mock-all-no",
@@ -97,12 +111,16 @@ def test_execute_model_challenge_incorrect(sample_task_data: tuple[str, str, dic
     assert record.error_classification == ErrorCategory.WRONG_ANSWER
 
 
-def test_execute_model_challenge_format_error(sample_task_data: tuple[str, str, dict], tmp_path: Path) -> None:
+def test_execute_model_challenge_format_error(
+    sample_task_data: tuple[str, str, dict], tmp_path: Path
+) -> None:
     """Verify non-JSON model output is classified as MALFORMED_JSON with score 0.0."""
     task_id, prompt, gt = sample_task_data
 
     dummy_img = tmp_path / "diagram_blind.png"
-    dummy_img.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+    dummy_img.write_bytes(
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
 
     _resp, record = _execute_model_challenge(
         model_name="mock-format-error",

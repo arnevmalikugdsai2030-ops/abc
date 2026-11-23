@@ -131,7 +131,12 @@ def create_optical_figure(
             "bgcolor": "rgba(0,0,0,0)",
             "font": {"size": 11, "color": text_color},
         },
-        margin={"l": margin_val, "r": margin_val, "t": margin_val + 20, "b": margin_val},
+        margin={
+            "l": margin_val,
+            "r": margin_val,
+            "t": margin_val + 20,
+            "b": margin_val,
+        },
         width=width,
         height=height,
         hovermode="closest",
@@ -187,7 +192,11 @@ def _draw_obstacle(fig: go.Figure, obs: ObstacleSpec, is_dark: bool) -> None:
                 text=f"Obstacle: {obs.obstacle_id}<br>Type: Circle (r={obs.radius:.1f}mm)<br>Center: ({obs.center.x:.1f}, {obs.center.y:.1f})",
             )
         )
-    elif obs.obstacle_type == "rectangle" and obs.width is not None and obs.height is not None:
+    elif (
+        obs.obstacle_type == "rectangle"
+        and obs.width is not None
+        and obs.height is not None
+    ):
         # 4 rotated rectangle corners
         hw = obs.width / 2.0
         hh = obs.height / 2.0
@@ -218,7 +227,11 @@ def _draw_obstacle(fig: go.Figure, obs: ObstacleSpec, is_dark: bool) -> None:
         y=obs.center.y,
         text=obs.obstacle_id,
         showarrow=False,
-        font={"size": 11, "color": "#cbd5e1" if is_dark else "#1e293b", "family": "monospace"},
+        font={
+            "size": 11,
+            "color": "#cbd5e1" if is_dark else "#1e293b",
+            "family": "monospace",
+        },
     )
 
 
@@ -315,7 +328,11 @@ def _draw_candidate_mirrors(
                 y=[ma.y, mb.y],
                 mode="lines+markers",
                 line={"color": col, "width": width},
-                marker={"size": 8 if is_active else 5, "color": col, "symbol": "circle"},
+                marker={
+                    "size": 8 if is_active else 5,
+                    "color": col,
+                    "symbol": "circle",
+                },
                 name=f"Candidate Mirror {cid}" + (" (Active)" if is_active else ""),
                 opacity=opacity,
                 hoverinfo="text",
@@ -335,7 +352,9 @@ def _draw_candidate_mirrors(
         )
 
 
-def _draw_camera(fig: go.Figure, cam: CameraSpec, show_fov: bool, is_dark: bool) -> None:
+def _draw_camera(
+    fig: go.Figure, cam: CameraSpec, show_fov: bool, is_dark: bool
+) -> None:
     """Render the camera icon, heading axis, and semi-transparent FOV cone."""
     cx, cy = cam.position.x, cam.position.y
     heading_rad = np.radians(cam.heading_deg)
@@ -352,7 +371,12 @@ def _draw_camera(fig: go.Figure, cam: CameraSpec, show_fov: bool, is_dark: bool)
             x=[cx],
             y=[cy],
             mode="markers+text",
-            marker={"size": 14, "color": "#2b7fff", "symbol": "circle", "line": {"color": "#ffffff", "width": 1.5}},
+            marker={
+                "size": 14,
+                "color": "#2b7fff",
+                "symbol": "circle",
+                "line": {"color": "#ffffff", "width": 1.5},
+            },
             name="Camera (C)",
             text=["Camera C"],
             textposition="bottom center",
@@ -382,7 +406,9 @@ def _draw_camera(fig: go.Figure, cam: CameraSpec, show_fov: bool, is_dark: bool)
 
     # FOV Cone Wedge
     if show_fov:
-        arc_angles = np.linspace(heading_rad - fov_half_rad, heading_rad + fov_half_rad, 25)
+        arc_angles = np.linspace(
+            heading_rad - fov_half_rad, heading_rad + fov_half_rad, 25
+        )
         arc_x = [cx] + (cx + cone_len * np.cos(arc_angles)).tolist() + [cx]
         arc_y = [cy] + (cy + cone_len * np.sin(arc_angles)).tolist() + [cy]
 
@@ -446,7 +472,12 @@ def _draw_debug_overlays(
                 x=[vx],
                 y=[vy],
                 mode="markers+text",
-                marker={"size": 11, "color": "#d946ef", "symbol": "circle-open", "line": {"width": 2, "color": "#d946ef"}},
+                marker={
+                    "size": 11,
+                    "color": "#d946ef",
+                    "symbol": "circle-open",
+                    "line": {"width": 2, "color": "#d946ef"},
+                },
                 text=["Virtual Target S'"],
                 textposition="top center",
                 name="Virtual Target (S')",
@@ -475,7 +506,12 @@ def _draw_debug_overlays(
                 x=[rx],
                 y=[ry],
                 mode="markers",
-                marker={"size": 10, "color": "#00e5ff", "symbol": "diamond", "line": {"color": "#ffffff", "width": 1.5}},
+                marker={
+                    "size": 10,
+                    "color": "#00e5ff",
+                    "symbol": "diamond",
+                    "line": {"color": "#ffffff", "width": 1.5},
+                },
                 name="Reflection Point (P)",
                 hoverinfo="text",
                 hovertext=f"Reflection Point P: ({rx:.1f}, {ry:.1f})<br>θ_i = θ_r = {oracle.incident_angle_deg or 0.0:.1f}°",
@@ -522,7 +558,9 @@ def _draw_debug_overlays(
         # Reflected Ray: Reflection Point P -> Target S
         refl_color = "#10b981" if oracle.is_visible else "#ef4444"
         refl_dash = "solid" if oracle.is_visible else "dash"
-        refl_name = "Reflected Ray (Leg 2)" if oracle.is_visible else "Reflected Ray (Blocked)"
+        refl_name = (
+            "Reflected Ray (Leg 2)" if oracle.is_visible else "Reflected Ray (Blocked)"
+        )
 
         fig.add_trace(
             go.Scatter(
@@ -570,7 +608,12 @@ def _draw_debug_overlays(
                     x=[hx],
                     y=[hy],
                     mode="markers+text",
-                    marker={"size": 14, "color": "#ef4444", "symbol": "x-thin", "line": {"width": 3, "color": "#ef4444"}},
+                    marker={
+                        "size": 14,
+                        "color": "#ef4444",
+                        "symbol": "x-thin",
+                        "line": {"width": 3, "color": "#ef4444"},
+                    },
                     text=[f"Collision: {hit.obstacle_id}"],
                     textposition="bottom right",
                     name="Ray Collision Hit",

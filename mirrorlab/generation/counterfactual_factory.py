@@ -92,12 +92,18 @@ class CounterfactualFactory:
         reason = oracle_res.reason
 
         refl_pt = (
-            Point2D(x=float(oracle_res.reflection_point[0]), y=float(oracle_res.reflection_point[1]))
+            Point2D(
+                x=float(oracle_res.reflection_point[0]),
+                y=float(oracle_res.reflection_point[1]),
+            )
             if oracle_res.reflection_point is not None
             else None
         )
         virt_tgt = (
-            Point2D(x=float(oracle_res.virtual_target[0]), y=float(oracle_res.virtual_target[1]))
+            Point2D(
+                x=float(oracle_res.virtual_target[0]),
+                y=float(oracle_res.virtual_target[1]),
+            )
             if oracle_res.virtual_target is not None
             else None
         )
@@ -156,11 +162,17 @@ class CounterfactualFactory:
         )
         eval_a = self.oracle.evaluate(scene_a)
         if not eval_a.is_visible:
-            raise ValueError(f"Base scene A for seed {seed} is not visible ({eval_a.reason})")
+            raise ValueError(
+                f"Base scene A for seed {seed} is not visible ({eval_a.reason})"
+            )
 
         # Extract mirror geometry
-        ma = np.array([scene_a.mirror.endpoint_a.x, scene_a.mirror.endpoint_a.y], dtype=np.float64)
-        mb = np.array([scene_a.mirror.endpoint_b.x, scene_a.mirror.endpoint_b.y], dtype=np.float64)
+        ma = np.array(
+            [scene_a.mirror.endpoint_a.x, scene_a.mirror.endpoint_a.y], dtype=np.float64
+        )
+        mb = np.array(
+            [scene_a.mirror.endpoint_b.x, scene_a.mirror.endpoint_b.y], dtype=np.float64
+        )
         m_center = (ma + mb) * 0.5
         m_delta = mb - ma
         m_len = float(vector_magnitude(m_delta))
@@ -174,8 +186,26 @@ class CounterfactualFactory:
 
         # Candidate tilt angles sorted in increasing magnitude to find the minimal flip
         candidate_deltas_deg = [
-            +2.5, -2.5, +4.0, -4.0, +6.0, -6.0, +8.0, -8.0, +10.0, -10.0,
-            +13.0, -13.0, +16.0, -16.0, +20.0, -20.0, +25.0, -25.0, +30.0, -30.0,
+            +2.5,
+            -2.5,
+            +4.0,
+            -4.0,
+            +6.0,
+            -6.0,
+            +8.0,
+            -8.0,
+            +10.0,
+            -10.0,
+            +13.0,
+            -13.0,
+            +16.0,
+            -16.0,
+            +20.0,
+            -20.0,
+            +25.0,
+            -25.0,
+            +30.0,
+            -30.0,
         ]
 
         best_scene_b: InspectionScene | None = None
@@ -188,8 +218,13 @@ class CounterfactualFactory:
             new_m_angle_rad = m_angle_rad + delta_rad
             new_norm_angle_rad = normal_angle_rad + delta_rad
 
-            u_new = np.array([math.cos(new_m_angle_rad), math.sin(new_m_angle_rad)], dtype=np.float64)
-            n_new = np.array([math.cos(new_norm_angle_rad), math.sin(new_norm_angle_rad)], dtype=np.float64)
+            u_new = np.array(
+                [math.cos(new_m_angle_rad), math.sin(new_m_angle_rad)], dtype=np.float64
+            )
+            n_new = np.array(
+                [math.cos(new_norm_angle_rad), math.sin(new_norm_angle_rad)],
+                dtype=np.float64,
+            )
 
             new_ma = m_center - (m_len * 0.5) * u_new
             new_mb = m_center + (m_len * 0.5) * u_new
@@ -238,7 +273,9 @@ class CounterfactualFactory:
                 break
 
         if best_scene_b is None:
-            raise RuntimeError(f"Could not find valid angular perturbation for seed {seed}")
+            raise RuntimeError(
+                f"Could not find valid angular perturbation for seed {seed}"
+            )
 
         # Build pair record
         orig_angle_deg = math.degrees(m_angle_rad)
@@ -359,12 +396,16 @@ class CounterfactualFactory:
         if not eval_a.is_visible or eval_a.reflection_point is None:
             raise ValueError(f"Base scene A for seed {seed} is not clear")
 
-        cam_pt = np.array([scene_a.camera.position.x, scene_a.camera.position.y], dtype=np.float64)
+        cam_pt = np.array(
+            [scene_a.camera.position.x, scene_a.camera.position.y], dtype=np.float64
+        )
         refl_pt = eval_a.reflection_point
-        tgt_pt = np.array([scene_a.target.center.x, scene_a.target.center.y], dtype=np.float64)
+        tgt_pt = np.array(
+            [scene_a.target.center.x, scene_a.target.center.y], dtype=np.float64
+        )
 
         # Select leg to block (alternate based on seed)
-        block_leg_1 = (seed % 2 == 0)
+        block_leg_1 = seed % 2 == 0
         rng = np.random.default_rng(seed + 777)
 
         if block_leg_1:
@@ -404,7 +445,9 @@ class CounterfactualFactory:
             obstacles=obstacles_b,
             ground_truth_state=VisibilityState.NOT_VISIBLE,
             ground_truth_reason=(
-                ObstructionReason.BLOCKED_INCIDENT if block_leg_1 else ObstructionReason.BLOCKED_REFLECTED
+                ObstructionReason.BLOCKED_INCIDENT
+                if block_leg_1
+                else ObstructionReason.BLOCKED_REFLECTED
             ),
             diagnostic_details=f"Blocked by {new_obs_id} along {blocked_leg_desc}",
         )
@@ -521,8 +564,12 @@ class CounterfactualFactory:
             # Check distance to camera, target, mirror endpoints
             d_cam = math.hypot(cx - cam_pt[0], cy - cam_pt[1])
             d_tgt = math.hypot(cx - tgt_pt[0], cy - tgt_pt[1])
-            d_ma = math.hypot(cx - scene_a.mirror.endpoint_a.x, cy - scene_a.mirror.endpoint_a.y)
-            d_mb = math.hypot(cx - scene_a.mirror.endpoint_b.x, cy - scene_a.mirror.endpoint_b.y)
+            d_ma = math.hypot(
+                cx - scene_a.mirror.endpoint_a.x, cy - scene_a.mirror.endpoint_a.y
+            )
+            d_mb = math.hypot(
+                cx - scene_a.mirror.endpoint_b.x, cy - scene_a.mirror.endpoint_b.y
+            )
 
             if (
                 clearance >= 30.0
@@ -535,7 +582,9 @@ class CounterfactualFactory:
                 break
 
         if distractor_spec is None:
-            raise RuntimeError(f"Could not place non-interfering distractor for seed {seed}")
+            raise RuntimeError(
+                f"Could not place non-interfering distractor for seed {seed}"
+            )
 
         obstacles_b = list(scene_a.obstacles) + [distractor_spec]
 
@@ -561,7 +610,9 @@ class CounterfactualFactory:
 
         eval_b = self.oracle.evaluate(scene_b)
         if not eval_b.is_visible:
-            raise RuntimeError(f"Distractor accidentally blocked sightline in seed {seed}")
+            raise RuntimeError(
+                f"Distractor accidentally blocked sightline in seed {seed}"
+            )
 
         changed_param = "obstacles.irrelevant_inserted"
         orig_vals = {
@@ -784,7 +835,9 @@ class CounterfactualFactory:
 
             # pairs.jsonl
             with open(out_path / "pairs.jsonl", "w", encoding="utf-8") as f:
-                f.writelines(b.pair_record.model_dump_json() + "\n" for b in all_bundles)
+                f.writelines(
+                    b.pair_record.model_dump_json() + "\n" for b in all_bundles
+                )
 
             # tasks.jsonl (all child tasks)
             with open(out_path / "tasks.jsonl", "w", encoding="utf-8") as f:

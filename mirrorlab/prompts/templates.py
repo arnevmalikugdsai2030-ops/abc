@@ -77,7 +77,9 @@ class PromptTemplate(BaseModel):
         rendered = self.render().encode("utf-8")
         return hashlib.sha256(rendered).hexdigest()
 
-    def validate_response(self, response_data: dict[str, Any]) -> tuple[bool, str | None]:
+    def validate_response(
+        self, response_data: dict[str, Any]
+    ) -> tuple[bool, str | None]:
         """Validates that a response dictionary conforms to the required keys and types."""
         req_keys = self.json_schema_spec.get("required", [])
         for k in req_keys:
@@ -90,7 +92,10 @@ class PromptTemplate(BaseModel):
             if prop_name in response_data and "enum" in prop_spec:
                 val = response_data[prop_name]
                 if val not in prop_spec["enum"]:
-                    return False, f"Value '{val}' for '{prop_name}' not in allowed enum: {prop_spec['enum']}"
+                    return (
+                        False,
+                        f"Value '{val}' for '{prop_name}' not in allowed enum: {prop_spec['enum']}",
+                    )
 
         return True, None
 

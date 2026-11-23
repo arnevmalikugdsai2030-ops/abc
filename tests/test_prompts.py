@@ -61,13 +61,18 @@ class TestVersionedPromptLibraryStructure:
         prompt = get_prompt(TaskType.TASK_B_OBSTRUCTION)
         assert prompt.metadata.prompt_id == "prompt_obs_v1"
         assert prompt.metadata.version == "1.0.0"
-        assert "blocked" in prompt.question.lower() or "obstacle" in prompt.question.lower()
+        assert (
+            "blocked" in prompt.question.lower()
+            or "obstacle" in prompt.question.lower()
+        )
 
     def test_repair_prompt_v1_metadata(self):
         prompt = get_prompt(TaskType.TASK_C_REPAIR)
         assert prompt.metadata.prompt_id == "prompt_repair_v1"
         assert prompt.metadata.version == "1.0.0"
-        assert "setting" in prompt.question.lower() or "mirror" in prompt.question.lower()
+        assert (
+            "setting" in prompt.question.lower() or "mirror" in prompt.question.lower()
+        )
 
 
 class TestPromptSchemaRequirements:
@@ -138,10 +143,16 @@ class TestPromptNeutralityAndZeroLeakage:
     def test_prompt_has_no_leakage(self, task_type: TaskType):
         rendered = render_prompt(task_type).lower()
         for forbidden in self.LEAKAGE_FORBIDDEN_TERMS:
-            assert forbidden not in rendered, f"Forbidden leaked term '{forbidden}' found in {task_type.value} prompt"
+            assert forbidden not in rendered, (
+                f"Forbidden leaked term '{forbidden}' found in {task_type.value} prompt"
+            )
 
     def test_questions_are_concise_and_neutral(self):
-        for task_type in [TaskType.TASK_A_VISIBILITY, TaskType.TASK_B_OBSTRUCTION, TaskType.TASK_C_REPAIR]:
+        for task_type in [
+            TaskType.TASK_A_VISIBILITY,
+            TaskType.TASK_B_OBSTRUCTION,
+            TaskType.TASK_C_REPAIR,
+        ]:
             p = get_prompt(task_type)
             # Question must end with question mark
             assert p.question.strip().endswith("?")

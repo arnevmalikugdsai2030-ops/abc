@@ -184,7 +184,10 @@ class SceneGenerator:
         """
         rng = np.random.default_rng(seed)
         params = DIFFICULTY_PRESETS[difficulty]
-        sid = scene_id or f"scene_{difficulty.value.lower()}_{category.value.lower()}_{seed}"
+        sid = (
+            scene_id
+            or f"scene_{difficulty.value.lower()}_{category.value.lower()}_{seed}"
+        )
 
         for attempt in range(1, self.max_attempts + 1):
             candidate = self._generate_candidate(rng, category, difficulty, params)
@@ -217,7 +220,13 @@ class SceneGenerator:
             if self._matches_category(oracle_verdict, category):
                 self.seen_fingerprints.add(fingerprint)
                 return self._build_inspection_scene(
-                    sid, seed, category, difficulty, candidate, oracle_verdict, params.is_boundary
+                    sid,
+                    seed,
+                    category,
+                    difficulty,
+                    candidate,
+                    oracle_verdict,
+                    params.is_boundary,
                 )
             else:
                 self.rejection_log.append(
@@ -260,7 +269,10 @@ class SceneGenerator:
         m_b = np.array([m_cx, m_cy]) + half_len * t_unit
 
         # 2. Pick intended reflection point R on mirror
-        if difficulty == DifficultyLevel.BOUNDARY and category == SceneCategory.VALID_VISIBLE:
+        if (
+            difficulty == DifficultyLevel.BOUNDARY
+            and category == SceneCategory.VALID_VISIBLE
+        ):
             # Place reflection point extremely close to mirror endpoint (within 2% to 4%)
             t_hit = (
                 float(rng.uniform(0.02, 0.045))
@@ -268,7 +280,9 @@ class SceneGenerator:
                 else float(rng.uniform(0.955, 0.98))
             )
         else:
-            t_hit = float(rng.uniform(params.min_edge_margin_t, 1.0 - params.min_edge_margin_t))
+            t_hit = float(
+                rng.uniform(params.min_edge_margin_t, 1.0 - params.min_edge_margin_t)
+            )
 
         r_pt = m_a + t_hit * (m_b - m_a)
 
@@ -306,7 +320,10 @@ class SceneGenerator:
         ray_dir = vector_normalize(r_pt - cam_pos)
         cam_aim_deg = math.degrees(math.atan2(ray_dir[1], ray_dir[0]))
 
-        if difficulty == DifficultyLevel.BOUNDARY and category == SceneCategory.VALID_VISIBLE:
+        if (
+            difficulty == DifficultyLevel.BOUNDARY
+            and category == SceneCategory.VALID_VISIBLE
+        ):
             # Place ray near FOV boundary (within 1.0° - 1.8° of cone edge)
             boundary_offset = (fov_deg / 2.0) - float(rng.uniform(0.8, 1.8))
             offset_dir = 1.0 if rng.random() > 0.5 else -1.0
@@ -330,7 +347,11 @@ class SceneGenerator:
         obstacles: list[ObstacleBase] = [partition]
 
         # 6. Distractor obstacles (for STANDARD, HARD, and BOUNDARY)
-        num_distractors = int(rng.integers(params.num_distractors_range[0], params.num_distractors_range[1] + 1))
+        num_distractors = int(
+            rng.integers(
+                params.num_distractors_range[0], params.num_distractors_range[1] + 1
+            )
+        )
         if num_distractors > 0:
             # Distractor zones away from optical rays
             distractor_corners = [
@@ -340,7 +361,10 @@ class SceneGenerator:
                 (100.0, 240.0, 120.0, 300.0),  # Lower-left
             ]
             for d_idx in range(num_distractors):
-                zone = distractor_corners[(d_idx + int(rng.integers(0, len(distractor_corners)))) % len(distractor_corners)]
+                zone = distractor_corners[
+                    (d_idx + int(rng.integers(0, len(distractor_corners))))
+                    % len(distractor_corners)
+                ]
                 cx = float(rng.uniform(zone[0], zone[1]))
                 cy = float(rng.uniform(zone[2], zone[3]))
                 obs_id = f"O{len(obstacles) + 1}"
@@ -348,13 +372,30 @@ class SceneGenerator:
                 # Ensure distractor does not overlap camera, target, mirror
                 d_c = math.hypot(cx - cam_pos[0], cy - cam_pos[1])
                 d_t = math.hypot(cx - tgt_pos[0], cy - tgt_pos[1])
-                d_m = min(math.hypot(cx - m_a[0], cy - m_a[1]), math.hypot(cx - m_b[0], cy - m_b[1]))
+                d_m = min(
+                    math.hypot(cx - m_a[0], cy - m_a[1]),
+                    math.hypot(cx - m_b[0], cy - m_b[1]),
+                )
 
                 if d_c > 60.0 and d_t > 60.0 and d_m > 50.0:
                     if rng.random() > 0.5:
-                        obstacles.append(CircleObstacle(obs_id, center=[cx, cy], radius=float(rng.uniform(18.0, 28.0))))
+                        obstacles.append(
+                            CircleObstacle(
+                                obs_id,
+                                center=[cx, cy],
+                                radius=float(rng.uniform(18.0, 28.0)),
+                            )
+                        )
                     else:
-                        obstacles.append(RectangleObstacle(obs_id, center=[cx, cy], width=float(rng.uniform(35.0, 50.0)), height=float(rng.uniform(35.0, 50.0)), angle_degrees=float(rng.uniform(0.0, 45.0))))
+                        obstacles.append(
+                            RectangleObstacle(
+                                obs_id,
+                                center=[cx, cy],
+                                width=float(rng.uniform(35.0, 50.0)),
+                                height=float(rng.uniform(35.0, 50.0)),
+                                angle_degrees=float(rng.uniform(0.0, 45.0)),
+                            )
+                        )
 
         # 7. Apply Category-Specific Perturbations
         if category == SceneCategory.VALID_VISIBLE:

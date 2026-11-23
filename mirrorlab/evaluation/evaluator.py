@@ -97,9 +97,10 @@ class BenchmarkEvaluator:
 
         eval_records: list[dict[str, Any]] = []
 
-        with open(raw_log_path, "w", encoding="utf-8") as f_raw, open(
-            predictions_path, "w", encoding="utf-8"
-        ) as f_pred:
+        with (
+            open(raw_log_path, "w", encoding="utf-8") as f_raw,
+            open(predictions_path, "w", encoding="utf-8") as f_pred,
+        ):
             for task in tasks:
                 tid = task["task_id"]
                 ttype = task.get("task_type", "TASK_A_VISIBILITY")
@@ -191,32 +192,64 @@ class BenchmarkEvaluator:
 
     def _render_report_markdown(self, metrics: EvaluationMetrics) -> str:
         """Render publication-grade scientific Markdown evaluation report."""
-        is_mock_str = "[MOCK RUNNER - NOT BENCHMARK DATA]" if getattr(self.adapter, "strategy", None) else "[LIVE API EVALUATION]"
+        is_mock_str = (
+            "[MOCK RUNNER - NOT BENCHMARK DATA]"
+            if getattr(self.adapter, "strategy", None)
+            else "[LIVE API EVALUATION]"
+        )
 
         md = []
-        md.append(f"# MIRRORLAB Benchmark Evaluation Report: `{self.adapter.model_name}`\n")
-        md.append(f"**Run ID:** `{self.run_id}` | **Status:** {is_mock_str} | **Split:** `{self.split_name}`\n")
+        md.append(
+            f"# MIRRORLAB Benchmark Evaluation Report: `{self.adapter.model_name}`\n"
+        )
+        md.append(
+            f"**Run ID:** `{self.run_id}` | **Status:** {is_mock_str} | **Split:** `{self.split_name}`\n"
+        )
 
         md.append("## 1. Executive Summary & Headline Accuracy\n")
         md.append("| Metric | Result | Benchmark Baseline (Chance) | Description |")
         md.append("|---|---|---|---|")
-        md.append(f"| **Overall Task Accuracy** | **{metrics.overall_accuracy * 100:.1f}%** | ~33.3% | Composite accuracy across all tasks |")
-        md.append(f"| **Task A: Visibility** | **{metrics.task_a_accuracy * 100:.1f}%** | 50.0% | Specular sightline binary detection |")
-        md.append(f"| **Task A: Reason Precision** | {metrics.task_a_reason_accuracy * 100:.1f}% | ~16.7% | Exact optical failure mode classification |")
-        md.append(f"| **Task B: Obstruction (Binary)** | {metrics.task_b_blocked_accuracy * 100:.1f}% | 50.0% | Detection of blocking barrier |")
-        md.append(f"| **Task B: 3-Field Precision** | **{metrics.task_b_full_accuracy * 100:.1f}%** | ~8.3% | Blocker label + path segment exact attribution |")
-        md.append(f"| **Task C: Mirror Repair** | **{metrics.task_c_accuracy * 100:.1f}%** | 33.3% | Selection of the single valid mirror configuration |")
-        md.append(f"| **Counterfactual Pair Consistency** | **{metrics.pair_consistency_score * 100:.1f}%** | 25.0% | **Joint Correctness** (Both A and B correct) |")
-        md.append(f"| **Cosmetic Theme Invariance** | {metrics.cosmetic_invariance_rate * 100:.1f}% | 50.0% | Consistency across 4 CAD visual themes |")
-        md.append(f"| **Format Compliance** | {metrics.format_compliance_rate * 100:.1f}% | 100.0% | Adherence to requested JSON response schema |")
+        md.append(
+            f"| **Overall Task Accuracy** | **{metrics.overall_accuracy * 100:.1f}%** | ~33.3% | Composite accuracy across all tasks |"
+        )
+        md.append(
+            f"| **Task A: Visibility** | **{metrics.task_a_accuracy * 100:.1f}%** | 50.0% | Specular sightline binary detection |"
+        )
+        md.append(
+            f"| **Task A: Reason Precision** | {metrics.task_a_reason_accuracy * 100:.1f}% | ~16.7% | Exact optical failure mode classification |"
+        )
+        md.append(
+            f"| **Task B: Obstruction (Binary)** | {metrics.task_b_blocked_accuracy * 100:.1f}% | 50.0% | Detection of blocking barrier |"
+        )
+        md.append(
+            f"| **Task B: 3-Field Precision** | **{metrics.task_b_full_accuracy * 100:.1f}%** | ~8.3% | Blocker label + path segment exact attribution |"
+        )
+        md.append(
+            f"| **Task C: Mirror Repair** | **{metrics.task_c_accuracy * 100:.1f}%** | 33.3% | Selection of the single valid mirror configuration |"
+        )
+        md.append(
+            f"| **Counterfactual Pair Consistency** | **{metrics.pair_consistency_score * 100:.1f}%** | 25.0% | **Joint Correctness** (Both A and B correct) |"
+        )
+        md.append(
+            f"| **Cosmetic Theme Invariance** | {metrics.cosmetic_invariance_rate * 100:.1f}% | 50.0% | Consistency across 4 CAD visual themes |"
+        )
+        md.append(
+            f"| **Format Compliance** | {metrics.format_compliance_rate * 100:.1f}% | 100.0% | Adherence to requested JSON response schema |"
+        )
         md.append("")
 
         md.append("## 2. Counterfactual Pair Consistency Breakdown\n")
-        md.append("> **Note on Guessing Bias:** A model guessing 'YES' on all pairs scores **0.0%** on Flip and Obstacle Insertion pairs. Joint correctness completely eliminates single-answer bias.\n")
-        md.append("| Counterfactual Pair Type | Consistency Rate | Pairs Evaluated | Target Relationship |")
+        md.append(
+            "> **Note on Guessing Bias:** A model guessing 'YES' on all pairs scores **0.0%** on Flip and Obstacle Insertion pairs. Joint correctness completely eliminates single-answer bias.\n"
+        )
+        md.append(
+            "| Counterfactual Pair Type | Consistency Rate | Pairs Evaluated | Target Relationship |"
+        )
         md.append("|---|---|---|---|")
         for ptype, rate in metrics.pair_consistency_by_type.items():
-            md.append(f"| `{ptype}` | **{rate * 100:.1f}%** | Monitored | Outcome flips or invariant |")
+            md.append(
+                f"| `{ptype}` | **{rate * 100:.1f}%** | Monitored | Outcome flips or invariant |"
+            )
         md.append("")
 
         md.append("## 3. Parser Extraction Pass Distribution\n")
@@ -229,7 +262,9 @@ class BenchmarkEvaluator:
 
         if metrics.confusion_by_reason_code:
             md.append("## 4. Failure Mode Diagnostic Breakdown\n")
-            md.append("| True Ground-Truth Reason | Correct Predictions | Incorrect Predictions | Accuracy |")
+            md.append(
+                "| True Ground-Truth Reason | Correct Predictions | Incorrect Predictions | Accuracy |"
+            )
             md.append("|---|---|---|---|")
             for rcode, data in metrics.confusion_by_reason_code.items():
                 c_ok = data.get("correct", 0)

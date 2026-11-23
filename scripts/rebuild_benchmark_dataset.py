@@ -82,7 +82,9 @@ def main():
         output_dir=pair_dir,
         start_seed=40000,
     )
-    print(f"Generated {len(pair_bundles)} counterfactual pairs in {time.time() - t0:.2f}s")
+    print(
+        f"Generated {len(pair_bundles)} counterfactual pairs in {time.time() - t0:.2f}s"
+    )
 
     # 5. Rebuild Task E: OOD Tasks (30 tasks, seeds 80000-80029)
     ood_dir = data_root / "ood_tasks"
@@ -136,7 +138,9 @@ def main():
     print("=" * 65)
     for idx, c in enumerate(report.checks, 1):
         status_str = "[PASS]" if c.passed else "[FAIL]"
-        print(f"  {idx:2d}. {status_str} {c.name:<45} ({c.items_checked:3d} items): {c.details}")
+        print(
+            f"  {idx:2d}. {status_str} {c.name:<45} ({c.items_checked:3d} items): {c.details}"
+        )
         if not c.passed and c.failures:
             for fail in c.failures[:5]:
                 print(f"       ! {fail}")

@@ -40,7 +40,9 @@ from mirrorlab.ui.design_tokens import (
 # ---------------------------------------------------------------------------
 # Statistical Helpers: Wilson Score Interval
 # ---------------------------------------------------------------------------
-def wilson_score_interval(k: int, n: int, confidence: float = 0.95) -> tuple[float, float]:
+def wilson_score_interval(
+    k: int, n: int, confidence: float = 0.95
+) -> tuple[float, float]:
     """
     Computes Wilson score continuity-corrected confidence interval for binomial proportion k/n.
     Guarantees valid [0.0, 100.0]% intervals even for small n or extreme rates (0% or 100%).
@@ -60,7 +62,9 @@ def wilson_score_interval(k: int, n: int, confidence: float = 0.95) -> tuple[flo
 # ---------------------------------------------------------------------------
 # Data Aggregator: Scan and Extract All Evaluation Runs
 # ---------------------------------------------------------------------------
-def load_all_evaluation_records(logs_root: Path | str = "eval_logs") -> list[dict[str, Any]]:
+def load_all_evaluation_records(
+    logs_root: Path | str = "eval_logs",
+) -> list[dict[str, Any]]:
     """
     Scans eval_logs/ and compiles all individual task evaluation records into a unified list.
     """
@@ -83,12 +87,17 @@ def load_all_evaluation_records(logs_root: Path | str = "eval_logs") -> list[dic
                     c_data = json.load(f)
                 p_ver = c_data.get("metadata", {}).get("prompt_version", "1.0.0")
 
-                for mod_key, mod_file in [("gemini", "metrics_gemini.json"), ("openai", "metrics_openai.json")]:
+                for mod_key, mod_file in [
+                    ("gemini", "metrics_gemini.json"),
+                    ("openai", "metrics_openai.json"),
+                ]:
                     mf = run_dir / mod_file
                     if mf.exists():
                         with open(mf, encoding="utf-8") as f:
                             m_data = json.load(f)
-                        mod_name = c_data.get("metadata", {}).get(f"provider_{1 if mod_key=='gemini' else 2}", mod_key)
+                        mod_name = c_data.get("metadata", {}).get(
+                            f"provider_{1 if mod_key == 'gemini' else 2}", mod_key
+                        )
                         for s in m_data.get("per_sample_evaluations", []):
                             records.append(
                                 {
@@ -96,14 +105,22 @@ def load_all_evaluation_records(logs_root: Path | str = "eval_logs") -> list[dic
                                     "model_name": mod_name,
                                     "prompt_version": p_ver,
                                     "task_id": s.get("task_id", ""),
-                                    "task_type": s.get("task_type", "TASK_A_VISIBILITY"),
-                                    "difficulty_tier": s.get("difficulty_tier", "STANDARD"),
-                                    "ground_truth_reason": s.get("ground_truth_reason", "CLEAR"),
+                                    "task_type": s.get(
+                                        "task_type", "TASK_A_VISIBILITY"
+                                    ),
+                                    "difficulty_tier": s.get(
+                                        "difficulty_tier", "STANDARD"
+                                    ),
+                                    "ground_truth_reason": s.get(
+                                        "ground_truth_reason", "CLEAR"
+                                    ),
                                     "is_correct": s.get("is_correct", False),
                                     "score": 1.0 if s.get("is_correct", False) else 0.0,
                                     "is_valid_format": s.get("is_valid_format", True),
                                     "is_api_error": s.get("is_api_error", False),
-                                    "latency_ms": float(s.get("latency_ms", 0.0) or 0.0),
+                                    "latency_ms": float(
+                                        s.get("latency_ms", 0.0) or 0.0
+                                    ),
                                 }
                             )
                 continue
@@ -126,13 +143,19 @@ def load_all_evaluation_records(logs_root: Path | str = "eval_logs") -> list[dic
                                 "prompt_version": "1.0.0",
                                 "task_id": row.get("Task ID", ""),
                                 "task_type": row.get("Task Type", "TASK_A_VISIBILITY"),
-                                "difficulty_tier": row.get("Difficulty Tier", "STANDARD"),
+                                "difficulty_tier": row.get(
+                                    "Difficulty Tier", "STANDARD"
+                                ),
                                 "ground_truth_reason": row.get("Reason Code", "CLEAR"),
                                 "is_correct": is_corr,
                                 "score": 1.0 if is_corr else 0.0,
-                                "is_valid_format": row.get("Format Valid", "").lower() == "true",
-                                "is_api_error": row.get("API Error", "").lower() == "true",
-                                "latency_ms": float(row.get("Latency (ms)", 0.0) or 0.0),
+                                "is_valid_format": row.get("Format Valid", "").lower()
+                                == "true",
+                                "is_api_error": row.get("API Error", "").lower()
+                                == "true",
+                                "latency_ms": float(
+                                    row.get("Latency (ms)", 0.0) or 0.0
+                                ),
                             }
                         )
                 continue
@@ -156,7 +179,9 @@ def load_all_evaluation_records(logs_root: Path | str = "eval_logs") -> list[dic
                             "task_id": s.get("task_id", ""),
                             "task_type": s.get("task_type", "TASK_A_VISIBILITY"),
                             "difficulty_tier": s.get("difficulty_tier", "STANDARD"),
-                            "ground_truth_reason": s.get("ground_truth_reason", "CLEAR"),
+                            "ground_truth_reason": s.get(
+                                "ground_truth_reason", "CLEAR"
+                            ),
                             "is_correct": is_corr,
                             "score": 1.0 if is_corr else 0.0,
                             "is_valid_format": s.get("is_valid_format", True),
@@ -170,7 +195,9 @@ def load_all_evaluation_records(logs_root: Path | str = "eval_logs") -> list[dic
     return records
 
 
-def load_all_run_aggregates(logs_root: Path | str = "eval_logs") -> list[dict[str, Any]]:
+def load_all_run_aggregates(
+    logs_root: Path | str = "eval_logs",
+) -> list[dict[str, Any]]:
     """
     Extracts high-level run aggregates, including counterfactual pair metrics,
     flip consistency, cosmetic invariance, and McNemar statistical tests.
@@ -190,7 +217,9 @@ def load_all_run_aggregates(logs_root: Path | str = "eval_logs") -> list[dict[st
             try:
                 with open(comp_file, encoding="utf-8") as f:
                     c_data = json.load(f)
-                aggregates.append({"run_id": run_dir.name, "type": "comparison", "data": c_data})
+                aggregates.append(
+                    {"run_id": run_dir.name, "type": "comparison", "data": c_data}
+                )
                 continue
             except (json.JSONDecodeError, OSError):
                 pass
@@ -200,7 +229,9 @@ def load_all_run_aggregates(logs_root: Path | str = "eval_logs") -> list[dict[st
             try:
                 with open(metrics_file, encoding="utf-8") as f:
                     m_data = json.load(f)
-                aggregates.append({"run_id": run_dir.name, "type": "single", "data": m_data})
+                aggregates.append(
+                    {"run_id": run_dir.name, "type": "single", "data": m_data}
+                )
             except (json.JSONDecodeError, OSError):
                 pass
 
@@ -218,12 +249,22 @@ def _to_markdown_str(data: Any) -> str:
         headers = [str(data.index.name or "Category")] + [str(c) for c in data.columns]
         rows = []
         for idx, row in data.iterrows():
-            row_vals = [str(idx)] + [f"{v:.3f}" if isinstance(v, float) else str(v) for v in row]
+            row_vals = [str(idx)] + [
+                f"{v:.3f}" if isinstance(v, float) else str(v) for v in row
+            ]
             rows.append(row_vals)
-        col_w = [max(len(h), max((len(r[i]) for r in rows), default=0)) for i, h in enumerate(headers)]
-        header_str = "| " + " | ".join(h.ljust(col_w[i]) for i, h in enumerate(headers)) + " |"
+        col_w = [
+            max(len(h), max((len(r[i]) for r in rows), default=0))
+            for i, h in enumerate(headers)
+        ]
+        header_str = (
+            "| " + " | ".join(h.ljust(col_w[i]) for i, h in enumerate(headers)) + " |"
+        )
         sep_str = "| " + " | ".join("-" * col_w[i] for i in range(len(headers))) + " |"
-        body_strs = ["| " + " | ".join(r[i].ljust(col_w[i]) for i in range(len(headers))) + " |" for r in rows]
+        body_strs = [
+            "| " + " | ".join(r[i].ljust(col_w[i]) for i in range(len(headers))) + " |"
+            for r in rows
+        ]
         return "\n".join([header_str, sep_str] + body_strs)
     return str(data)
 
@@ -243,7 +284,9 @@ def render_analytics_dashboard() -> None:
     run_aggregates = load_all_run_aggregates()
 
     if not all_records:
-        st.warning("Empty State: No evaluation records discovered in eval_logs/. Run an evaluation to view analytics.")
+        st.warning(
+            "Empty State: No evaluation records discovered in eval_logs/. Run an evaluation to view analytics."
+        )
         return
 
     df_all = pd.DataFrame(all_records)
@@ -256,23 +299,33 @@ def render_analytics_dashboard() -> None:
 
         with f_col1:
             all_runs = sorted(df_all["run_id"].unique())
-            sel_runs = st.multiselect("Run ID:", all_runs, default=all_runs, key="ana_sel_runs")
+            sel_runs = st.multiselect(
+                "Run ID:", all_runs, default=all_runs, key="ana_sel_runs"
+            )
 
         with f_col2:
             all_models = sorted(df_all["model_name"].unique())
-            sel_models = st.multiselect("Model:", all_models, default=all_models, key="ana_sel_models")
+            sel_models = st.multiselect(
+                "Model:", all_models, default=all_models, key="ana_sel_models"
+            )
 
         with f_col3:
             all_tasks = sorted(df_all["task_type"].unique())
-            sel_tasks = st.multiselect("Task Type:", all_tasks, default=all_tasks, key="ana_sel_tasks")
+            sel_tasks = st.multiselect(
+                "Task Type:", all_tasks, default=all_tasks, key="ana_sel_tasks"
+            )
 
         with f_col4:
             all_diffs = sorted(df_all["difficulty_tier"].unique())
-            sel_diffs = st.multiselect("Difficulty Tier:", all_diffs, default=all_diffs, key="ana_sel_diffs")
+            sel_diffs = st.multiselect(
+                "Difficulty Tier:", all_diffs, default=all_diffs, key="ana_sel_diffs"
+            )
 
         with f_col5:
             all_pvers = sorted(df_all["prompt_version"].unique())
-            sel_pvers = st.multiselect("Prompt Version:", all_pvers, default=all_pvers, key="ana_sel_pvers")
+            sel_pvers = st.multiselect(
+                "Prompt Version:", all_pvers, default=all_pvers, key="ana_sel_pvers"
+            )
 
     # Filter DataFrame
     df = df_all.copy()
@@ -304,7 +357,7 @@ def render_analytics_dashboard() -> None:
             </div>
             <div style="font-family:monospace; font-size:12px; color:{COLOR_TEXT_SECONDARY}; text-align:right;">
                 <div>Wilson 95% CI: <strong>[{w_low:.1f}%, {w_high:.1f}%]</strong></div>
-                <div>Models: {len(df['model_name'].unique())} | Runs: {len(df['run_id'].unique())}</div>
+                <div>Models: {len(df["model_name"].unique())} | Runs: {len(df["run_id"].unique())}</div>
             </div>
         </div>
         """,
@@ -312,7 +365,9 @@ def render_analytics_dashboard() -> None:
     )
 
     if total_n == 0:
-        st.info("No records match the active filter criteria. Please broaden your selection.")
+        st.info(
+            "No records match the active filter criteria. Please broaden your selection."
+        )
         return
 
     # =======================================================================
@@ -351,11 +406,18 @@ def render_analytics_dashboard() -> None:
             barmode="group",
             text="Label",
             range_y=[0, 115],
-            color_discrete_sequence=[COLOR_CYAN_PRIMARY, "#F59E0B", "#10B981", "#EC4899"],
+            color_discrete_sequence=[
+                COLOR_CYAN_PRIMARY,
+                "#F59E0B",
+                "#10B981",
+                "#EC4899",
+            ],
         )
         layout_dict = get_plotly_layout_dict(height=380)
         fig_task.update_layout(**layout_dict)
-        fig_task.update_traces(textposition="outside", textfont={"family": "monospace", "size": 11})
+        fig_task.update_traces(
+            textposition="outside", textfont={"family": "monospace", "size": 11}
+        )
         st.plotly_chart(fig_task, use_container_width=True)
 
     with col_chart_2:
@@ -379,7 +441,9 @@ def render_analytics_dashboard() -> None:
         df_diff = pd.DataFrame(diff_stats)
         # Order difficulties
         if not df_diff.empty:
-            df_diff["Order"] = df_diff["Difficulty"].apply(lambda d: diff_order.index(d) if d in diff_order else 99)
+            df_diff["Order"] = df_diff["Difficulty"].apply(
+                lambda d: diff_order.index(d) if d in diff_order else 99
+            )
             df_diff = df_diff.sort_values(by=["Order", "Model"])
 
         fig_diff = px.bar(
@@ -393,14 +457,18 @@ def render_analytics_dashboard() -> None:
             color_discrete_sequence=["#38BDF8", "#F59E0B", "#A855F7"],
         )
         fig_diff.update_layout(**layout_dict)
-        fig_diff.update_traces(textposition="outside", textfont={"family": "monospace", "size": 11})
+        fig_diff.update_traces(
+            textposition="outside", textfont={"family": "monospace", "size": 11}
+        )
         st.plotly_chart(fig_diff, use_container_width=True)
 
     # =======================================================================
     # SECTION 3: PAIR ACCURACY & COUNTERFACTUAL INVARIANCE MATRIX
     # =======================================================================
     st.markdown("**3. Counterfactual Invariance & Pair Consistency Matrix**")
-    st.caption("Evaluates whether models maintain invariant reasoning across controlled physical and cosmetic transformations.")
+    st.caption(
+        "Evaluates whether models maintain invariant reasoning across controlled physical and cosmetic transformations."
+    )
 
     # Extract pair metrics from run aggregates
     cf_data_rows = []
@@ -409,7 +477,10 @@ def render_analytics_dashboard() -> None:
         # Comparison run format
         if agg["type"] == "comparison":
             head = d.get("headline_metrics", {})
-            for m_key, m_name in [("gemini", d["metadata"]["provider_1"]), ("openai", d["metadata"]["provider_2"])]:
+            for m_key, m_name in [
+                ("gemini", d["metadata"]["provider_1"]),
+                ("openai", d["metadata"]["provider_2"]),
+            ]:
                 cf_data_rows.append(
                     {
                         "Run ID": agg["run_id"],
@@ -430,10 +501,10 @@ def render_analytics_dashboard() -> None:
                 {
                     "Run ID": agg["run_id"],
                     "Model": mod,
-                    "Joint Pair Accuracy": f"{p_acc.get('rate', 0.0)*100.0:.1f}% ({p_acc.get('correct', 0)}/{p_acc.get('total', 0)})",
-                    "Flip Consistency": f"{flip_acc.get('rate', 0.0)*100.0:.1f}% ({flip_acc.get('correct', 0)}/{flip_acc.get('total', 0)})",
-                    "Cosmetic Invariance": f"{cosm_acc.get('rate', 0.0)*100.0:.1f}% ({cosm_acc.get('correct', 0)}/{cosm_acc.get('total', 0)})",
-                    "Distractor Robustness": f"{irrel_acc.get('rate', 0.0)*100.0:.1f}% ({irrel_acc.get('correct', 0)}/{irrel_acc.get('total', 0)})",
+                    "Joint Pair Accuracy": f"{p_acc.get('rate', 0.0) * 100.0:.1f}% ({p_acc.get('correct', 0)}/{p_acc.get('total', 0)})",
+                    "Flip Consistency": f"{flip_acc.get('rate', 0.0) * 100.0:.1f}% ({flip_acc.get('correct', 0)}/{flip_acc.get('total', 0)})",
+                    "Cosmetic Invariance": f"{cosm_acc.get('rate', 0.0) * 100.0:.1f}% ({cosm_acc.get('correct', 0)}/{cosm_acc.get('total', 0)})",
+                    "Distractor Robustness": f"{irrel_acc.get('rate', 0.0) * 100.0:.1f}% ({irrel_acc.get('correct', 0)}/{irrel_acc.get('total', 0)})",
                 }
             )
 
@@ -449,22 +520,35 @@ def render_analytics_dashboard() -> None:
 
     with col_chart_3:
         st.markdown("**4. Failure Categories Diagnostic Breakdown**")
-        st.caption("Itemized root cause classification for all failed evaluation samples.")
+        st.caption(
+            "Itemized root cause classification for all failed evaluation samples."
+        )
 
         # Filter failed samples
         df_failed = df[df["is_correct"] == False]
         if not df_failed.empty:
             fail_counts = df_failed["ground_truth_reason"].value_counts().reset_index()
             fail_counts.columns = ["Failure Reason", "Count"]
-            fail_counts["Percentage"] = (fail_counts["Count"] / len(df_failed) * 100.0).round(1)
-            fail_counts["Label"] = fail_counts.apply(lambda r: f"{r['Failure Reason']}: {r['Count']} ({r['Percentage']}%)", axis=1)
+            fail_counts["Percentage"] = (
+                fail_counts["Count"] / len(df_failed) * 100.0
+            ).round(1)
+            fail_counts["Label"] = fail_counts.apply(
+                lambda r: f"{r['Failure Reason']}: {r['Count']} ({r['Percentage']}%)",
+                axis=1,
+            )
 
             fig_fail = px.pie(
                 fail_counts,
                 names="Failure Reason",
                 values="Count",
                 hole=0.45,
-                color_discrete_sequence=["#EF4444", "#F59E0B", "#A855F7", "#3B82F6", "#64748B"],
+                color_discrete_sequence=[
+                    "#EF4444",
+                    "#F59E0B",
+                    "#A855F7",
+                    "#3B82F6",
+                    "#64748B",
+                ],
             )
             fig_fail.update_layout(
                 plot_bgcolor=COLOR_BG_BASE,
@@ -480,7 +564,9 @@ def render_analytics_dashboard() -> None:
 
     with col_chart_4:
         st.markdown("**5. Head-to-Head Provider Comparison & McNemar Test**")
-        st.caption("Paired McNemar test evaluates whether model accuracy differences are statistically significant.")
+        st.caption(
+            "Paired McNemar test evaluates whether model accuracy differences are statistically significant."
+        )
 
         comp_agg = next((a for a in run_aggregates if a["type"] == "comparison"), None)
         if comp_agg:
@@ -495,29 +581,33 @@ def render_analytics_dashboard() -> None:
             st.markdown(
                 f"""
                 <div style="background:#0B1220; border:1px solid #1E293B; border-radius:6px; padding:14px; font-family:monospace; font-size:12px;">
-                    <div><strong>Model 1:</strong> {p1_name} — <strong>{p1_acc:.1f}%</strong> (95% CI: {m_stat.get('provider1_ci_95')})</div>
-                    <div><strong>Model 2:</strong> {p2_name} — <strong>{p2_acc:.1f}%</strong> (95% CI: {m_stat.get('provider2_ci_95')})</div>
+                    <div><strong>Model 1:</strong> {p1_name} — <strong>{p1_acc:.1f}%</strong> (95% CI: {m_stat.get("provider1_ci_95")})</div>
+                    <div><strong>Model 2:</strong> {p2_name} — <strong>{p2_acc:.1f}%</strong> (95% CI: {m_stat.get("provider2_ci_95")})</div>
                     <hr style="border:0; border-top:1px solid #1E293B; margin:8px 0;" />
-                    <div><strong>Contingency Matrix (N={m_stat.get('sample_size', 20)}):</strong></div>
-                    <div>- Both Correct: <strong>{ctable.get('both_correct', 0)}</strong></div>
-                    <div>- {p1_name} only: <strong>{ctable.get('provider1_only', 0)}</strong></div>
-                    <div>- {p2_name} only: <strong>{ctable.get('provider2_only', 0)}</strong></div>
-                    <div>- Both Incorrect: <strong>{ctable.get('both_incorrect', 0)}</strong></div>
+                    <div><strong>Contingency Matrix (N={m_stat.get("sample_size", 20)}):</strong></div>
+                    <div>- Both Correct: <strong>{ctable.get("both_correct", 0)}</strong></div>
+                    <div>- {p1_name} only: <strong>{ctable.get("provider1_only", 0)}</strong></div>
+                    <div>- {p2_name} only: <strong>{ctable.get("provider2_only", 0)}</strong></div>
+                    <div>- Both Incorrect: <strong>{ctable.get("both_incorrect", 0)}</strong></div>
                     <hr style="border:0; border-top:1px solid #1E293B; margin:8px 0;" />
-                    <div>McNemar Chi-Square (χ²): <strong>{m_stat.get('mcnemar_statistic', 0.0):.2f}</strong></div>
-                    <div>Statistically Significant: <strong style="color:{COLOR_STATUS_WARNING};">{m_stat.get('statistically_significant', False)} (p > 0.05)</strong></div>
+                    <div>McNemar Chi-Square (χ²): <strong>{m_stat.get("mcnemar_statistic", 0.0):.2f}</strong></div>
+                    <div>Statistically Significant: <strong style="color:{COLOR_STATUS_WARNING};">{m_stat.get("statistically_significant", False)} (p > 0.05)</strong></div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
         else:
-            st.info("Run a dual-provider comparison to display the paired McNemar statistical test.")
+            st.info(
+                "Run a dual-provider comparison to display the paired McNemar statistical test."
+            )
 
     # =======================================================================
     # SECTION 6: LATENCY DISTRIBUTION & PERCENTILES
     # =======================================================================
     st.markdown("**6. Latency Distribution & Statistical Percentiles (ms)**")
-    st.caption("Measures inference response time distribution, median latency, and tail-end P90/P95 latencies.")
+    st.caption(
+        "Measures inference response time distribution, median latency, and tail-end P90/P95 latencies."
+    )
 
     lat_col1, lat_col2 = st.columns([7, 5])
 
@@ -561,7 +651,9 @@ def render_analytics_dashboard() -> None:
     # SECTION 7: RESEARCHER DATA EXPORT
     # =======================================================================
     st.markdown("**7. Export Filtered Benchmark Records & Scientific Summary**")
-    st.caption("Download itemized raw evaluation logs and statistical summaries for publication or offline analysis.")
+    st.caption(
+        "Download itemized raw evaluation logs and statistical summaries for publication or offline analysis."
+    )
 
     exp_col1, exp_col2, exp_col3 = st.columns(3)
 
@@ -595,13 +687,13 @@ Overall Accuracy: {overall_acc:.2f}% ({correct_n}/{total_n})
 Wilson 95% CI: [{w_low:.1f}%, {w_high:.1f}%]
 
 ## Task Breakdown
-{_to_markdown_str(df.groupby('task_type')['is_correct'].agg(['count', 'sum', 'mean']))}
+{_to_markdown_str(df.groupby("task_type")["is_correct"].agg(["count", "sum", "mean"]))}
 
 ## Difficulty Breakdown
-{_to_markdown_str(df.groupby('difficulty_tier')['is_correct'].agg(['count', 'sum', 'mean']))}
+{_to_markdown_str(df.groupby("difficulty_tier")["is_correct"].agg(["count", "sum", "mean"]))}
 
 ## Failure Diagnostics
-{_to_markdown_str(df[df['is_correct']==False]['ground_truth_reason'].value_counts()) if not df[df['is_correct']==False].empty else 'Zero failures'}
+{_to_markdown_str(df[df["is_correct"] == False]["ground_truth_reason"].value_counts()) if not df[df["is_correct"] == False].empty else "Zero failures"}
 """
     with exp_col3:
         st.download_button(
@@ -610,4 +702,73 @@ Wilson 95% CI: [{w_low:.1f}%, {w_high:.1f}%]
             file_name=f"mirrorlab_summary_report_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}.md",
             mime="text/markdown",
             use_container_width=True,
+        )
+
+    # =======================================================================
+    # SECTION 8: SHORTCUT-RESISTANCE & VISUAL NECESSITY AUDIT
+    # =======================================================================
+    st.markdown(
+        "**8. Visual Necessity & Shortcut-Resistance Audit (8-Condition Suite)**"
+    )
+    st.caption(
+        "Certifies that MIRRORLAB requires genuine 2D geometric vision rather than unimodal language priors or metadata leaks."
+    )
+    shortcut_json_path = Path("data/shortcut_eval_results.json")
+    if shortcut_json_path.is_file():
+        try:
+            with open(shortcut_json_path, encoding="utf-8") as f_sc:
+                sc_data = json.load(f_sc)
+            sc_c1, sc_c2, sc_c3, sc_c4 = st.columns(4)
+            with sc_c1:
+                st.metric(
+                    "Visual Necessity Ratio",
+                    f"{sc_data.get('visual_necessity_ratio', 0.0):+.1%}",
+                    help="Acc(Image+Q) - Acc(Q-only)",
+                )
+            with sc_c2:
+                st.metric(
+                    "Language Prior Bias",
+                    f"{sc_data.get('language_prior_bias', 0.0):+.1%}",
+                    help="Acc(Q-only) - 50%",
+                )
+            with sc_c3:
+                st.metric(
+                    "Cosmetic Invariance",
+                    f"{sc_data.get('cosmetic_invariance_score', 0.0):.1%}",
+                    help="Robustness to color/texture inversion",
+                )
+            with sc_c4:
+                st.metric(
+                    "Geometric Sensitivity",
+                    f"{sc_data.get('geometric_sensitivity', 0.0):+.1%}",
+                    help="Performance drop under spatial scrambling",
+                )
+
+            # Table of 8 conditions
+            conditions_dict = sc_data.get("conditions", {})
+            if conditions_dict:
+                cond_rows = []
+                for ck, cv in conditions_dict.items():
+                    k_c = cv.get("correct_count", 0)
+                    n_c = cv.get("total_evaluated", 0)
+                    acc_c = cv.get("accuracy", 0.0) * 100.0
+                    delta_c = cv.get("delta_vs_multimodal", 0.0) * 100.0
+                    cond_rows.append(
+                        {
+                            "Condition": ck,
+                            "Sample (k/N)": f"{k_c}/{n_c}",
+                            "Accuracy": f"{acc_c:.1f}%",
+                            "95% CI": f"[{cv.get('ci_lower', 0) * 100:.1f}%, {cv.get('ci_upper', 0) * 100:.1f}%]",
+                            "Δ vs Multimodal": f"{delta_c:+.1f}%"
+                            if delta_c != 0.0
+                            else "Baseline",
+                            "Interpretation": cv.get("interpretation", ""),
+                        }
+                    )
+                st.dataframe(cond_rows, use_container_width=True)
+        except (json.JSONDecodeError, OSError) as e:
+            st.info(f"Could not load shortcut results: {e}")
+    else:
+        st.info(
+            "Run `python scripts/run_shortcut_evaluation.py` to generate the 8-condition visual necessity audit."
         )

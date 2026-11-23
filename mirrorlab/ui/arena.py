@@ -61,7 +61,9 @@ def _init_arena_state() -> None:
         st.session_state["arena_paired_revealed"] = False
 
 
-def _compute_prediction_lock_hash(task_id: str, model_name: str, raw_response: str) -> str:
+def _compute_prediction_lock_hash(
+    task_id: str, model_name: str, raw_response: str
+) -> str:
     """Generate a cryptographic tamper-evident lock hash for the prediction."""
     payload = f"{task_id}::{model_name}::{raw_response}".encode()
     return hashlib.sha256(payload).hexdigest()[:16].upper()
@@ -212,7 +214,9 @@ def _render_single_task_arena() -> None:
             return
 
         task_labels = [t["id"] for t in tasks_list]
-        selected_task_id = st.selectbox("Select Benchmark Task ID:", task_labels, key="single_task_id")
+        selected_task_id = st.selectbox(
+            "Select Benchmark Task ID:", task_labels, key="single_task_id"
+        )
         current_task = next(t for t in tasks_list if t["id"] == selected_task_id)
 
     with col_model_sel:
@@ -220,7 +224,9 @@ def _render_single_task_arena() -> None:
             f"<div style='font-size:12px; font-weight:700; color:{COLOR_CYAN_PRIMARY}; text-transform:uppercase;'>Step 2: Select Vision-Language Model</div>",
             unsafe_allow_html=True,
         )
-        selected_model = st.selectbox("Vision Model:", AVAILABLE_ARENA_MODELS, index=0, key="single_model_name")
+        selected_model = st.selectbox(
+            "Vision Model:", AVAILABLE_ARENA_MODELS, index=0, key="single_model_name"
+        )
         if selected_model.startswith("mock"):
             st.markdown(
                 "<div style='font-size:11px; color:#F59E0B; font-weight:700; background:rgba(245,158,11,0.1); padding:4px 8px; border-radius:4px; margin-top:4px; border:1px solid rgba(245,158,11,0.3);'>"
@@ -239,7 +245,15 @@ def _render_single_task_arena() -> None:
             key="single_api_key",
             help="If not provided, the adapter automatically checks your local .env or system environment.",
         )
-        temperature = st.slider("Sampling Temperature:", 0.0, 1.0, 0.0, 0.1, key="single_temp", help="0.0 recommended for deterministic benchmark.")
+        temperature = st.slider(
+            "Sampling Temperature:",
+            0.0,
+            1.0,
+            0.0,
+            0.1,
+            key="single_temp",
+            help="0.0 recommended for deterministic benchmark.",
+        )
 
     # Task Metadata & Security Strip
     blind_img_path = current_task.get("diagram_blind")
@@ -247,7 +261,9 @@ def _render_single_task_arena() -> None:
     question_dict = current_task.get("question", {})
     ground_truth_dict = current_task.get("answer", {})
 
-    prompt_text = question_dict.get("prompt") or question_dict.get("question", "Can the camera see the red X defect?")
+    prompt_text = question_dict.get("prompt") or question_dict.get(
+        "question", "Can the camera see the red X defect?"
+    )
 
     st.markdown(
         f"""
@@ -274,7 +290,11 @@ def _render_single_task_arena() -> None:
     with col_view:
         st.markdown("**Step 3: Blind Diagram (Model Input)**")
         if blind_img_path and Path(blind_img_path).exists():
-            st.image(blind_img_path, caption=f"Blind Inspection Schematic: {selected_task_id}", use_container_width=True)
+            st.image(
+                blind_img_path,
+                caption=f"Blind Inspection Schematic: {selected_task_id}",
+                use_container_width=True,
+            )
         else:
             st.warning(f"Blind diagram image not found at {blind_img_path}")
 
@@ -283,7 +303,11 @@ def _render_single_task_arena() -> None:
         st.text_area("Full Model Prompt:", prompt_text, height=280, disabled=True)
 
         st.write("")
-        challenge_btn = st.button("⚔️ Submit Question & Challenge Model", type="primary", use_container_width=True)
+        challenge_btn = st.button(
+            "⚔️ Submit Question & Challenge Model",
+            type="primary",
+            use_container_width=True,
+        )
 
         if challenge_btn:
             with st.spinner(f"Querying {selected_model}..."):
@@ -298,7 +322,9 @@ def _render_single_task_arena() -> None:
                         api_key_override=api_key_input or None,
                         temperature=temperature,
                     )
-                    lock_hash = _compute_prediction_lock_hash(selected_task_id, selected_model, resp.raw_text)
+                    lock_hash = _compute_prediction_lock_hash(
+                        selected_task_id, selected_model, resp.raw_text
+                    )
                     st.session_state["arena_single_result"] = {
                         "response": resp,
                         "record": record,
@@ -331,7 +357,7 @@ def _render_single_task_arena() -> None:
                 <div>
                     <span style="font-size:11px; color:#10B981; text-transform:uppercase; font-weight:700; letter-spacing:0.05em;">Step 7: Prediction Locked</span>
                     <div style="font-family:monospace; font-size:13px; font-weight:700; color:{COLOR_TEXT_PRIMARY};">
-                        LOCK HASH: <code>{lock_hash}</code> | MODEL: <strong>{res_data['model_name']}</strong> | TIME: <strong>{timestamp}</strong>
+                        LOCK HASH: <code>{lock_hash}</code> | MODEL: <strong>{res_data["model_name"]}</strong> | TIME: <strong>{timestamp}</strong>
                     </div>
                 </div>
                 <div>
@@ -346,7 +372,10 @@ def _render_single_task_arena() -> None:
 
         with col_raw:
             st.markdown("**Step 5: Verbatim Raw Model Response:**")
-            st.code(resp.raw_text if resp.raw_text else "(Empty or Error response)", language="json")
+            st.code(
+                resp.raw_text if resp.raw_text else "(Empty or Error response)",
+                language="json",
+            )
 
         with col_parsed:
             st.markdown("**Step 6: Structured Parsed Answer:**")
@@ -356,7 +385,7 @@ def _render_single_task_arena() -> None:
                     <div style="background:#0B1220; border:1px solid #1E293B; border-radius:6px; padding:12px; font-family:monospace; font-size:12px;">
                         <div><strong>Format Validity:</strong> <span style="color:{COLOR_STATUS_SUCCESS};">VALID JSON ✓</span></div>
                         <div style="margin-top:6px;"><strong>Extracted Prediction:</strong> <code>{record.extracted_prediction}</code></div>
-                        <div style="margin-top:6px;"><strong>Detailed Explanation:</strong> <span style="color:{COLOR_TEXT_SECONDARY};">{record.detailed_explanation or 'N/A'}</span></div>
+                        <div style="margin-top:6px;"><strong>Detailed Explanation:</strong> <span style="color:{COLOR_TEXT_SECONDARY};">{record.detailed_explanation or "N/A"}</span></div>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -367,7 +396,7 @@ def _render_single_task_arena() -> None:
                     <div style="background:rgba(239,68,68,0.1); border:1px solid {COLOR_STATUS_ERROR}; border-radius:6px; padding:12px; font-family:monospace; font-size:12px;">
                         <div><strong>Format Validity:</strong> <span style="color:{COLOR_STATUS_ERROR};">INVALID FORMAT ✗</span></div>
                         <div style="margin-top:6px;"><strong>Error Classification:</strong> {record.error_classification.value}</div>
-                        <div style="margin-top:6px; color:{COLOR_STATUS_ERROR};"><strong>Errors:</strong> {', '.join(record.validation_errors)}</div>
+                        <div style="margin-top:6px; color:{COLOR_STATUS_ERROR};"><strong>Errors:</strong> {", ".join(record.validation_errors)}</div>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -379,7 +408,11 @@ def _render_single_task_arena() -> None:
         st.write("")
         reveal_col1, reveal_col2 = st.columns([3, 1])
         with reveal_col1:
-            reveal_btn = st.button("👁️ REVEAL ORACLE ANSWER & GEOMETRIC EXPLANATION", type="primary", use_container_width=True)
+            reveal_btn = st.button(
+                "👁️ REVEAL ORACLE ANSWER & GEOMETRIC EXPLANATION",
+                type="primary",
+                use_container_width=True,
+            )
         with reveal_col2:
             if st.button("🔄 Reset Challenge", use_container_width=True):
                 st.session_state["arena_single_result"] = None
@@ -391,8 +424,16 @@ def _render_single_task_arena() -> None:
 
         if st.session_state.get("arena_single_revealed"):
             is_correct = record.final_score == 1.0
-            gt_ans = ground_truth_dict.get("answer") or ground_truth_dict.get("can_see") or ground_truth_dict.get("correct_candidate")
-            gt_reason = ground_truth_dict.get("reason_code") or ground_truth_dict.get("blocked_segment") or "N/A"
+            gt_ans = (
+                ground_truth_dict.get("answer")
+                or ground_truth_dict.get("can_see")
+                or ground_truth_dict.get("correct_candidate")
+            )
+            gt_reason = (
+                ground_truth_dict.get("reason_code")
+                or ground_truth_dict.get("blocked_segment")
+                or "N/A"
+            )
             gt_proof = ground_truth_dict.get("detailed_explanation", "")
 
             # Impactful Verdict Banner
@@ -426,7 +467,9 @@ def _render_single_task_arena() -> None:
                     st.image(blind_img_path, use_container_width=True)
 
             with comp_col2:
-                st.caption("**Answer Overlay with Specular Ray Tracing (Oracle Truth)**")
+                st.caption(
+                    "**Answer Overlay with Specular Ray Tracing (Oracle Truth)**"
+                )
                 if overlay_img_path and Path(overlay_img_path).exists():
                     st.image(overlay_img_path, use_container_width=True)
                 else:
@@ -437,9 +480,18 @@ def _render_single_task_arena() -> None:
                 proof_geo = ground_truth_dict.get("proof_geometry", {})
                 if proof_geo:
                     p_items = [
-                        ("θ_i (Incidence)", f"{proof_geo.get('incident_angle_deg', 0.0):.1f}°"),
-                        ("θ_r (Reflection)", f"{proof_geo.get('reflected_angle_deg', 0.0):.1f}°"),
-                        ("Total Path", f"{proof_geo.get('total_optical_distance', 0.0):.1f} mm"),
+                        (
+                            "θ_i (Incidence)",
+                            f"{proof_geo.get('incident_angle_deg', 0.0):.1f}°",
+                        ),
+                        (
+                            "θ_r (Reflection)",
+                            f"{proof_geo.get('reflected_angle_deg', 0.0):.1f}°",
+                        ),
+                        (
+                            "Total Path",
+                            f"{proof_geo.get('total_optical_distance', 0.0):.1f} mm",
+                        ),
                         ("Reason Code", str(gt_reason)),
                     ]
                     render_telemetry_strip(p_items)
@@ -460,7 +512,9 @@ def _render_paired_task_arena() -> None:
         f"<div style='font-size:12px; font-weight:700; color:{COLOR_CYAN_PRIMARY}; text-transform:uppercase;'>Paired Counterfactual Evaluation Studio</div>",
         unsafe_allow_html=True,
     )
-    st.caption("Evaluates paired consistency, mirror-angle flip invariance, cosmetic robustness, and obstacle distractors.")
+    st.caption(
+        "Evaluates paired consistency, mirror-angle flip invariance, cosmetic robustness, and obstacle distractors."
+    )
 
     col_pair_sel, col_model_sel = st.columns([1, 1])
 
@@ -471,11 +525,15 @@ def _render_paired_task_arena() -> None:
             return
 
         pair_labels = [p["id"] for p in pairs]
-        selected_pair_id = st.selectbox("Select Counterfactual Pair:", pair_labels, key="cf_pair_id")
+        selected_pair_id = st.selectbox(
+            "Select Counterfactual Pair:", pair_labels, key="cf_pair_id"
+        )
         current_pair = next(p for p in pairs if p["id"] == selected_pair_id)
 
     with col_model_sel:
-        selected_model = st.selectbox("Vision Model:", AVAILABLE_ARENA_MODELS, index=0, key="cf_model_name")
+        selected_model = st.selectbox(
+            "Vision Model:", AVAILABLE_ARENA_MODELS, index=0, key="cf_model_name"
+        )
         if selected_model.startswith("mock"):
             st.markdown(
                 "<div style='font-size:11px; color:#F59E0B; font-weight:700; background:rgba(245,158,11,0.1); padding:4px 8px; border-radius:4px; margin-top:4px; border:1px solid rgba(245,158,11,0.3);'>"
@@ -488,7 +546,9 @@ def _render_paired_task_arena() -> None:
                 "🌐 REAL MULTIMODAL API EVALUATION</div>",
                 unsafe_allow_html=True,
             )
-        api_key_input = st.text_input("API Key (Optional override):", type="password", key="cf_api_key")
+        api_key_input = st.text_input(
+            "API Key (Optional override):", type="password", key="cf_api_key"
+        )
 
     pair_data = current_pair.get("pair_data", {})
     pair_dir = Path(current_pair["dir"])
@@ -536,7 +596,9 @@ def _render_paired_task_arena() -> None:
     # -----------------------------------------------------------------------
     # Step 3: Display Both Related Scenes (Blind Mode)
     # -----------------------------------------------------------------------
-    st.markdown("**Step 3: Related Scenes in Blind Evaluation Mode (Zero Answers Exposed):**")
+    st.markdown(
+        "**Step 3: Related Scenes in Blind Evaluation Mode (Zero Answers Exposed):**"
+    )
     col_scene_a, col_scene_b = st.columns(2)
 
     with col_scene_a:
@@ -545,12 +607,18 @@ def _render_paired_task_arena() -> None:
             st.image(blind_a_path, use_container_width=True)
 
     with col_scene_b:
-        st.markdown(f"**Scene B (Perturbed / Counterfactual)** — `{selected_pair_id}_b`")
+        st.markdown(
+            f"**Scene B (Perturbed / Counterfactual)** — `{selected_pair_id}_b`"
+        )
         if Path(blind_b_path).exists():
             st.image(blind_b_path, use_container_width=True)
 
     st.write("")
-    run_pair_btn = st.button("⚔️ Challenge Model on Both Related Scenes", type="primary", use_container_width=True)
+    run_pair_btn = st.button(
+        "⚔️ Challenge Model on Both Related Scenes",
+        type="primary",
+        use_container_width=True,
+    )
 
     if run_pair_btn:
         with st.spinner(f"Evaluating {selected_model} on Scene A and Scene B..."):
@@ -583,12 +651,18 @@ def _render_paired_task_arena() -> None:
                     "rec_a": rec_a,
                     "resp_b": resp_b,
                     "rec_b": rec_b,
-                    "lock_a": _compute_prediction_lock_hash(f"{selected_pair_id}_a", selected_model, resp_a.raw_text),
-                    "lock_b": _compute_prediction_lock_hash(f"{selected_pair_id}_b", selected_model, resp_b.raw_text),
+                    "lock_a": _compute_prediction_lock_hash(
+                        f"{selected_pair_id}_a", selected_model, resp_a.raw_text
+                    ),
+                    "lock_b": _compute_prediction_lock_hash(
+                        f"{selected_pair_id}_b", selected_model, resp_b.raw_text
+                    ),
                     "timestamp": datetime.now(UTC).strftime("%H:%M:%S UTC"),
                 }
                 st.session_state["arena_paired_revealed"] = False
-                st.success("Both predictions locked! Answer keys remain securely hidden.")
+                st.success(
+                    "Both predictions locked! Answer keys remain securely hidden."
+                )
             except (ValueError, RuntimeError, TimeoutError, OSError) as exc:
                 st.error(f"Paired evaluation error: {exc}")
 
@@ -607,7 +681,7 @@ def _render_paired_task_arena() -> None:
                 <div>
                     <span style="font-size:11px; color:{COLOR_CYAN_PRIMARY}; text-transform:uppercase; font-weight:700;">Predictions Locked Simultaneously</span>
                     <div style="font-family:monospace; font-size:13px; font-weight:700; color:{COLOR_TEXT_PRIMARY};">
-                        LOCK A: <code>{paired_res['lock_a']}</code> | LOCK B: <code>{paired_res['lock_b']}</code> | TIME: <strong>{paired_res['timestamp']}</strong>
+                        LOCK A: <code>{paired_res["lock_a"]}</code> | LOCK B: <code>{paired_res["lock_b"]}</code> | TIME: <strong>{paired_res["timestamp"]}</strong>
                     </div>
                 </div>
                 <div>
@@ -624,8 +698,8 @@ def _render_paired_task_arena() -> None:
                 f"""
                 <div style="background:#0B1220; border:1px solid #1E293B; border-radius:6px; padding:12px; font-family:monospace; font-size:12px;">
                     <div><strong>Scene A Locked Prediction:</strong> <code>{rec_a.extracted_prediction}</code></div>
-                    <div style="margin-top:4px;"><strong>Format:</strong> {'VALID' if rec_a.is_valid_format else 'INVALID'}</div>
-                    <div style="margin-top:4px; color:{COLOR_TEXT_SECONDARY};">Explanation: {rec_a.detailed_explanation or 'N/A'}</div>
+                    <div style="margin-top:4px;"><strong>Format:</strong> {"VALID" if rec_a.is_valid_format else "INVALID"}</div>
+                    <div style="margin-top:4px; color:{COLOR_TEXT_SECONDARY};">Explanation: {rec_a.detailed_explanation or "N/A"}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -635,8 +709,8 @@ def _render_paired_task_arena() -> None:
                 f"""
                 <div style="background:#0B1220; border:1px solid #1E293B; border-radius:6px; padding:12px; font-family:monospace; font-size:12px;">
                     <div><strong>Scene B Locked Prediction:</strong> <code>{rec_b.extracted_prediction}</code></div>
-                    <div style="margin-top:4px;"><strong>Format:</strong> {'VALID' if rec_b.is_valid_format else 'INVALID'}</div>
-                    <div style="margin-top:4px; color:{COLOR_TEXT_SECONDARY};">Explanation: {rec_b.detailed_explanation or 'N/A'}</div>
+                    <div style="margin-top:4px;"><strong>Format:</strong> {"VALID" if rec_b.is_valid_format else "INVALID"}</div>
+                    <div style="margin-top:4px; color:{COLOR_TEXT_SECONDARY};">Explanation: {rec_b.detailed_explanation or "N/A"}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -646,7 +720,11 @@ def _render_paired_task_arena() -> None:
         # Step 8-10: Reveal Oracle Answers Together
         # -------------------------------------------------------------------
         st.write("")
-        reveal_p_btn = st.button("👁️ REVEAL PAIRED ORACLE RESULTS & CONSISTENCY VERDICT", type="primary", use_container_width=True)
+        reveal_p_btn = st.button(
+            "👁️ REVEAL PAIRED ORACLE RESULTS & CONSISTENCY VERDICT",
+            type="primary",
+            use_container_width=True,
+        )
 
         if reveal_p_btn:
             st.session_state["arena_paired_revealed"] = True
@@ -655,17 +733,25 @@ def _render_paired_task_arena() -> None:
             both_correct = (rec_a.final_score == 1.0) and (rec_b.final_score == 1.0)
 
             # Analyze relationship tracking
-            pred_a_val = rec_a.extracted_prediction.get("can_see") if isinstance(rec_a.extracted_prediction, dict) else rec_a.extracted_prediction
-            pred_b_val = rec_b.extracted_prediction.get("can_see") if isinstance(rec_b.extracted_prediction, dict) else rec_b.extracted_prediction
+            pred_a_val = (
+                rec_a.extracted_prediction.get("can_see")
+                if isinstance(rec_a.extracted_prediction, dict)
+                else rec_a.extracted_prediction
+            )
+            pred_b_val = (
+                rec_b.extracted_prediction.get("can_see")
+                if isinstance(rec_b.extracted_prediction, dict)
+                else rec_b.extracted_prediction
+            )
 
             gt_a_val = gt_a.get("can_see", True)
             gt_b_val = gt_b.get("can_see", True)
 
             tracking_success = False
             if expected_rel == "INVARIANT_OUTCOME":
-                tracking_success = (pred_a_val == pred_b_val)
+                tracking_success = pred_a_val == pred_b_val
             elif expected_rel == "DIRECTIONAL_FLIP":
-                tracking_success = (pred_a_val != pred_b_val)
+                tracking_success = pred_a_val != pred_b_val
 
             track_status = (
                 f"<span style='color:{COLOR_STATUS_SUCCESS}; font-weight:700;'>✓ Successfully tracked {expected_rel}</span>"
@@ -697,13 +783,19 @@ def _render_paired_task_arena() -> None:
             st.markdown(paired_banner, unsafe_allow_html=True)
 
             # Paired Overlays Side-by-Side
-            st.markdown("**Paired Geometric Explanations (Oracle Ground Truth Overlays):**")
+            st.markdown(
+                "**Paired Geometric Explanations (Oracle Ground Truth Overlays):**"
+            )
             col_ov_a, col_ov_b = st.columns(2)
             with col_ov_a:
-                st.caption(f"**Scene A Truth:** {gt_a.get('answer')} ({gt_a.get('reason_code')})")
+                st.caption(
+                    f"**Scene A Truth:** {gt_a.get('answer')} ({gt_a.get('reason_code')})"
+                )
                 if Path(overlay_a_path).exists():
                     st.image(overlay_a_path, use_container_width=True)
             with col_ov_b:
-                st.caption(f"**Scene B Truth:** {gt_b.get('answer')} ({gt_b.get('reason_code')})")
+                st.caption(
+                    f"**Scene B Truth:** {gt_b.get('answer')} ({gt_b.get('reason_code')})"
+                )
                 if Path(overlay_b_path).exists():
                     st.image(overlay_b_path, use_container_width=True)

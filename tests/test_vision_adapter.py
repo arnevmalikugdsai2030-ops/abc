@@ -95,7 +95,9 @@ class TestBaseVisionAdapterContract:
 class TestGeminiVisionAdapterLifecycle:
     """Tests Gemini adapter initialization, secret loading, and error handling."""
 
-    def test_missing_api_key_returns_structured_error_response(self, sample_image: Path):
+    def test_missing_api_key_returns_structured_error_response(
+        self, sample_image: Path
+    ):
         # Explicitly pass api_key="" and patch os.environ
         with patch.dict("os.environ", {}, clear=True):
             adapter = GeminiVisionAdapter(model_name="gemini-2.5-flash", api_key="")
@@ -123,8 +125,13 @@ class TestGeminiVisionAdapterLifecycle:
         assert adapter._is_retryable_error(Exception("503 Service Unavailable")) is True
         assert adapter._is_retryable_error(Exception("Resource Exhausted")) is True
         assert adapter._is_retryable_error(Exception("Request Timeout")) is True
-        assert adapter._is_retryable_error(Exception("401 Unauthorized: Invalid API Key")) is False
-        assert adapter._is_retryable_error(Exception("Invalid argument format")) is False
+        assert (
+            adapter._is_retryable_error(Exception("401 Unauthorized: Invalid API Key"))
+            is False
+        )
+        assert (
+            adapter._is_retryable_error(Exception("Invalid argument format")) is False
+        )
 
 
 class TestRetryMechanismWithMocks:
@@ -204,7 +211,9 @@ class TestRetryMechanismWithMocks:
 class TestOpenAIVisionAdapterLifecycle:
     """Tests OpenAI adapter initialization, secret loading, retry loop, and errors."""
 
-    def test_missing_api_key_returns_structured_error_response(self, sample_image: Path):
+    def test_missing_api_key_returns_structured_error_response(
+        self, sample_image: Path
+    ):
         with patch.dict("os.environ", {}, clear=True):
             adapter = OpenAIVisionAdapter(model_name="gpt-4o", api_key="")
             response = adapter.ask(sample_image, "Is target visible?")
@@ -309,4 +318,3 @@ class TestRealisticBaselinesAndPricing:
         adapter = get_model_adapter("mock-gpt4o")
         assert isinstance(adapter, MockVisionAdapter)
         assert adapter.strategy == MockStrategy.REALISTIC_GPT4O_BASELINE
-

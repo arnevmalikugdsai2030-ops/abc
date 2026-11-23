@@ -189,7 +189,9 @@ class TestResponseParserFailureCases:
 
     def test_unknown_obstacle_label(self):
         # Obstacle label O9 is not in {O1, O2, O3, NONE}
-        raw = '{"blocked": true, "obstacle_id": "O9", "blocked_leg": "CAMERA_TO_MIRROR"}'
+        raw = (
+            '{"blocked": true, "obstacle_id": "O9", "blocked_leg": "CAMERA_TO_MIRROR"}'
+        )
         record = ResponseParser.parse_and_grade(
             raw_response=raw,
             task_type=TaskType.TASK_B_OBSTRUCTION,
@@ -198,7 +200,9 @@ class TestResponseParserFailureCases:
         assert record.is_valid_format is False
         assert record.final_score == 0.0
         assert record.error_classification == ErrorCategory.UNKNOWN_OBSTACLE_LABEL
-        assert any("Unknown obstacle label 'O9'" in err for err in record.validation_errors)
+        assert any(
+            "Unknown obstacle label 'O9'" in err for err in record.validation_errors
+        )
 
     def test_invalid_repair_setting(self):
         # Candidate setting D does not exist in {A, B, C}
@@ -211,7 +215,9 @@ class TestResponseParserFailureCases:
         assert record.is_valid_format is False
         assert record.final_score == 0.0
         assert record.error_classification == ErrorCategory.INVALID_REPAIR_SETTING
-        assert any("Invalid repair setting 'D'" in err for err in record.validation_errors)
+        assert any(
+            "Invalid repair setting 'D'" in err for err in record.validation_errors
+        )
 
     def test_invalid_reason_code(self):
         # Invalid reason code
@@ -246,7 +252,9 @@ class TestNoSilentConversionInvariant:
 
     def test_unknown_obstacle_is_never_silently_converted(self):
         # Ground truth is O2, model outputs O99
-        raw = '{"blocked": true, "obstacle_id": "O99", "blocked_leg": "CAMERA_TO_MIRROR"}'
+        raw = (
+            '{"blocked": true, "obstacle_id": "O99", "blocked_leg": "CAMERA_TO_MIRROR"}'
+        )
         gt = {
             "is_blocked": True,
             "blocking_obstacle_label": "O2",

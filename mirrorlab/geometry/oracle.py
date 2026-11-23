@@ -293,4 +293,3 @@ class VisibilityOracle:
 
     def __call__(self, scene: Any) -> VisibilityOracleResult:
         return self.evaluate(scene)
-

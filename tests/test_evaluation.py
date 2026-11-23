@@ -28,7 +28,9 @@ class TestStructuredParser:
 
     def test_pass_1_strict_json(self):
         text = '{"answer": "YES", "reason": "CLEAR", "explanation": "Path is clear."}'
-        parsed = StructuredParser.parse(text, task_type="TASK_A_VISIBILITY", task_id="t1")
+        parsed = StructuredParser.parse(
+            text, task_type="TASK_A_VISIBILITY", task_id="t1"
+        )
         assert parsed.is_valid_format is True
         assert parsed.extraction_pass == 1
         assert parsed.prediction == "YES"
@@ -43,7 +45,9 @@ class TestStructuredParser:
             "```\n"
             "This concludes the ray-tracing inspection."
         )
-        parsed = StructuredParser.parse(text, task_type="TASK_A_VISIBILITY", task_id="t2")
+        parsed = StructuredParser.parse(
+            text, task_type="TASK_A_VISIBILITY", task_id="t2"
+        )
         assert parsed.is_valid_format is True
         assert parsed.extraction_pass == 2
         assert parsed.prediction == "NO"
@@ -56,7 +60,9 @@ class TestStructuredParser:
             '{"is_blocked": true, "answer": "YES", "blocker_label": "O2", "blocked_segment": "CAMERA_TO_MIRROR"} '
             "Hope this helps."
         )
-        parsed = StructuredParser.parse(text, task_type="TASK_B_OBSTRUCTION", task_id="t3")
+        parsed = StructuredParser.parse(
+            text, task_type="TASK_B_OBSTRUCTION", task_id="t3"
+        )
         assert parsed.is_valid_format is True
         assert parsed.extraction_pass == 3
         assert parsed.prediction == "YES"
@@ -69,7 +75,9 @@ class TestStructuredParser:
             "After calculating the reflection angle, I determined that the mirror reflective face "
             "faces the camera and target. The answer is YES, the scratch is CLEAR and visible."
         )
-        parsed = StructuredParser.parse(text, task_type="TASK_A_VISIBILITY", task_id="t4")
+        parsed = StructuredParser.parse(
+            text, task_type="TASK_A_VISIBILITY", task_id="t4"
+        )
         assert parsed.is_valid_format is True
         assert parsed.extraction_pass == 4
         assert parsed.prediction == "YES"
@@ -86,7 +94,9 @@ class TestStructuredParser:
 
     def test_unparseable_gibberish_returns_format_error(self):
         text = "The diagram is blurry and I am not sure about optical geometry."
-        parsed = StructuredParser.parse(text, task_type="TASK_A_VISIBILITY", task_id="t6")
+        parsed = StructuredParser.parse(
+            text, task_type="TASK_A_VISIBILITY", task_id="t6"
+        )
         assert parsed.is_valid_format is False
         assert parsed.extraction_pass == 0
         assert parsed.prediction is None
@@ -150,11 +160,16 @@ class TestCounterfactualPairScoring:
                 "task_id": "scene_b",
                 "task_type": "TASK_A_VISIBILITY",
                 "ground_truth": {"answer": "NO", "reason_code": "MIRROR_MISS"},
-                "parsed_answer": {"prediction": "YES", "is_valid_format": True},  # Guessed YES -> wrong!
+                "parsed_answer": {
+                    "prediction": "YES",
+                    "is_valid_format": True,
+                },  # Guessed YES -> wrong!
             },
         ]
 
-        metrics = BenchmarkMetricsCalculator.compute(eval_records, pairs_records=[pair_rec])
+        metrics = BenchmarkMetricsCalculator.compute(
+            eval_records, pairs_records=[pair_rec]
+        )
         # Individual accuracy on the 2 tasks is 1/2 = 50%
         assert metrics.overall_accuracy == 0.50
         # But counterfactual pair consistency MUST be 0.0%!
@@ -182,7 +197,9 @@ class TestCounterfactualPairScoring:
             },
         ]
 
-        metrics = BenchmarkMetricsCalculator.compute(eval_records, pairs_records=[pair_rec])
+        metrics = BenchmarkMetricsCalculator.compute(
+            eval_records, pairs_records=[pair_rec]
+        )
         assert metrics.overall_accuracy == 1.0
         assert metrics.pair_consistency_score == 1.0
 

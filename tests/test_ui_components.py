@@ -84,7 +84,9 @@ class TestUIComponents:
         assert "chip-visible" in chip_clear
         assert "VISIBLE" in chip_clear
 
-        chip_blocked = render_verdict_badge("BLOCKED_CAMERA_TO_MIRROR", is_visible=False)
+        chip_blocked = render_verdict_badge(
+            "BLOCKED_CAMERA_TO_MIRROR", is_visible=False
+        )
         assert "chip-blocked" in chip_blocked
         assert "BLOCKED" in chip_blocked
 

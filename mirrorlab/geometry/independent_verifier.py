@@ -111,7 +111,9 @@ class IndependentGeometryVerifier:
         W = mirror_b - mirror_a
         mirror_len = float(np.linalg.norm(W))
         if mirror_len < cls.EPSILON:
-            return IndependentReflectionResult(is_valid=False, failure_reason="DEGENERATE_MIRROR")
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason="DEGENERATE_MIRROR"
+            )
 
         u = W / mirror_len  # Unit tangent along mirror
         # Normal pointing into cavity
@@ -124,11 +126,17 @@ class IndependentGeometryVerifier:
         d_T = float(np.dot(target_pos - mirror_a, n))
 
         if d_C <= cls.EPSILON and d_T <= cls.EPSILON:
-            return IndependentReflectionResult(is_valid=False, failure_reason="WRONG_SIDE_BOTH")
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason="WRONG_SIDE_BOTH"
+            )
         if d_C <= cls.EPSILON:
-            return IndependentReflectionResult(is_valid=False, failure_reason="WRONG_SIDE_CAMERA")
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason="WRONG_SIDE_CAMERA"
+            )
         if d_T <= cls.EPSILON:
-            return IndependentReflectionResult(is_valid=False, failure_reason="WRONG_SIDE_TARGET")
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason="WRONG_SIDE_TARGET"
+            )
 
         # Virtual camera position: C' = C - 2 * d_C * n
         C_prime = cam_pos - 2.0 * d_C * n
@@ -138,7 +146,9 @@ class IndependentGeometryVerifier:
         det = W[0] * V[1] - W[1] * V[0]
 
         if abs(det) < 1e-12:
-            return IndependentReflectionResult(is_valid=False, failure_reason="PARALLEL_TO_MIRROR")
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason="PARALLEL_TO_MIRROR"
+            )
 
         # Intersection parameter t on mirror line: R = A + t * W
         diff = mirror_a - C_prime
@@ -147,13 +157,17 @@ class IndependentGeometryVerifier:
 
         # Must be in front of virtual camera towards target: s in (0, 1)
         if s <= cls.EPSILON or s >= 1.0 - cls.EPSILON:
-            return IndependentReflectionResult(is_valid=False, failure_reason="BEHIND_CAMERA")
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason="BEHIND_CAMERA"
+            )
 
         # Finite mirror segment bounds: t in [0, 1]
         is_on_segment = (0.0 - cls.EPSILON) <= t <= (1.0 + cls.EPSILON)
         if not is_on_segment:
             reason = "MISSED_MIRROR_PAST_A" if t < 0.0 else "MISSED_MIRROR_PAST_B"
-            return IndependentReflectionResult(is_valid=False, failure_reason=reason, mirror_t=t)
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason=reason, mirror_t=t
+            )
 
         # Exact reflection point
         t_clamped = max(0.0, min(1.0, float(t)))
@@ -166,7 +180,9 @@ class IndependentGeometryVerifier:
         len_refl = float(np.linalg.norm(v_refl))
 
         if len_inc < cls.EPSILON or len_refl < cls.EPSILON:
-            return IndependentReflectionResult(is_valid=False, failure_reason="DEGENERATE_PATH")
+            return IndependentReflectionResult(
+                is_valid=False, failure_reason="DEGENERATE_PATH"
+            )
 
         u_inc = v_inc / len_inc
         u_refl = v_refl / len_refl
@@ -283,7 +299,11 @@ class IndependentGeometryVerifier:
                 if t_min > t_max:
                     return False, 0.0, None
 
-        if t_min <= t_max and t_max >= (trim_eps / leg_len) and t_min <= (1.0 - trim_eps / leg_len):
+        if (
+            t_min <= t_max
+            and t_max >= (trim_eps / leg_len)
+            and t_min <= (1.0 - trim_eps / leg_len)
+        ):
             hit_dist = t_min * leg_len
             hit_pt = p1 + (t_min * D)
             return True, hit_dist, hit_pt
@@ -295,11 +315,22 @@ class IndependentGeometryVerifier:
         """
         Calculates ground-truth visibility using the independent virtual-camera method.
         """
-        cam = np.array([scene.camera.position.x, scene.camera.position.y], dtype=np.float64)
-        target = np.array([scene.target.center.x, scene.target.center.y], dtype=np.float64)
-        m_a = np.array([scene.mirror.endpoint_a.x, scene.mirror.endpoint_a.y], dtype=np.float64)
-        m_b = np.array([scene.mirror.endpoint_b.x, scene.mirror.endpoint_b.y], dtype=np.float64)
-        norm = np.array([scene.mirror.reflective_normal.dx, scene.mirror.reflective_normal.dy], dtype=np.float64)
+        cam = np.array(
+            [scene.camera.position.x, scene.camera.position.y], dtype=np.float64
+        )
+        target = np.array(
+            [scene.target.center.x, scene.target.center.y], dtype=np.float64
+        )
+        m_a = np.array(
+            [scene.mirror.endpoint_a.x, scene.mirror.endpoint_a.y], dtype=np.float64
+        )
+        m_b = np.array(
+            [scene.mirror.endpoint_b.x, scene.mirror.endpoint_b.y], dtype=np.float64
+        )
+        norm = np.array(
+            [scene.mirror.reflective_normal.dx, scene.mirror.reflective_normal.dy],
+            dtype=np.float64,
+        )
 
         # 1. Specular Reflection Check via Virtual Camera
         refl = cls.calculate_virtual_camera_reflection(cam, target, m_a, m_b, norm)
@@ -314,7 +345,9 @@ class IndependentGeometryVerifier:
                 "PARALLEL_TO_MIRROR": ObstructionReason.MISSED_MIRROR,
                 "BEHIND_CAMERA": ObstructionReason.MISSED_MIRROR,
             }
-            obs_reason = reason_map.get(refl.failure_reason or "", ObstructionReason.MISSED_MIRROR)
+            obs_reason = reason_map.get(
+                refl.failure_reason or "", ObstructionReason.MISSED_MIRROR
+            )
             return IndependentVisibilityVerdict(
                 is_visible=False,
                 state=VisibilityState.NOT_VISIBLE,
@@ -331,7 +364,9 @@ class IndependentGeometryVerifier:
 
         # 2. Camera Angular FOV Cone Check
         forward_rad = math.radians(scene.camera.heading_deg)
-        fwd_vec = np.array([math.cos(forward_rad), math.sin(forward_rad)], dtype=np.float64)
+        fwd_vec = np.array(
+            [math.cos(forward_rad), math.sin(forward_rad)], dtype=np.float64
+        )
         v_ray = R - cam
         d_ray = float(np.linalg.norm(v_ray))
         if d_ray < cls.EPSILON:
@@ -359,14 +394,17 @@ class IndependentGeometryVerifier:
                 total_optical_distance=refl.total_path_distance,
                 fermat_residual=refl.fermat_residual,
                 blocking_hit=None,
-                diagnostic_proof=f"Incident ray angle ({math.degrees(math.acos(max(-1.0, min(1.0, cos_fov)))):.1f} deg) outside FOV ({scene.camera.fov_degrees/2.0:.1f} deg).",
+                diagnostic_proof=f"Incident ray angle ({math.degrees(math.acos(max(-1.0, min(1.0, cos_fov)))):.1f} deg) outside FOV ({scene.camera.fov_degrees / 2.0:.1f} deg).",
             )
 
         # 3. Two-Leg Obstacle Occlusion Check
         closest_hit: IndependentObstacleHit | None = None
         closest_leg: str | None = None
 
-        legs = [("LEG_1_CAMERA_TO_MIRROR", cam, R), ("LEG_2_MIRROR_TO_TARGET", R, target)]
+        legs = [
+            ("LEG_1_CAMERA_TO_MIRROR", cam, R),
+            ("LEG_2_MIRROR_TO_TARGET", R, target),
+        ]
 
         for leg_name, p_start, p_end in legs:
             for obs in scene.obstacles:
@@ -377,7 +415,9 @@ class IndependentGeometryVerifier:
 
                 if obs.obstacle_type == "circle":
                     radius = obs.radius if obs.radius is not None else 0.0
-                    hit, dist, hit_pt = cls.check_segment_circle_occlusion(p_start, p_end, c_obs, radius)
+                    hit, dist, hit_pt = cls.check_segment_circle_occlusion(
+                        p_start, p_end, c_obs, radius
+                    )
                 elif obs.obstacle_type == "rectangle":
                     width = obs.width if obs.width is not None else 0.0
                     height = obs.height if obs.height is not None else 0.0
@@ -386,11 +426,21 @@ class IndependentGeometryVerifier:
                     )
 
                 if hit and hit_pt is not None:
-                    if closest_hit is None or (leg_name == "LEG_1_CAMERA_TO_MIRROR" and closest_leg == "LEG_2_MIRROR_TO_TARGET"):
-                        closest_hit = IndependentObstacleHit(obs.obstacle_id, leg_name, hit_pt, dist)
+                    if closest_hit is None or (
+                        leg_name == "LEG_1_CAMERA_TO_MIRROR"
+                        and closest_leg == "LEG_2_MIRROR_TO_TARGET"
+                    ):
+                        closest_hit = IndependentObstacleHit(
+                            obs.obstacle_id, leg_name, hit_pt, dist
+                        )
                         closest_leg = leg_name
-                    elif leg_name == closest_leg and dist < closest_hit.hit_distance_along_leg:
-                        closest_hit = IndependentObstacleHit(obs.obstacle_id, leg_name, hit_pt, dist)
+                    elif (
+                        leg_name == closest_leg
+                        and dist < closest_hit.hit_distance_along_leg
+                    ):
+                        closest_hit = IndependentObstacleHit(
+                            obs.obstacle_id, leg_name, hit_pt, dist
+                        )
 
             # If leg 1 is blocked, no need to check leg 2 as leg 1 blocks sight first
             if closest_hit and closest_leg == "LEG_1_CAMERA_TO_MIRROR":
@@ -451,8 +501,13 @@ class IndependentGeometryVerifier:
 
         # Reflection point delta
         delta_r = 0.0
-        if oracle_result.reflection_point is not None and indep.reflection_point is not None:
-            delta_r = float(np.linalg.norm(oracle_result.reflection_point - indep.reflection_point))
+        if (
+            oracle_result.reflection_point is not None
+            and indep.reflection_point is not None
+        ):
+            delta_r = float(
+                np.linalg.norm(oracle_result.reflection_point - indep.reflection_point)
+            )
 
         # Mathematical certification requires:
         # 1. State agreement
@@ -476,8 +531,14 @@ class IndependentGeometryVerifier:
             agreed=vis_match and reason_match,
             oracle_visible=oracle_result.is_visible,
             independent_visible=indep.is_visible,
-            oracle_reason=str(oracle_result.reason.value if hasattr(oracle_result.reason, "value") else oracle_result.reason),
-            independent_reason=str(indep.reason.value if hasattr(indep.reason, "value") else indep.reason),
+            oracle_reason=str(
+                oracle_result.reason.value
+                if hasattr(oracle_result.reason, "value")
+                else oracle_result.reason
+            ),
+            independent_reason=str(
+                indep.reason.value if hasattr(indep.reason, "value") else indep.reason
+            ),
             reflection_point_delta_mm=delta_r,
             fermat_residual=indep.fermat_residual,
             is_mathematically_certified=certified,

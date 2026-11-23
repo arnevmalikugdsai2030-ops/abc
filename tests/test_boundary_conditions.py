@@ -332,4 +332,7 @@ class TestCoordinateScaleAndNumericalLimits:
         )
         verdict = VisibilityOracle.evaluate(scene)
         assert verdict.is_visible is False
-        assert verdict.reason in (ObstructionReason.MISSED_MIRROR, ObstructionReason.NONE)
+        assert verdict.reason in (
+            ObstructionReason.MISSED_MIRROR,
+            ObstructionReason.NONE,
+        )

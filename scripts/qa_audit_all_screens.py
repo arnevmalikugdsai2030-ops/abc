@@ -45,7 +45,7 @@ def run_audit() -> None:
 
     # Verify Scene Generator controls
     assert len(at.selectbox) >= 3  # task_type, difficulty, sub_opt
-    assert len(at.button) >= 4    # Random Seed, Generate, Load Preset, Download
+    assert len(at.button) >= 4  # Random Seed, Generate, Load Preset, Download
 
     # Test Task A generation
     print("  -> Testing Scene Generation (Task A)...")
@@ -80,7 +80,9 @@ def run_audit() -> None:
 
     # Check candidate mirror buttons exist for Task C
     cand_btns = [b for b in at.button if "Mirror [" in b.label]
-    assert len(cand_btns) == 3, f"Expected 3 candidate mirror buttons for Task C, found {len(cand_btns)}"
+    assert len(cand_btns) == 3, (
+        f"Expected 3 candidate mirror buttons for Task C, found {len(cand_btns)}"
+    )
     print(f"  -> Candidate mirror buttons present: {[b.label for b in cand_btns]}")
 
     # Test Task D (Counterfactual) generation
@@ -96,7 +98,9 @@ def run_audit() -> None:
 
     # Check Scene A / Scene B toggle buttons exist
     cf_btns = [b for b in at.button if "Inspect Scene" in b.label]
-    assert len(cf_btns) == 2, f"Expected Scene A and Scene B buttons, found {len(cf_btns)}"
+    assert len(cf_btns) == 2, (
+        f"Expected Scene A and Scene B buttons, found {len(cf_btns)}"
+    )
     print(f"  -> Counterfactual toggles present: {[b.label for b in cf_btns]}")
 
     # Test Geometry Sliders (Camera, Mirror, Target)
@@ -109,7 +113,10 @@ def run_audit() -> None:
 
     # Test Task Package Download button
     print("  -> Testing Task Package (.ZIP) Download button...")
-    dl_btn = next((d for d in at.download_button if "Download Complete Task Package" in d.label), None)
+    dl_btn = next(
+        (d for d in at.download_button if "Download Complete Task Package" in d.label),
+        None,
+    )
     assert dl_btn is not None, "Missing task package download button"
     print(f"  -> Download package button verified: {dl_btn.label}")
     print("  ✓ [PASS] Scene Laboratory passed all interaction tests.")
@@ -150,7 +157,9 @@ def run_audit() -> None:
 
     # Test Paired Counterfactual Evaluation Mode
     print("  -> Testing Paired Counterfactual Mode in Model Arena...")
-    arena_mode_radio = next((r for r in at.radio if "Evaluation Arena Mode" in r.label), None)
+    arena_mode_radio = next(
+        (r for r in at.radio if "Evaluation Arena Mode" in r.label), None
+    )
     assert arena_mode_radio is not None
     arena_mode_radio.set_value("⚖️ Paired Counterfactual Evaluation")
     at.run()
@@ -160,14 +169,21 @@ def run_audit() -> None:
     model_sel.select("mock-oracle")
     at.run()
 
-    run_pair_btn = next((b for b in at.button if "Challenge Model on Both Related Scenes" in b.label), None)
+    run_pair_btn = next(
+        (b for b in at.button if "Challenge Model on Both Related Scenes" in b.label),
+        None,
+    )
     assert run_pair_btn is not None, "Missing paired challenge button"
     run_pair_btn.click()
     at.run()
-    assert len(at.exception) == 0, f"Paired challenge execution exception: {at.exception}"
+    assert len(at.exception) == 0, (
+        f"Paired challenge execution exception: {at.exception}"
+    )
 
     # Click paired reveal
-    reveal_pair_btn = next((b for b in at.button if "REVEAL PAIRED ORACLE RESULTS" in b.label), None)
+    reveal_pair_btn = next(
+        (b for b in at.button if "REVEAL PAIRED ORACLE RESULTS" in b.label), None
+    )
     assert reveal_pair_btn is not None, "Missing paired reveal button"
     reveal_pair_btn.click()
     at.run()
@@ -186,8 +202,12 @@ def run_audit() -> None:
     assert len(at.exception) == 0, f"Analytics startup exception: {at.exception}"
 
     # Check multi-dimensional filter multiselects exist
-    assert len(at.multiselect) >= 5, f"Expected 5 filter multiselects, found {len(at.multiselect)}"
-    print(f"  -> Multi-dimensional filter multiselects verified: {[m.label for m in at.multiselect]}")
+    assert len(at.multiselect) >= 5, (
+        f"Expected 5 filter multiselects, found {len(at.multiselect)}"
+    )
+    print(
+        f"  -> Multi-dimensional filter multiselects verified: {[m.label for m in at.multiselect]}"
+    )
 
     # Check export buttons exist
     csv_dl = next((d for d in at.download_button if "CSV" in d.label), None)
@@ -208,7 +228,9 @@ def run_audit() -> None:
     workspace_radio = at.sidebar.radio[0]
     workspace_radio.set_value("📈 Benchmark Dashboard")
     at.run(timeout=180)
-    assert len(at.exception) == 0, f"Benchmark Dashboard startup exception: {at.exception}"
+    assert len(at.exception) == 0, (
+        f"Benchmark Dashboard startup exception: {at.exception}"
+    )
     print("  -> Benchmark Dashboard loaded with real manifests and evaluation runs.")
     print("  ✓ [PASS] Benchmark Dashboard verified across all tabs.")
 
@@ -221,7 +243,9 @@ def run_audit() -> None:
     workspace_radio = at.sidebar.radio[0]
     workspace_radio.set_value("🛠️ Physical Rig Guide")
     at.run()
-    assert len(at.exception) == 0, f"Physical Rig Guide startup exception: {at.exception}"
+    assert len(at.exception) == 0, (
+        f"Physical Rig Guide startup exception: {at.exception}"
+    )
     print("  ✓ [PASS] Physical Rig Specifications verified.")
 
     print("\n" + "=" * 70)

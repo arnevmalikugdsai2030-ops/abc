@@ -29,7 +29,9 @@ from mirrorlab.schema.task import (
 @pytest.fixture
 def factory() -> CounterfactualFactory:
     """Fixture providing a CounterfactualFactory instance."""
-    return CounterfactualFactory(canvas_width=1000.0, canvas_height=1000.0, image_size=512)
+    return CounterfactualFactory(
+        canvas_width=1000.0, canvas_height=1000.0, image_size=512
+    )
 
 
 class TestCounterfactualPairType1MirrorAngleFlip:
@@ -56,7 +58,10 @@ class TestCounterfactualPairType1MirrorAngleFlip:
         # Scene B must be NOT VISIBLE
         out_b = record.ground_truth_outcomes["test_flip_01_b"]
         assert out_b.is_visible is False
-        assert out_b.reason_code in (VisibilityReasonCode.MIRROR_MISS, VisibilityReasonCode.OUTSIDE_FOV)
+        assert out_b.reason_code in (
+            VisibilityReasonCode.MIRROR_MISS,
+            VisibilityReasonCode.OUTSIDE_FOV,
+        )
 
         # Invariant components: Camera, Target, Obstacles must match
         sc_a = bundle.scene_a_bundle.scene
@@ -85,7 +90,9 @@ class TestCounterfactualPairType2CosmeticControl:
 
         record = bundle.pair_record
         assert record.pair_type == CounterfactualPairType.COSMETIC_CONTROL
-        assert record.expected_relationship == ExpectedPairRelationship.INVARIANT_OUTCOME
+        assert (
+            record.expected_relationship == ExpectedPairRelationship.INVARIANT_OUTCOME
+        )
         assert record.relationship_verified is True
         assert record.changed_parameter == "rendering.theme"
 
@@ -138,7 +145,9 @@ class TestCounterfactualPairType3ObstacleInsertion:
 class TestCounterfactualPairType4IrrelevantObstacle:
     """Tests for Pair Type 4: Irrelevant Obstacle."""
 
-    def test_irrelevant_obstacle_preserves_visibility(self, factory: CounterfactualFactory):
+    def test_irrelevant_obstacle_preserves_visibility(
+        self, factory: CounterfactualFactory
+    ):
         bundle = factory.create_irrelevant_obstacle_pair(
             seed=43001,
             pair_id="test_irrel_01",
@@ -147,7 +156,9 @@ class TestCounterfactualPairType4IrrelevantObstacle:
 
         record = bundle.pair_record
         assert record.pair_type == CounterfactualPairType.IRRELEVANT_OBSTACLE
-        assert record.expected_relationship == ExpectedPairRelationship.INVARIANT_OUTCOME
+        assert (
+            record.expected_relationship == ExpectedPairRelationship.INVARIANT_OUTCOME
+        )
         assert record.relationship_verified is True
 
         out_a = record.ground_truth_outcomes["test_irrel_01_a"]
@@ -169,7 +180,9 @@ class TestCounterfactualPairType4IrrelevantObstacle:
 class TestPairVerificationAndRejection:
     """Tests for strict rejection of invalid counterfactual pairs."""
 
-    def test_reject_mismatched_flipped_relationship(self, factory: CounterfactualFactory):
+    def test_reject_mismatched_flipped_relationship(
+        self, factory: CounterfactualFactory
+    ):
         # Two identical visible scenes claiming to be FLIPPED_OUTCOME must raise ValueError
         sc_a = factory.scene_generator.generate_scene(seed=101, scene_id="s1")
         sc_b = sc_a.model_copy(deep=True, update={"scene_id": "s2"})
@@ -194,7 +207,9 @@ class TestPairVerificationAndRejection:
 class TestPairArtifactBundlePersistence:
     """Tests for artifact generation and manifest persistence on disk."""
 
-    def test_pair_bundle_directory_artifacts(self, factory: CounterfactualFactory, tmp_path: Path):
+    def test_pair_bundle_directory_artifacts(
+        self, factory: CounterfactualFactory, tmp_path: Path
+    ):
         pair_dir = tmp_path / "pairs"
         factory.create_mirror_angle_flip_pair(
             seed=40002,
@@ -231,19 +246,31 @@ class TestPairArtifactBundlePersistence:
 
     def test_deterministic_reproducibility(self):
         """Verifies that running the same seed produces identical pair records across instances."""
-        f1 = CounterfactualFactory(canvas_width=1000.0, canvas_height=1000.0, image_size=512)
-        f2 = CounterfactualFactory(canvas_width=1000.0, canvas_height=1000.0, image_size=512)
+        f1 = CounterfactualFactory(
+            canvas_width=1000.0, canvas_height=1000.0, image_size=512
+        )
+        f2 = CounterfactualFactory(
+            canvas_width=1000.0, canvas_height=1000.0, image_size=512
+        )
         b1 = f1.create_mirror_angle_flip_pair(seed=45555, pair_id="rep_01")
         b2 = f2.create_mirror_angle_flip_pair(seed=45555, pair_id="rep_01")
 
         assert b1.pair_record.new_values == b2.pair_record.new_values
-        assert b1.scene_a_bundle.scene.model_dump() == b2.scene_a_bundle.scene.model_dump()
-        assert b1.scene_b_bundle.scene.model_dump() == b2.scene_b_bundle.scene.model_dump()
+        assert (
+            b1.scene_a_bundle.scene.model_dump() == b2.scene_a_bundle.scene.model_dump()
+        )
+        assert (
+            b1.scene_b_bundle.scene.model_dump() == b2.scene_b_bundle.scene.model_dump()
+        )
 
-    def test_generate_dataset_manifests(self, factory: CounterfactualFactory, tmp_path: Path):
+    def test_generate_dataset_manifests(
+        self, factory: CounterfactualFactory, tmp_path: Path
+    ):
         """Verifies small batch dataset generation and JSONL manifests."""
         out_dir = tmp_path / "cf_batch"
-        bundles = factory.generate_dataset(num_pairs_per_type=2, output_dir=out_dir, start_seed=50000)
+        bundles = factory.generate_dataset(
+            num_pairs_per_type=2, output_dir=out_dir, start_seed=50000
+        )
 
         assert len(bundles) == 8  # 4 types * 2 pairs = 8 pairs
         assert (out_dir / "pairs.jsonl").is_file()
@@ -257,4 +284,3 @@ class TestPairArtifactBundlePersistence:
         with open(out_dir / "tasks.jsonl", encoding="utf-8") as f:
             task_lines = [line.strip() for line in f if line.strip()]
         assert len(task_lines) == 16  # 8 pairs * 2 scenes = 16 tasks
-

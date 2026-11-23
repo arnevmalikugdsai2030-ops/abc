@@ -165,7 +165,9 @@ class VisibilityTaskFactory:
                 json.dump(question.model_dump(mode="json"), f, indent=2)
 
             # 4. ground_truth.json
-            with open(effective_task_dir / "ground_truth.json", "w", encoding="utf-8") as f:
+            with open(
+                effective_task_dir / "ground_truth.json", "w", encoding="utf-8"
+            ) as f:
                 json.dump(ground_truth.model_dump(mode="json"), f, indent=2)
 
             # 5. diagram_overlay.png

@@ -33,7 +33,9 @@ from mirrorlab.schema.scene import (
 logger = logging.getLogger(__name__)
 
 
-def load_sample_scenes(data_dir: Path | str = "data/sample_scenes") -> list[InspectionScene]:
+def load_sample_scenes(
+    data_dir: Path | str = "data/sample_scenes",
+) -> list[InspectionScene]:
     """Load all pre-generated sample inspection scenes."""
     p = Path(data_dir)
     if not p.exists():
@@ -51,7 +53,9 @@ def load_sample_scenes(data_dir: Path | str = "data/sample_scenes") -> list[Insp
     return scenes
 
 
-def load_tasks_by_family(family: str, base_dir: Path | str = "data") -> list[dict[str, Any]]:
+def load_tasks_by_family(
+    family: str, base_dir: Path | str = "data"
+) -> list[dict[str, Any]]:
     """
     Load tasks for a specific task family.
 
@@ -90,10 +94,18 @@ def load_tasks_by_family(family: str, base_dir: Path | str = "data") -> list[dic
                             "id": sub.name,
                             "dir": str(sub),
                             "pair_data": pair_data,
-                            "diagram_blind_a": str(sub / "diagram_a_blind.png") if (sub / "diagram_a_blind.png").exists() else None,
-                            "diagram_overlay_a": str(sub / "diagram_a_overlay.png") if (sub / "diagram_a_overlay.png").exists() else None,
-                            "diagram_blind_b": str(sub / "diagram_b_blind.png") if (sub / "diagram_b_blind.png").exists() else None,
-                            "diagram_overlay_b": str(sub / "diagram_b_overlay.png") if (sub / "diagram_b_overlay.png").exists() else None,
+                            "diagram_blind_a": str(sub / "diagram_a_blind.png")
+                            if (sub / "diagram_a_blind.png").exists()
+                            else None,
+                            "diagram_overlay_a": str(sub / "diagram_a_overlay.png")
+                            if (sub / "diagram_a_overlay.png").exists()
+                            else None,
+                            "diagram_blind_b": str(sub / "diagram_b_blind.png")
+                            if (sub / "diagram_b_blind.png").exists()
+                            else None,
+                            "diagram_overlay_b": str(sub / "diagram_b_overlay.png")
+                            if (sub / "diagram_b_overlay.png").exists()
+                            else None,
                         }
                     )
                 except (json.JSONDecodeError, OSError, ValueError) as err:
@@ -133,8 +145,12 @@ def load_tasks_by_family(family: str, base_dir: Path | str = "data") -> list[dic
                         "question": q_data,
                         "scene": scene_data,
                         "answer": ans_data,
-                        "diagram_blind": str(sub / "diagram_blind.png") if (sub / "diagram_blind.png").exists() else None,
-                        "diagram_overlay": str(sub / "diagram_overlay.png") if (sub / "diagram_overlay.png").exists() else None,
+                        "diagram_blind": str(sub / "diagram_blind.png")
+                        if (sub / "diagram_blind.png").exists()
+                        else None,
+                        "diagram_overlay": str(sub / "diagram_overlay.png")
+                        if (sub / "diagram_overlay.png").exists()
+                        else None,
                     }
                 )
             except (json.JSONDecodeError, OSError, ValueError) as err:
@@ -144,7 +160,9 @@ def load_tasks_by_family(family: str, base_dir: Path | str = "data") -> list[dic
     return tasks
 
 
-def load_benchmark_manifest(splits_dir: Path | str = "data/benchmark_splits") -> dict[str, Any] | None:
+def load_benchmark_manifest(
+    splits_dir: Path | str = "data/benchmark_splits",
+) -> dict[str, Any] | None:
     """Load the benchmark dataset manifest."""
     manifest_path = Path(splits_dir) / "manifest.json"
     if not manifest_path.exists():
@@ -293,12 +311,16 @@ def build_interactive_scene(
 
     optical_path: list[Point2D] = []
     if oracle_res.path_points is not None:
-        optical_path = [Point2D(x=float(p[0]), y=float(p[1])) for p in oracle_res.path_points]
+        optical_path = [
+            Point2D(x=float(p[0]), y=float(p[1])) for p in oracle_res.path_points
+        ]
 
     return InspectionScene(
         scene_id="interactive_playground",
         seed=42,
-        category=SceneCategory.VALID_VISIBLE if oracle_res.is_visible else SceneCategory.MIRROR_MISS,
+        category=SceneCategory.VALID_VISIBLE
+        if oracle_res.is_visible
+        else SceneCategory.MIRROR_MISS,
         difficulty=DifficultyLevel.STANDARD,
         canvas_width=canvas_w,
         canvas_height=canvas_h,
@@ -328,14 +350,36 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
     manifest = load_benchmark_manifest(root / "benchmark_splits")
 
     # Counts from physical task directories on disk
-    vis_count = len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()]) if (root / "benchmark_tasks").exists() else 0
-    obs_count = len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()]) if (root / "obstruction_tasks").exists() else 0
-    rep_count = len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()]) if (root / "repair_tasks").exists() else 0
-    pair_count = len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()]) if (root / "counterfactual_pairs").exists() else 0
-    ood_count = len([d for d in (root / "ood_tasks").iterdir() if d.is_dir()]) if (root / "ood_tasks").exists() else 0
+    vis_count = (
+        len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()])
+        if (root / "benchmark_tasks").exists()
+        else 0
+    )
+    obs_count = (
+        len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()])
+        if (root / "obstruction_tasks").exists()
+        else 0
+    )
+    rep_count = (
+        len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()])
+        if (root / "repair_tasks").exists()
+        else 0
+    )
+    pair_count = (
+        len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()])
+        if (root / "counterfactual_pairs").exists()
+        else 0
+    )
+    ood_count = (
+        len([d for d in (root / "ood_tasks").iterdir() if d.is_dir()])
+        if (root / "ood_tasks").exists()
+        else 0
+    )
 
     total_disk_tasks = vis_count + obs_count + rep_count + pair_count + ood_count
-    total_child_scenes = vis_count + obs_count + rep_count + (pair_count * 2) + ood_count
+    total_child_scenes = (
+        vis_count + obs_count + rep_count + (pair_count * 2) + ood_count
+    )
 
     # Difficulty tiers and obstacle count distribution from all actual benchmark scenes on disk
     difficulty_counts: dict[str, int] = {}
@@ -408,7 +452,9 @@ def get_dataset_statistics(data_root: Path | str = "data") -> dict[str, Any]:
         "difficulty_counts": difficulty_counts,
         "sample_scenes_count": len(all_scenes_obs_counts),
         "average_obstacles_per_scene": avg_obstacles,
-        "isolation_verified": manifest.get("isolation_verified", False) if manifest else False,
+        "isolation_verified": manifest.get("isolation_verified", False)
+        if manifest
+        else False,
     }
 
 
@@ -452,7 +498,9 @@ def get_task_distribution(data_root: Path | str = "data") -> dict[str, Any]:
     }
 
 
-def get_recent_evaluation_runs(logs_root: Path | str = "eval_logs") -> list[dict[str, Any]]:
+def get_recent_evaluation_runs(
+    logs_root: Path | str = "eval_logs",
+) -> list[dict[str, Any]]:
     """
     Discovers all benchmark evaluation runs from disk, parsed from actual log files.
     """
@@ -471,7 +519,9 @@ def get_recent_evaluation_runs(logs_root: Path | str = "eval_logs") -> list[dict
         run_info: dict[str, Any] = {
             "run_id": d.name,
             "path": str(d),
-            "timestamp": d.name.replace("comparison_", "").replace("dev_eval_", "").replace("mock-", ""),
+            "timestamp": d.name.replace("comparison_", "")
+            .replace("dev_eval_", "")
+            .replace("mock-", ""),
             "is_comparison": comp_file.exists(),
         }
 
@@ -501,7 +551,9 @@ def get_recent_evaluation_runs(logs_root: Path | str = "eval_logs") -> list[dict
                 med_lat = lat.get("gemini", {}).get("median")
                 cost_val = c_data.get("financial_cost_usd", {}).get("openai")
 
-                is_sim = bool("mock" in d.name.lower() or meta.get("is_simulated", True))
+                is_sim = bool(
+                    "mock" in d.name.lower() or meta.get("is_simulated", True)
+                )
 
                 run_info.update(
                     {
@@ -525,7 +577,9 @@ def get_recent_evaluation_runs(logs_root: Path | str = "eval_logs") -> list[dict
                 acc = m_data.get("overall_accuracy")
                 if isinstance(acc, dict):
                     acc_rate = acc.get("rate")
-                    acc_val = (float(acc_rate) * 100.0) if acc_rate is not None else None
+                    acc_val = (
+                        (float(acc_rate) * 100.0) if acc_rate is not None else None
+                    )
                 elif isinstance(acc, (int, float)):
                     acc_val = float(acc) * 100.0 if acc <= 1.0 else float(acc)
                 else:
@@ -556,7 +610,9 @@ def get_recent_evaluation_runs(logs_root: Path | str = "eval_logs") -> list[dict
     return runs
 
 
-def load_evaluation_run_details(run_id: str, logs_root: Path | str = "eval_logs") -> dict[str, Any] | None:
+def load_evaluation_run_details(
+    run_id: str, logs_root: Path | str = "eval_logs"
+) -> dict[str, Any] | None:
     """
     Loads full metrics, accuracy breakdowns, failure traces, and latencies for a specific run ID.
     """
@@ -676,11 +732,31 @@ def get_dataset_validation_status(
 
     root = Path(data_root)
     # Check if physical dataset exists
-    vis_count = len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()]) if (root / "benchmark_tasks").exists() else 0
-    obs_count = len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()]) if (root / "obstruction_tasks").exists() else 0
-    rep_count = len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()]) if (root / "repair_tasks").exists() else 0
-    pair_count = len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()]) if (root / "counterfactual_pairs").exists() else 0
-    ood_count = len([d for d in (root / "ood_tasks").iterdir() if d.is_dir()]) if (root / "ood_tasks").exists() else 0
+    vis_count = (
+        len([d for d in (root / "benchmark_tasks").iterdir() if d.is_dir()])
+        if (root / "benchmark_tasks").exists()
+        else 0
+    )
+    obs_count = (
+        len([d for d in (root / "obstruction_tasks").iterdir() if d.is_dir()])
+        if (root / "obstruction_tasks").exists()
+        else 0
+    )
+    rep_count = (
+        len([d for d in (root / "repair_tasks").iterdir() if d.is_dir()])
+        if (root / "repair_tasks").exists()
+        else 0
+    )
+    pair_count = (
+        len([d for d in (root / "counterfactual_pairs").iterdir() if d.is_dir()])
+        if (root / "counterfactual_pairs").exists()
+        else 0
+    )
+    ood_count = (
+        len([d for d in (root / "ood_tasks").iterdir() if d.is_dir()])
+        if (root / "ood_tasks").exists()
+        else 0
+    )
     total_tasks = vis_count + obs_count + rep_count + pair_count + ood_count
 
     check_names = [
@@ -694,6 +770,7 @@ def get_dataset_validation_status(
         "Counterfactual Invariant Verification",
         "Anti-Duplicate Geometry",
         "Test Set Partition Isolation",
+        "Counterfactual Split Pair Integrity",
     ]
 
     if total_tasks == 0:
@@ -727,26 +804,32 @@ def get_dataset_validation_status(
     formatted_checks = []
     for idx, c in enumerate(report.checks, 1):
         status_str = "PASSED" if c.passed else "FAILED"
-        formatted_checks.append({
-            "id": idx,
-            "name": c.name,
-            "status": status_str,
-            "passed": c.passed,
-            "items_checked": c.items_checked,
-            "details": c.details,
-            "failure_count": len(c.failures),
-            "failures": c.failures[:10],
-        })
+        formatted_checks.append(
+            {
+                "id": idx,
+                "name": c.name,
+                "status": status_str,
+                "passed": c.passed,
+                "items_checked": c.items_checked,
+                "details": c.details,
+                "failure_count": len(c.failures),
+                "failures": c.failures[:10],
+            }
+        )
 
     result = {
         "all_passed": report.all_passed,
         "total_checks": len(formatted_checks),
         "checks": formatted_checks,
         "isolation_verified": report.all_passed,
-        "split_summary": report.split_summary.get("split_counts", {}) if report.split_summary else {},
+        "split_summary": report.split_summary.get("split_counts", {})
+        if report.split_summary
+        else {},
         "total_tasks": report.total_tasks_checked,
         "total_scenes": report.total_scenes_checked,
-        "status_message": "PASSED: All 10 verification checks satisfied." if report.all_passed else "FAILED: Audit violations detected.",
+        "status_message": f"PASSED: All {len(formatted_checks)} verification checks satisfied."
+        if report.all_passed
+        else "FAILED: Audit violations detected.",
     }
     _VALIDATION_CACHE[cache_key] = result
     return result

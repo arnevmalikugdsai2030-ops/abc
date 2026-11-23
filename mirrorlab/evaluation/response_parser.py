@@ -44,8 +44,12 @@ class ErrorCategory(str, Enum):
     EMPTY_RESPONSE = "EMPTY_RESPONSE"  # Empty string or whitespace returned by model
     MALFORMED_JSON = "MALFORMED_JSON"  # JSON syntax error / non-JSON output
     MISSING_REQUIRED_KEY = "MISSING_REQUIRED_KEY"  # Missing required schema key
-    INVALID_DATA_TYPE = "INVALID_DATA_TYPE"  # Key present but wrong type (e.g. string for boolean)
-    UNKNOWN_OBSTACLE_LABEL = "UNKNOWN_OBSTACLE_LABEL"  # Obstacle label not in {O1, O2, O3, NONE}
+    INVALID_DATA_TYPE = (
+        "INVALID_DATA_TYPE"  # Key present but wrong type (e.g. string for boolean)
+    )
+    UNKNOWN_OBSTACLE_LABEL = (
+        "UNKNOWN_OBSTACLE_LABEL"  # Obstacle label not in {O1, O2, O3, NONE}
+    )
     INVALID_REPAIR_SETTING = "INVALID_REPAIR_SETTING"  # Setting not in {A, B, C}
     INVALID_REASON_CODE = "INVALID_REASON_CODE"  # Reason code not in allowed enum
 
@@ -86,8 +90,22 @@ class ResponseParser:
         "BLOCKED_CAMERA_TO_MIRROR",
         "BLOCKED_MIRROR_TO_TARGET",
     }
-    VALID_OBSTACLE_LABELS: ClassVar[set[str]] = {"O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "NONE"}
-    VALID_BLOCKED_LEGS: ClassVar[set[str]] = {"CAMERA_TO_MIRROR", "MIRROR_TO_TARGET", "NONE"}
+    VALID_OBSTACLE_LABELS: ClassVar[set[str]] = {
+        "O1",
+        "O2",
+        "O3",
+        "O4",
+        "O5",
+        "O6",
+        "O7",
+        "O8",
+        "NONE",
+    }
+    VALID_BLOCKED_LEGS: ClassVar[set[str]] = {
+        "CAMERA_TO_MIRROR",
+        "MIRROR_TO_TARGET",
+        "NONE",
+    }
     VALID_REPAIR_SETTINGS: ClassVar[set[str]] = {"A", "B", "C"}
 
     @classmethod
@@ -238,7 +256,9 @@ class ResponseParser:
             direct_err = str(e)
 
         # Attempt 2: Markdown code fence ```json ... ```
-        fence_matches = re.findall(r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
+        fence_matches = re.findall(
+            r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.IGNORECASE
+        )
         for block in fence_matches:
             try:
                 val = json.loads(block.strip())
@@ -310,12 +330,16 @@ class ResponseParser:
             elif isinstance(ans_val, str) and ans_val.upper() in ("YES", "NO"):
                 vis_bool = ans_val.upper() == "YES"
             else:
-                errors.append(f"Field '{orig_k}' must be 'YES' or 'NO', got {ans_val!r}")
+                errors.append(
+                    f"Field '{orig_k}' must be 'YES' or 'NO', got {ans_val!r}"
+                )
                 return ErrorCategory.INVALID_DATA_TYPE, None, None
         else:
             orig_k, vis_val = visible_entry
             if not isinstance(vis_val, bool):
-                errors.append(f"Field '{orig_k}' must be a boolean (true or false), got {type(vis_val).__name__} ({vis_val!r})")
+                errors.append(
+                    f"Field '{orig_k}' must be a boolean (true or false), got {type(vis_val).__name__} ({vis_val!r})"
+                )
                 return ErrorCategory.INVALID_DATA_TYPE, None, None
             vis_bool = vis_val
 
@@ -325,11 +349,15 @@ class ResponseParser:
         if reason_entry:
             orig_rk, r_val = reason_entry
             if not isinstance(r_val, str):
-                errors.append(f"Field '{orig_rk}' must be a string, got {type(r_val).__name__}")
+                errors.append(
+                    f"Field '{orig_rk}' must be a string, got {type(r_val).__name__}"
+                )
                 return ErrorCategory.INVALID_DATA_TYPE, None, None
             u_reason = r_val.strip().upper()
             if u_reason not in cls.VALID_REASON_CODES:
-                errors.append(f"Invalid reason code '{r_val}'. Allowed: {sorted(cls.VALID_REASON_CODES)}")
+                errors.append(
+                    f"Invalid reason code '{r_val}'. Allowed: {sorted(cls.VALID_REASON_CODES)}"
+                )
                 return ErrorCategory.INVALID_REASON_CODE, None, None
             reason_code = u_reason
 
@@ -361,41 +389,61 @@ class ResponseParser:
             elif isinstance(ans_val, str) and ans_val.upper() in ("YES", "NO"):
                 blocked_bool = ans_val.upper() == "YES"
             else:
-                errors.append(f"Field '{orig_k}' must be 'YES' or 'NO', got {ans_val!r}")
+                errors.append(
+                    f"Field '{orig_k}' must be 'YES' or 'NO', got {ans_val!r}"
+                )
                 return ErrorCategory.INVALID_DATA_TYPE, None, None
         else:
             orig_k, blk_val = blocked_entry
             if not isinstance(blk_val, bool):
-                errors.append(f"Field '{orig_k}' must be a boolean (true or false), got {type(blk_val).__name__} ({blk_val!r})")
+                errors.append(
+                    f"Field '{orig_k}' must be a boolean (true or false), got {type(blk_val).__name__} ({blk_val!r})"
+                )
                 return ErrorCategory.INVALID_DATA_TYPE, None, None
             blocked_bool = blk_val
 
         # 2. Check obstacle_id
-        obs_entry = norm_keys.get("obstacle_id") or norm_keys.get("blocker_label") or norm_keys.get("blocker")
+        obs_entry = (
+            norm_keys.get("obstacle_id")
+            or norm_keys.get("blocker_label")
+            or norm_keys.get("blocker")
+        )
         if not obs_entry:
             errors.append("Missing required key: 'obstacle_id'")
             return ErrorCategory.MISSING_REQUIRED_KEY, None, None
         orig_ok, obs_val = obs_entry
         if not isinstance(obs_val, str):
-            errors.append(f"Field '{orig_ok}' must be a string label, got {type(obs_val).__name__}")
+            errors.append(
+                f"Field '{orig_ok}' must be a string label, got {type(obs_val).__name__}"
+            )
             return ErrorCategory.INVALID_DATA_TYPE, None, None
         u_obs = obs_val.strip().upper()
         if u_obs not in cls.VALID_OBSTACLE_LABELS:
-            errors.append(f"Unknown obstacle label '{obs_val}'. Allowed: {sorted(cls.VALID_OBSTACLE_LABELS)}")
+            errors.append(
+                f"Unknown obstacle label '{obs_val}'. Allowed: {sorted(cls.VALID_OBSTACLE_LABELS)}"
+            )
             return ErrorCategory.UNKNOWN_OBSTACLE_LABEL, None, None
 
         # 3. Check blocked_leg
-        leg_entry = norm_keys.get("blocked_leg") or norm_keys.get("blocked_segment") or norm_keys.get("segment")
+        leg_entry = (
+            norm_keys.get("blocked_leg")
+            or norm_keys.get("blocked_segment")
+            or norm_keys.get("segment")
+        )
         if not leg_entry:
             errors.append("Missing required key: 'blocked_leg'")
             return ErrorCategory.MISSING_REQUIRED_KEY, None, None
         orig_lk, leg_val = leg_entry
         if not isinstance(leg_val, str):
-            errors.append(f"Field '{orig_lk}' must be a string, got {type(leg_val).__name__}")
+            errors.append(
+                f"Field '{orig_lk}' must be a string, got {type(leg_val).__name__}"
+            )
             return ErrorCategory.INVALID_DATA_TYPE, None, None
         u_leg = leg_val.strip().upper()
         if u_leg not in cls.VALID_BLOCKED_LEGS:
-            errors.append(f"Invalid blocked_leg '{leg_val}'. Allowed: {sorted(cls.VALID_BLOCKED_LEGS)}")
+            errors.append(
+                f"Invalid blocked_leg '{leg_val}'. Allowed: {sorted(cls.VALID_BLOCKED_LEGS)}"
+            )
             return ErrorCategory.INVALID_DATA_TYPE, None, None
 
         explanation = str(norm_keys.get("explanation", (None, ""))[1])
@@ -426,12 +474,16 @@ class ResponseParser:
 
         orig_sk, s_val = setting_entry
         if not isinstance(s_val, str):
-            errors.append(f"Field '{orig_sk}' must be a string candidate letter ('A', 'B', or 'C'), got {type(s_val).__name__}")
+            errors.append(
+                f"Field '{orig_sk}' must be a string candidate letter ('A', 'B', or 'C'), got {type(s_val).__name__}"
+            )
             return ErrorCategory.INVALID_DATA_TYPE, None, None
 
         u_setting = s_val.strip().upper()
         if u_setting not in cls.VALID_REPAIR_SETTINGS:
-            errors.append(f"Invalid repair setting '{s_val}'. Allowed: {sorted(cls.VALID_REPAIR_SETTINGS)}")
+            errors.append(
+                f"Invalid repair setting '{s_val}'. Allowed: {sorted(cls.VALID_REPAIR_SETTINGS)}"
+            )
             return ErrorCategory.INVALID_REPAIR_SETTING, None, None
 
         explanation = str(norm_keys.get("explanation", (None, ""))[1])
@@ -443,7 +495,10 @@ class ResponseParser:
 
     @classmethod
     def _grade_prediction(
-        cls, task_type: TaskType, prediction: dict[str, Any], ground_truth: dict[str, Any]
+        cls,
+        task_type: TaskType,
+        prediction: dict[str, Any],
+        ground_truth: dict[str, Any],
     ) -> bool:
         """Compares validated prediction dictionary against mathematical ground truth."""
         if task_type in (TaskType.TASK_A_VISIBILITY, TaskType.TASK_D_COUNTERFACTUAL):
@@ -457,7 +512,9 @@ class ResponseParser:
             if gt_blocked != p_blocked:
                 return False
 
-            raw_gt_blocker = ground_truth.get("blocking_obstacle_label") or ground_truth.get("blocker_label")
+            raw_gt_blocker = ground_truth.get(
+                "blocking_obstacle_label"
+            ) or ground_truth.get("blocker_label")
             gt_blocker = str(raw_gt_blocker).upper() if raw_gt_blocker else "NONE"
             p_blocker = str(prediction.get("obstacle_id", "")).upper()
 

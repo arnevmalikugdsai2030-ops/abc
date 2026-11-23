@@ -86,7 +86,13 @@ def preflight_check_blind_images(
     """
     Verify that blind images exist, are valid 1024x1024 PNGs, and contain zero ground-truth overlays.
     """
-    results = {"total_checked": len(tasks), "valid_images": 0, "corrupt_images": 0, "leaks_detected": 0, "errors": []}
+    results = {
+        "total_checked": len(tasks),
+        "valid_images": 0,
+        "corrupt_images": 0,
+        "leaks_detected": 0,
+        "errors": [],
+    }
 
     for task in tasks:
         tid = task["task_id"]
@@ -103,7 +109,9 @@ def preflight_check_blind_images(
                 # 1. Check dimensions
                 w, h = img.size
                 if (w, h) != (1024, 1024):
-                    results["errors"].append(f"Image {img_name} invalid dimensions: {w}x{h} (expected 1024x1024)")
+                    results["errors"].append(
+                        f"Image {img_name} invalid dimensions: {w}x{h} (expected 1024x1024)"
+                    )
                     results["corrupt_images"] += 1
                     continue
 
@@ -124,7 +132,15 @@ def preflight_confirm_answer_separation(
     """
     Confirm that the public task dictionaries and prompts contain ZERO answer keys or hints.
     """
-    forbidden_keys = {"answer", "can_see", "is_blocked", "blocker_label", "blocked_segment", "correct_candidate", "proof_geometry"}
+    forbidden_keys = {
+        "answer",
+        "can_see",
+        "is_blocked",
+        "blocker_label",
+        "blocked_segment",
+        "correct_candidate",
+        "proof_geometry",
+    }
     leaks = []
 
     for task in tasks:
@@ -132,7 +148,9 @@ def preflight_confirm_answer_separation(
         # Check task dictionary keys
         found_keys = set(task.keys()).intersection(forbidden_keys)
         if found_keys:
-            leaks.append(f"Task {tid} public payload leaks ground-truth keys: {found_keys}")
+            leaks.append(
+                f"Task {tid} public payload leaks ground-truth keys: {found_keys}"
+            )
 
         # Check prompt text for explicit answer leakage
         prompt_lower = (task.get("prompt") or task.get("question") or "").lower()
@@ -187,7 +205,12 @@ def run_development_evaluation(
 
     # Select balanced 20-sample development subset across all task types
     # 8 Visibility (Task A), 4 Obstruction (Task B), 4 Repair (Task C), 4 Counterfactual Pairs (Task D)
-    vis_tasks = [t for t in all_tasks if t.get("task_type") == "TASK_A_VISIBILITY" and not t["task_id"].startswith("pair_")][:8]
+    vis_tasks = [
+        t
+        for t in all_tasks
+        if t.get("task_type") == "TASK_A_VISIBILITY"
+        and not t["task_id"].startswith("pair_")
+    ][:8]
     obs_tasks = [t for t in all_tasks if t.get("task_type") == "TASK_B_OBSTRUCTION"][:4]
     rep_tasks = [t for t in all_tasks if t.get("task_type") == "TASK_C_REPAIR"][:4]
     pair_tasks = [t for t in all_tasks if t["task_id"].startswith("pair_")][:4]
@@ -208,18 +231,26 @@ def run_development_evaluation(
     print("\n[PRE-FLIGHT VERIFICATION]")
     # 1. Validate scenes
     scene_val = preflight_validate_scenes(selected_tasks, all_gt, dev_path / "tasks")
-    print(f"  1. Scene Geometry Validation:   {scene_val['valid_count']}/{scene_val['total_checked']} VALID (0 geometry errors)")
+    print(
+        f"  1. Scene Geometry Validation:   {scene_val['valid_count']}/{scene_val['total_checked']} VALID (0 geometry errors)"
+    )
 
     # 2. Check blind images
     img_val = preflight_check_blind_images(selected_tasks, img_dir)
-    print(f"  2. Blind Image Inspection:       {img_val['valid_images']}/{img_val['total_checked']} OK (1024x1024 PNG, 0 leaks, 0 corrupt)")
+    print(
+        f"  2. Blind Image Inspection:       {img_val['valid_images']}/{img_val['total_checked']} OK (1024x1024 PNG, 0 leaks, 0 corrupt)"
+    )
 
     # 3. Confirm answer key separation
     sep_val = preflight_confirm_answer_separation(selected_tasks)
-    print(f"  3. Answer Key Separation Check: {'CONFIRMED ISOLATED' if sep_val['separation_confirmed'] else 'LEAK DETECTED'} (0 public leaks)")
+    print(
+        f"  3. Answer Key Separation Check: {'CONFIRMED ISOLATED' if sep_val['separation_confirmed'] else 'LEAK DETECTED'} (0 public leaks)"
+    )
 
     if not sep_val["separation_confirmed"]:
-        raise ValueError(f"Aborting evaluation due to answer key leakage: {sep_val['leaks']}")
+        raise ValueError(
+            f"Aborting evaluation due to answer key leakage: {sep_val['leaks']}"
+        )
 
     # -----------------------------------------------------------------------
     # Step 2: Configure Vision Model Adapter
@@ -232,8 +263,12 @@ def run_development_evaluation(
         adapter = GeminiVisionAdapter(model_name="gemini-2.5-flash", api_key=gemini_key)
     else:
         print("\n[MODEL CONFIGURATION]: Realistic Vision-Language Model Simulation")
-        print("  Notice: GEMINI_API_KEY not found in .env. Evaluating configured SOTA baseline")
-        print("  simulation modeling empirical VLM geometric reflection failure patterns.")
+        print(
+            "  Notice: GEMINI_API_KEY not found in .env. Evaluating configured SOTA baseline"
+        )
+        print(
+            "  simulation modeling empirical VLM geometric reflection failure patterns."
+        )
         adapter = MockVisionAdapter(
             strategy=MockStrategy.REALISTIC_VLM_BASELINE,
             ground_truth_map=all_gt,
@@ -256,7 +291,11 @@ def run_development_evaluation(
         for idx, task in enumerate(selected_tasks, 1):
             tid = task["task_id"]
             ttype = task.get("task_type", "TASK_A_VISIBILITY")
-            prompt_text = task.get("prompt") or task.get("question") or "Is the defect scratch visible?"
+            prompt_text = (
+                task.get("prompt")
+                or task.get("question")
+                or "Is the defect scratch visible?"
+            )
             img_file = task.get("image_filename") or f"{tid}.png"
             img_path = img_dir / img_file
             ref_gt = all_gt.get(tid, {})
@@ -321,7 +360,9 @@ def run_development_evaluation(
             )
 
             status_icon = "[OK]" if parsed_rec.final_score == 1.0 else "[FAIL]"
-            print(f"  [{idx:02d}/20] {tid:<35} | {ttype:<22} | Score: {parsed_rec.final_score:.1f} {status_icon:<6} | Latency: {resp.latency_sec*1000.0:5.1f} ms")
+            print(
+                f"  [{idx:02d}/20] {tid:<35} | {ttype:<22} | Score: {parsed_rec.final_score:.1f} {status_icon:<6} | Latency: {resp.latency_sec * 1000.0:5.1f} ms"
+            )
 
     # -----------------------------------------------------------------------
     # Step 3: Compute Comprehensive Benchmark Metrics
@@ -348,7 +389,9 @@ def run_development_evaluation(
     # Step 4: Display Output Summary Table
     # -----------------------------------------------------------------------
     print("\n" + "=" * 105)
-    print(f"{'#':<3} {'Task ID':<35} {'Task Type':<20} {'Model Prediction':<22} {'Ground Truth':<18} {'Status':<10} {'Latency':<9}")
+    print(
+        f"{'#':<3} {'Task ID':<35} {'Task Type':<20} {'Model Prediction':<22} {'Ground Truth':<18} {'Status':<10} {'Latency':<9}"
+    )
     print("=" * 105)
 
     for i, rec in enumerate(eval_records, 1):
@@ -374,40 +417,72 @@ def run_development_evaluation(
         # Ground Truth formatting
         gt_obj = rec["ground_truth"]
         if ttype in ("TASK_A_VISIBILITY", "TASK_D_COUNTERFACTUAL"):
-            gt_str = f"Visible={gt_obj.get('can_see') or (gt_obj.get('answer') == 'YES')}"
+            gt_str = (
+                f"Visible={gt_obj.get('can_see') or (gt_obj.get('answer') == 'YES')}"
+            )
         elif ttype == "TASK_B_OBSTRUCTION":
-            gt_str = f"Blocked={gt_obj.get('is_blocked')}, {gt_obj.get('blocker_label')}"
+            gt_str = (
+                f"Blocked={gt_obj.get('is_blocked')}, {gt_obj.get('blocker_label')}"
+            )
         elif ttype == "TASK_C_REPAIR":
             gt_str = f"Setting={gt_obj.get('correct_candidate')}"
         else:
             gt_str = str(gt_obj)
 
-        print(f"{i:<3} {tid:<35} {ttype:<20} {p_str:<22} {gt_str:<18} {status_str:<10} {lat:<9}")
+        print(
+            f"{i:<3} {tid:<35} {ttype:<20} {p_str:<22} {gt_str:<18} {status_str:<10} {lat:<9}"
+        )
 
     print("=" * 105)
 
     # Print Headline Metrics
     print("\n[BENCHMARK ACCURACY & ERROR BREAKDOWN]")
-    print(f"  - Overall Headline Accuracy:      {report.overall_accuracy.percentage:5.1f}%  ({report.overall_accuracy.correct}/{report.overall_accuracy.total})")
-    print(f"  - Task A (Visibility Accuracy):   {report.visibility_accuracy.percentage:5.1f}%  ({report.visibility_accuracy.correct}/{report.visibility_accuracy.total})")
+    print(
+        f"  - Overall Headline Accuracy:      {report.overall_accuracy.percentage:5.1f}%  ({report.overall_accuracy.correct}/{report.overall_accuracy.total})"
+    )
+    print(
+        f"  - Task A (Visibility Accuracy):   {report.visibility_accuracy.percentage:5.1f}%  ({report.visibility_accuracy.correct}/{report.visibility_accuracy.total})"
+    )
     print("  - Task B (Obstruction Accuracy):")
-    print(f"      * Blocked Status Accuracy:    {report.obstruction_accuracy.blocked_status.percentage:5.1f}%  ({report.obstruction_accuracy.blocked_status.correct}/{report.obstruction_accuracy.blocked_status.total})")
-    print(f"      * Blocker ID Accuracy:        {report.obstruction_accuracy.blocker_id.percentage:5.1f}%  ({report.obstruction_accuracy.blocker_id.correct}/{report.obstruction_accuracy.blocker_id.total})")
-    print(f"      * Blocked Leg Accuracy:       {report.obstruction_accuracy.blocked_leg.percentage:5.1f}%  ({report.obstruction_accuracy.blocked_leg.correct}/{report.obstruction_accuracy.blocked_leg.total})")
-    print(f"      * Joint Obstruction Accuracy: {report.obstruction_accuracy.joint.percentage:5.1f}%  ({report.obstruction_accuracy.joint.correct}/{report.obstruction_accuracy.joint.total})")
-    print(f"  - Task C (Repair Accuracy):       {report.repair_accuracy.percentage:5.1f}%  ({report.repair_accuracy.correct}/{report.repair_accuracy.total})")
-    print(f"  - Task D (Pair Consistency):      {report.pair_accuracy.percentage:5.1f}%  ({report.pair_accuracy.correct}/{report.pair_accuracy.total})")
-    print(f"      * Mirror Flip Consistency:    {report.mirror_angle_flip_consistency.percentage:5.1f}%  ({report.mirror_angle_flip_consistency.correct}/{report.mirror_angle_flip_consistency.total})")
-    print(f"      * Cosmetic Invariance Rate:   {report.cosmetic_invariance.percentage:5.1f}%  ({report.cosmetic_invariance.correct}/{report.cosmetic_invariance.total})")
-    print(f"  - Invalid Response Rate:          {report.invalid_response_rate.percentage:5.1f}%  ({report.invalid_response_rate.correct}/{report.invalid_response_rate.total})")
+    print(
+        f"      * Blocked Status Accuracy:    {report.obstruction_accuracy.blocked_status.percentage:5.1f}%  ({report.obstruction_accuracy.blocked_status.correct}/{report.obstruction_accuracy.blocked_status.total})"
+    )
+    print(
+        f"      * Blocker ID Accuracy:        {report.obstruction_accuracy.blocker_id.percentage:5.1f}%  ({report.obstruction_accuracy.blocker_id.correct}/{report.obstruction_accuracy.blocker_id.total})"
+    )
+    print(
+        f"      * Blocked Leg Accuracy:       {report.obstruction_accuracy.blocked_leg.percentage:5.1f}%  ({report.obstruction_accuracy.blocked_leg.correct}/{report.obstruction_accuracy.blocked_leg.total})"
+    )
+    print(
+        f"      * Joint Obstruction Accuracy: {report.obstruction_accuracy.joint.percentage:5.1f}%  ({report.obstruction_accuracy.joint.correct}/{report.obstruction_accuracy.joint.total})"
+    )
+    print(
+        f"  - Task C (Repair Accuracy):       {report.repair_accuracy.percentage:5.1f}%  ({report.repair_accuracy.correct}/{report.repair_accuracy.total})"
+    )
+    print(
+        f"  - Task D (Pair Consistency):      {report.pair_accuracy.percentage:5.1f}%  ({report.pair_accuracy.correct}/{report.pair_accuracy.total})"
+    )
+    print(
+        f"      * Mirror Flip Consistency:    {report.mirror_angle_flip_consistency.percentage:5.1f}%  ({report.mirror_angle_flip_consistency.correct}/{report.mirror_angle_flip_consistency.total})"
+    )
+    print(
+        f"      * Cosmetic Invariance Rate:   {report.cosmetic_invariance.percentage:5.1f}%  ({report.cosmetic_invariance.correct}/{report.cosmetic_invariance.total})"
+    )
+    print(
+        f"  - Invalid Response Rate:          {report.invalid_response_rate.percentage:5.1f}%  ({report.invalid_response_rate.correct}/{report.invalid_response_rate.total})"
+    )
 
     print("\n[LATENCY & FINANCIAL COST]")
     print(f"  - Inferences:                     {report.latency.count}")
     print(f"  - Median Latency (P50):           {report.latency.median_ms:.1f} ms")
     print(f"  - 90th Percentile Latency (P90):  {report.latency.p90_ms:.1f} ms")
     print(f"  - Mean Latency:                   {report.latency.mean_ms:.1f} ms")
-    print(f"  - Total Tokens Processed:         {total_prompt_tokens + total_completion_tokens:,} ({total_prompt_tokens:,} prompt + {total_completion_tokens:,} completion)")
-    print(f"  - Actual Estimated Cost (USD):    ${cost_usd:.5f}  (~{cost_usd*100:.3f} cents)")
+    print(
+        f"  - Total Tokens Processed:         {total_prompt_tokens + total_completion_tokens:,} ({total_prompt_tokens:,} prompt + {total_completion_tokens:,} completion)"
+    )
+    print(
+        f"  - Actual Estimated Cost (USD):    ${cost_usd:.5f}  (~{cost_usd * 100:.3f} cents)"
+    )
 
     # Print Failure Analysis
     failures = [r for r in eval_records if r["score"] == 0.0]
@@ -422,18 +497,30 @@ def run_development_evaluation(
 
         print(f"\n  Failure #{idx}: {tid} ({ttype})")
         print(f"    Error Category: {err_cat}")
-        print(f"    Ground Truth:   {gt.get('answer') or gt.get('can_see') or gt.get('is_blocked')} (Reason: {gt.get('reason_code') or gt.get('detailed_explanation')})")
+        print(
+            f"    Ground Truth:   {gt.get('answer') or gt.get('can_see') or gt.get('is_blocked')} (Reason: {gt.get('reason_code') or gt.get('detailed_explanation')})"
+        )
         print(f"    Model Raw Text: {raw.strip()[:160]}...")
         if err_cat == ErrorCategory.MALFORMED_JSON.value:
-            print("    Root Cause:     Model responded with conversational commentary without adhering to JSON schema.")
+            print(
+                "    Root Cause:     Model responded with conversational commentary without adhering to JSON schema."
+            )
         elif "flip" in tid:
-            print("    Root Cause:     Confirmation bias on counterfactual mirror angle flip. Model assumed rotation did not alter sightline.")
+            print(
+                "    Root Cause:     Confirmation bias on counterfactual mirror angle flip. Model assumed rotation did not alter sightline."
+            )
         elif gt.get("reason_code") == "MIRROR_MISS":
-            print("    Root Cause:     Finite aperture clipping failure. Model assumed planar mirror extends infinitely across the canvas.")
+            print(
+                "    Root Cause:     Finite aperture clipping failure. Model assumed planar mirror extends infinitely across the canvas."
+            )
         elif ttype == "TASK_B_OBSTRUCTION":
-            print("    Root Cause:     Path leg confusion between Leg 1 (Camera to Mirror) and Leg 2 (Mirror to Target).")
+            print(
+                "    Root Cause:     Path leg confusion between Leg 1 (Camera to Mirror) and Leg 2 (Mirror to Target)."
+            )
         elif ttype == "TASK_C_REPAIR":
-            print("    Root Cause:     Candidate positional bias. Guessing Candidate A instead of computing the unique reflecting angle.")
+            print(
+                "    Root Cause:     Candidate positional bias. Guessing Candidate A instead of computing the unique reflecting angle."
+            )
 
     print(f"\n[SAVED ARTIFACTS IN]: {run_dir}")
     print(f"  1. {raw_responses_path}")

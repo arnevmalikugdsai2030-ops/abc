@@ -65,7 +65,9 @@ class DatasetDistributionReport:
 def _calc_stats(values: Sequence[float]) -> MetricStats:
     """Compute summary statistics over an array of floats."""
     if not values:
-        return MetricStats(count=0, min_val=0.0, mean_val=0.0, median_val=0.0, max_val=0.0, std_val=0.0)
+        return MetricStats(
+            count=0, min_val=0.0, mean_val=0.0, median_val=0.0, max_val=0.0, std_val=0.0
+        )
     arr = np.array(values, dtype=np.float64)
     return MetricStats(
         count=len(arr),
@@ -77,17 +79,24 @@ def _calc_stats(values: Sequence[float]) -> MetricStats:
     )
 
 
-def compute_dataset_statistics(scenes: Sequence[InspectionScene]) -> DatasetDistributionReport:
+def compute_dataset_statistics(
+    scenes: Sequence[InspectionScene],
+) -> DatasetDistributionReport:
     """
     Compute rigorous dataset statistics over an arbitrary collection of inspection scenes.
     """
     total = len(scenes)
     if total == 0:
-        raise ValueError("Cannot compute dataset statistics on an empty collection of scenes.")
+        raise ValueError(
+            "Cannot compute dataset statistics on an empty collection of scenes."
+        )
 
     diff_counts: dict[str, int] = {d.value: 0 for d in DifficultyLevel}
     cat_counts: dict[str, int] = {c.value: 0 for c in SceneCategory}
-    state_counts: dict[str, int] = {VisibilityState.VISIBLE.value: 0, VisibilityState.NOT_VISIBLE.value: 0}
+    state_counts: dict[str, int] = {
+        VisibilityState.VISIBLE.value: 0,
+        VisibilityState.NOT_VISIBLE.value: 0,
+    }
 
     headline_cnt = 0
     boundary_cnt = 0
@@ -106,7 +115,9 @@ def compute_dataset_statistics(scenes: Sequence[InspectionScene]) -> DatasetDist
         # Difficulty & Category
         diff_counts[s.difficulty.value] = diff_counts.get(s.difficulty.value, 0) + 1
         cat_counts[s.category.value] = cat_counts.get(s.category.value, 0) + 1
-        state_counts[s.ground_truth_state.value] = state_counts.get(s.ground_truth_state.value, 0) + 1
+        state_counts[s.ground_truth_state.value] = (
+            state_counts.get(s.ground_truth_state.value, 0) + 1
+        )
 
         # Boundary separation
         if s.is_boundary or s.difficulty == DifficultyLevel.BOUNDARY:
@@ -179,14 +190,22 @@ def render_distribution_markdown(
     """Generate publication-ready Markdown table report."""
     md = []
     md.append(f"# {title}\n")
-    md.append(f"**Total Scenes Analyzed:** {report.total_scenes} | **Duplicate Count:** {report.duplicate_count} ({report.unique_fingerprints} unique fingerprints)\n")
+    md.append(
+        f"**Total Scenes Analyzed:** {report.total_scenes} | **Duplicate Count:** {report.duplicate_count} ({report.unique_fingerprints} unique fingerprints)\n"
+    )
 
     md.append("## 1. Headline vs. Boundary Dataset Separation\n")
-    md.append("> **Rule Enforcement:** Boundary cases are strictly segregated from the headline benchmark dataset to prevent noise in headline accuracy metrics.\n")
+    md.append(
+        "> **Rule Enforcement:** Boundary cases are strictly segregated from the headline benchmark dataset to prevent noise in headline accuracy metrics.\n"
+    )
     md.append("| Partition | Scene Count | Percentage | Description |")
     md.append("|---|---|---|---|")
-    md.append(f"| **Headline Benchmark** | {report.headline_count} | {report.headline_pct:.1f}% | Evaluates standard spatial reasoning across Easy, Standard, Hard tiers |")
-    md.append(f"| **Boundary Stress Test** | {report.boundary_count} | {report.boundary_pct:.1f}% | Evaluates sub-millimeter edge grazing, FOV boundaries, and mirror limits |")
+    md.append(
+        f"| **Headline Benchmark** | {report.headline_count} | {report.headline_pct:.1f}% | Evaluates standard spatial reasoning across Easy, Standard, Hard tiers |"
+    )
+    md.append(
+        f"| **Boundary Stress Test** | {report.boundary_count} | {report.boundary_pct:.1f}% | Evaluates sub-millimeter edge grazing, FOV boundaries, and mirror limits |"
+    )
     md.append("")
 
     md.append("## 2. Difficulty Tier Distribution\n")
@@ -210,7 +229,9 @@ def render_distribution_markdown(
     md.append("|---|---|---|---|")
     for cat, count in report.category_counts.items():
         pct = report.category_percentages.get(cat, 0.0)
-        md.append(f"| `{cat}` | {count} | {pct:.1f}% | Validated via `VisibilityOracle` |")
+        md.append(
+            f"| `{cat}` | {count} | {pct:.1f}% | Validated via `VisibilityOracle` |"
+        )
     md.append("")
 
     md.append("## 4. Ground Truth Visibility State\n")
@@ -218,7 +239,9 @@ def render_distribution_markdown(
     md.append("|---|---|---|---|")
     for state, count in report.state_counts.items():
         pct = report.state_percentages.get(state, 0.0)
-        md.append(f"| **{state}** | {count} | {pct:.1f}% | ~50% / ~50% Balanced Split |")
+        md.append(
+            f"| **{state}** | {count} | {pct:.1f}% | ~50% / ~50% Balanced Split |"
+        )
     md.append("")
 
     md.append("## 5. Geometric Distribution Metrics\n")
@@ -232,13 +255,25 @@ def render_distribution_markdown(
     md.append(_row("Camera FOV Angle", report.fov_stats, "°"))
     md.append(_row("Camera Heading Direction", report.camera_heading_stats, "°"))
     md.append(_row("Incident Angle ($θ_i = θ_r$)", report.incident_angle_stats, "°"))
-    md.append(_row("Total Optical Path ($C \\to R \\to T$)", report.optical_distance_stats, " mm"))
+    md.append(
+        _row(
+            "Total Optical Path ($C \\to R \\to T$)",
+            report.optical_distance_stats,
+            " mm",
+        )
+    )
     md.append(_row("Obstacles per Scene", report.obstacle_count_stats, ""))
     md.append("")
 
     md.append("## 6. Verification Integrity Statement\n")
-    md.append("- **Oracle Enforcement:** 100% of scenes analytically validated by `VisibilityOracle`.\n")
-    md.append(f"- **Zero Duplicate Geometry:** {report.unique_fingerprints} unique geometry fingerprints verified out of {report.total_scenes} scenes (0 duplicates).\n")
-    md.append("- **Headline Purity:** Boundary stress cases are strictly tagged `is_boundary=True` and segregated into independent evaluation pipelines.\n")
+    md.append(
+        "- **Oracle Enforcement:** 100% of scenes analytically validated by `VisibilityOracle`.\n"
+    )
+    md.append(
+        f"- **Zero Duplicate Geometry:** {report.unique_fingerprints} unique geometry fingerprints verified out of {report.total_scenes} scenes (0 duplicates).\n"
+    )
+    md.append(
+        "- **Headline Purity:** Boundary stress cases are strictly tagged `is_boundary=True` and segregated into independent evaluation pipelines.\n"
+    )
 
     return "\n".join(md)

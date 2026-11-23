@@ -137,7 +137,9 @@ def main() -> int:
     print(f"Task A (Visibility):         {metrics.task_a_accuracy * 100:.1f}%")
     print(f"Task B (Obstruction 3-Field):{metrics.task_b_full_accuracy * 100:.1f}%")
     print(f"Task C (Mirror Repair):      {metrics.task_c_accuracy * 100:.1f}%")
-    print(f"Counterfactual Pair Consistency:{metrics.pair_consistency_score * 100:.1f}%")
+    print(
+        f"Counterfactual Pair Consistency:{metrics.pair_consistency_score * 100:.1f}%"
+    )
     print(f"Cosmetic Theme Invariance:   {metrics.cosmetic_invariance_rate * 100:.1f}%")
     print(f"Format Compliance Rate:      {metrics.format_compliance_rate * 100:.1f}%")
     print("-" * 70)

@@ -23,23 +23,37 @@ def main():
     scenes = []
 
     # EASY: 30 scenes (seeds 10000 - 10029)
-    print("Generating EASY tier scenes (Large mirrors, broad FOV, obvious obstacles)...")
-    easy_scenes = gen.generate_batch(count=30, start_seed=10000, difficulty=DifficultyLevel.EASY)
+    print(
+        "Generating EASY tier scenes (Large mirrors, broad FOV, obvious obstacles)..."
+    )
+    easy_scenes = gen.generate_batch(
+        count=30, start_seed=10000, difficulty=DifficultyLevel.EASY
+    )
     scenes.extend(easy_scenes)
 
     # STANDARD: 50 scenes (seeds 20000 - 20049)
-    print("Generating STANDARD tier scenes (Moderate mirror, moderate FOV, distractors)...")
-    std_scenes = gen.generate_batch(count=50, start_seed=20000, difficulty=DifficultyLevel.STANDARD)
+    print(
+        "Generating STANDARD tier scenes (Moderate mirror, moderate FOV, distractors)..."
+    )
+    std_scenes = gen.generate_batch(
+        count=50, start_seed=20000, difficulty=DifficultyLevel.STANDARD
+    )
     scenes.extend(std_scenes)
 
     # HARD: 30 scenes (seeds 30000 - 30029)
-    print("Generating HARD tier scenes (Small mirror, narrow FOV, multiple obstacles)...")
-    hard_scenes = gen.generate_batch(count=30, start_seed=30000, difficulty=DifficultyLevel.HARD)
+    print(
+        "Generating HARD tier scenes (Small mirror, narrow FOV, multiple obstacles)..."
+    )
+    hard_scenes = gen.generate_batch(
+        count=30, start_seed=30000, difficulty=DifficultyLevel.HARD
+    )
     scenes.extend(hard_scenes)
 
     # BOUNDARY: 20 scenes (seeds 40000 - 40019)
     print("Generating BOUNDARY tier scenes (Endpoint grazing, FOV boundaries)...")
-    boundary_scenes = gen.generate_batch(count=20, start_seed=40000, difficulty=DifficultyLevel.BOUNDARY)
+    boundary_scenes = gen.generate_batch(
+        count=20, start_seed=40000, difficulty=DifficultyLevel.BOUNDARY
+    )
     scenes.extend(boundary_scenes)
 
     print(f"\nTotal scenes generated: {len(scenes)}")
@@ -62,9 +76,15 @@ def main():
     print("=" * 65)
 
     print("\n1. DATASET PARTITION SEPARATION:")
-    print(f"   - Headline Benchmark:   {report.headline_count:3d} scenes ({report.headline_pct:5.1f}%)")
-    print(f"   - Boundary Stress Test: {report.boundary_count:3d} scenes ({report.boundary_pct:5.1f}%)")
-    print(f"   - Zero Duplicate Check: {report.duplicate_count} duplicates ({report.unique_fingerprints} unique fingerprints)")
+    print(
+        f"   - Headline Benchmark:   {report.headline_count:3d} scenes ({report.headline_pct:5.1f}%)"
+    )
+    print(
+        f"   - Boundary Stress Test: {report.boundary_count:3d} scenes ({report.boundary_pct:5.1f}%)"
+    )
+    print(
+        f"   - Zero Duplicate Check: {report.duplicate_count} duplicates ({report.unique_fingerprints} unique fingerprints)"
+    )
 
     print("\n2. DIFFICULTY TIER DISTRIBUTION:")
     for diff, count in report.difficulty_counts.items():
@@ -82,7 +102,9 @@ def main():
         print(f"   - {state:<12}: {count:3d} scenes ({pct:5.1f}%)")
 
     print("\n5. GEOMETRIC METRICS DISTRIBUTION:")
-    print(f"   {'Metric':<25} | {'Min':>8} | {'Mean':>8} | {'Median':>8} | {'Max':>8} | {'StdDev':>8}")
+    print(
+        f"   {'Metric':<25} | {'Min':>8} | {'Mean':>8} | {'Median':>8} | {'Max':>8} | {'StdDev':>8}"
+    )
     print("   " + "-" * 73)
     metrics = [
         ("Mirror Length (mm)", report.mirror_length_stats),
@@ -93,7 +115,9 @@ def main():
         ("Obstacles per Scene", report.obstacle_count_stats),
     ]
     for label, s in metrics:
-        print(f"   {label:<25} | {s.min_val:8.1f} | {s.mean_val:8.1f} | {s.median_val:8.1f} | {s.max_val:8.1f} | {s.std_val:8.1f}")
+        print(
+            f"   {label:<25} | {s.min_val:8.1f} | {s.mean_val:8.1f} | {s.median_val:8.1f} | {s.max_val:8.1f} | {s.std_val:8.1f}"
+        )
     print("=" * 65 + "\n")
 
 

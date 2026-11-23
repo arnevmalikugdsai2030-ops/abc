@@ -114,19 +114,34 @@ class TestScoringEngineVisibility:
                 "task_id": "v1",
                 "task_type": "TASK_A_VISIBILITY",
                 "ground_truth": {"answer": "YES", "reason_code": "CLEAR"},
-                "parsed_answer": {"answer": "YES", "reason_code": "CLEAR", "is_valid_format": True},
+                "parsed_answer": {
+                    "answer": "YES",
+                    "reason_code": "CLEAR",
+                    "is_valid_format": True,
+                },
             },
             {
                 "task_id": "v2",
                 "task_type": "TASK_A_VISIBILITY",
                 "ground_truth": {"answer": "NO", "reason_code": "MIRROR_MISS"},
-                "parsed_answer": {"answer": "NO", "reason_code": "OUTSIDE_FOV", "is_valid_format": True},
+                "parsed_answer": {
+                    "answer": "NO",
+                    "reason_code": "OUTSIDE_FOV",
+                    "is_valid_format": True,
+                },
             },
             {
                 "task_id": "v3",
                 "task_type": "TASK_A_VISIBILITY",
-                "ground_truth": {"answer": "NO", "reason_code": "BLOCKED_CAMERA_TO_MIRROR"},
-                "parsed_answer": {"answer": "YES", "reason_code": "CLEAR", "is_valid_format": True},
+                "ground_truth": {
+                    "answer": "NO",
+                    "reason_code": "BLOCKED_CAMERA_TO_MIRROR",
+                },
+                "parsed_answer": {
+                    "answer": "YES",
+                    "reason_code": "CLEAR",
+                    "is_valid_format": True,
+                },
             },
         ]
 
@@ -268,7 +283,10 @@ class TestScoringEngineRepair:
                 "task_id": "r4",
                 "task_type": "TASK_C_REPAIR",
                 "ground_truth": {"correct_candidate": "A"},
-                "parsed_answer": {"selected_candidate": "SETTING A", "is_valid_format": True},
+                "parsed_answer": {
+                    "selected_candidate": "SETTING A",
+                    "is_valid_format": True,
+                },
             },
         ]
 
@@ -546,8 +564,16 @@ class TestScoringEngineExports:
                 "task_id": "task_exp_2",
                 "task_type": "TASK_B_OBSTRUCTION",
                 "difficulty_tier": "STANDARD",
-                "ground_truth": {"is_blocked": True, "blocker_label": "O1", "blocked_segment": "CAMERA_TO_MIRROR"},
-                "parsed_answer": {"is_blocked": True, "blocker_label": "O1", "blocked_segment": "CAMERA_TO_MIRROR"},
+                "ground_truth": {
+                    "is_blocked": True,
+                    "blocker_label": "O1",
+                    "blocked_segment": "CAMERA_TO_MIRROR",
+                },
+                "parsed_answer": {
+                    "is_blocked": True,
+                    "blocker_label": "O1",
+                    "blocked_segment": "CAMERA_TO_MIRROR",
+                },
                 "is_valid_format": True,
                 "latency_ms": 250.0,
             },
@@ -570,7 +596,9 @@ class TestScoringEngineExports:
         # CSV Export
         summary_csv = tmp_path / "metrics_summary.csv"
         per_task_csv = tmp_path / "per_task_details.csv"
-        s_path, t_path = report.export_csv(summary_path=summary_csv, per_task_path=per_task_csv)
+        s_path, t_path = report.export_csv(
+            summary_path=summary_csv, per_task_path=per_task_csv
+        )
 
         assert s_path.exists()
         assert t_path is not None and t_path.exists()

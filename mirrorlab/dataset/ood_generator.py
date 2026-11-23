@@ -224,7 +224,9 @@ class OODTaskGenerator:
             )
 
         # 5. Add clutter obstacles (5 to 8 total)
-        num_clutter = int(rng.integers(self.config.min_obstacles - 1, self.config.max_obstacles))
+        num_clutter = int(
+            rng.integers(self.config.min_obstacles - 1, self.config.max_obstacles)
+        )
         start_idx = len(obstacles) + 1
 
         for obs_i in range(start_idx, num_clutter + 2):
@@ -233,7 +235,12 @@ class OODTaskGenerator:
             oy = float(rng.uniform(canvas_h * 0.30, canvas_h * 0.70))
 
             # In visible / miss / wrong-side / FOV modes, ensure clutter does not occlude C->R or R->T
-            if target_category in ("VALID_VISIBLE", "MIRROR_MISS", "WRONG_SIDE", "OUTSIDE_FOV"):
+            if target_category in (
+                "VALID_VISIBLE",
+                "MIRROR_MISS",
+                "WRONG_SIDE",
+                "OUTSIDE_FOV",
+            ):
                 len_cr = max(1e-9, float(np.linalg.norm(R - C)))
                 len_rt = max(1e-9, float(np.linalg.norm(T - R)))
                 d_c_r = abs(_cross2d(R - C, C - np.array([ox, oy]))) / len_cr
@@ -296,8 +303,12 @@ class OODTaskGenerator:
         Retries up to max_retries_per_task times; raises RuntimeError if exceeded.
         """
         if base_seed is None:
-            base_seed = seed if seed is not None else (self.config.seed_start + task_index)
-        target_category = self.TARGET_CATEGORIES[task_index % len(self.TARGET_CATEGORIES)]
+            base_seed = (
+                seed if seed is not None else (self.config.seed_start + task_index)
+            )
+        target_category = self.TARGET_CATEGORIES[
+            task_index % len(self.TARGET_CATEGORIES)
+        ]
 
         for attempt in range(self.config.max_retries_per_task):
             seed = base_seed + attempt * 1000
@@ -314,15 +325,30 @@ class OODTaskGenerator:
             if target_category == "VALID_VISIBLE":
                 matched = oracle_res.is_visible
             elif target_category == "BLOCKED_INCIDENT":
-                matched = not oracle_res.is_visible and oracle_res.reason == ObstructionReason.BLOCKED_INCIDENT
+                matched = (
+                    not oracle_res.is_visible
+                    and oracle_res.reason == ObstructionReason.BLOCKED_INCIDENT
+                )
             elif target_category == "BLOCKED_REFLECTED":
-                matched = not oracle_res.is_visible and oracle_res.reason == ObstructionReason.BLOCKED_REFLECTED
+                matched = (
+                    not oracle_res.is_visible
+                    and oracle_res.reason == ObstructionReason.BLOCKED_REFLECTED
+                )
             elif target_category == "MIRROR_MISS":
-                matched = not oracle_res.is_visible and oracle_res.reason == ObstructionReason.MISSED_MIRROR
+                matched = (
+                    not oracle_res.is_visible
+                    and oracle_res.reason == ObstructionReason.MISSED_MIRROR
+                )
             elif target_category == "WRONG_SIDE":
-                matched = not oracle_res.is_visible and oracle_res.reason == ObstructionReason.BACK_OF_MIRROR
+                matched = (
+                    not oracle_res.is_visible
+                    and oracle_res.reason == ObstructionReason.BACK_OF_MIRROR
+                )
             elif target_category == "OUTSIDE_FOV":
-                matched = not oracle_res.is_visible and oracle_res.reason == ObstructionReason.OUT_OF_FOV
+                matched = (
+                    not oracle_res.is_visible
+                    and oracle_res.reason == ObstructionReason.OUT_OF_FOV
+                )
 
             if matched:
                 refl_pt = None
@@ -425,15 +451,17 @@ class OODTaskGenerator:
             cat_label = "VISIBLE" if is_vis else reason_str
             category_counts[cat_label] = category_counts.get(cat_label, 0) + 1
 
-            manifest_records.append({
-                "task_id": tid,
-                "seed": scene.seed,
-                "difficulty": "OOD_BOUNDARY",
-                "obstacle_count": len(scene.obstacles),
-                "is_visible": is_vis,
-                "reason": reason_str,
-                "category_label": cat_label,
-            })
+            manifest_records.append(
+                {
+                    "task_id": tid,
+                    "seed": scene.seed,
+                    "difficulty": "OOD_BOUNDARY",
+                    "obstacle_count": len(scene.obstacles),
+                    "is_visible": is_vis,
+                    "reason": reason_str,
+                    "category_label": cat_label,
+                }
+            )
 
         # Post-export revalidation: Reload from disk and verify certification of every saved record
         for tid in task_ids:

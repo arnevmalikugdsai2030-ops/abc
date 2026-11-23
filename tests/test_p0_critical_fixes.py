@@ -33,7 +33,7 @@ class TestP0DatasetValidationIntegrity:
     def test_dataset_validation_returns_measured_results(self):
         status = get_dataset_validation_status(data_root="data")
         assert "checks" in status
-        assert len(status["checks"]) == 10
+        assert len(status["checks"]) == 11
 
         # Each check must have measured items_checked and details
         for c in status["checks"]:
@@ -128,9 +128,13 @@ class TestP0ModelArenaTaskIDPropagation:
 
         # Create dummy image
         dummy_img = tmp_path / "dummy.png"
-        dummy_img.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+        dummy_img.write_bytes(
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+        )
 
-        adapter = MockVisionAdapter(strategy=MockStrategy.ORACLE, ground_truth_map=gt_map)
+        adapter = MockVisionAdapter(
+            strategy=MockStrategy.ORACLE, ground_truth_map=gt_map
+        )
 
         # 1. Ask for task_001 -> MUST return NO
         resp1 = adapter.ask(
@@ -168,11 +172,17 @@ class TestP0ModelArenaTaskIDPropagation:
 
     def test_simulated_model_label_and_provenance(self, tmp_path: Path):
         dummy_img = tmp_path / "dummy.png"
-        dummy_img.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+        dummy_img.write_bytes(
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+        )
 
         adapter = MockVisionAdapter(strategy=MockStrategy.ORACLE)
-        adapter.set_ground_truth(task_id="dummy_task", ground_truth={"can_see": True, "answer": "YES"})
-        resp = adapter.ask(image_path=dummy_img, question="Is it visible?", task_id="dummy_task")
+        adapter.set_ground_truth(
+            task_id="dummy_task", ground_truth={"can_see": True, "answer": "YES"}
+        )
+        resp = adapter.ask(
+            image_path=dummy_img, question="Is it visible?", task_id="dummy_task"
+        )
 
         assert resp.is_mock is True
         assert resp.raw_metadata.get("is_simulated") is True

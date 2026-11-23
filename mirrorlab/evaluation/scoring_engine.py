@@ -39,9 +39,15 @@ class MetricFraction(BaseModel):
     Guarantees denominators are never omitted or fabricated.
     """
 
-    correct: int = Field(default=0, ge=0, description="Numerator / number of successful items")
-    total: int = Field(default=0, ge=0, description="Denominator / total evaluated items")
-    rate: float = Field(default=0.0, ge=0.0, le=1.0, description="Normalized proportion [0.0, 1.0]")
+    correct: int = Field(
+        default=0, ge=0, description="Numerator / number of successful items"
+    )
+    total: int = Field(
+        default=0, ge=0, description="Denominator / total evaluated items"
+    )
+    rate: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Normalized proportion [0.0, 1.0]"
+    )
 
     @property
     def numerator(self) -> int:
@@ -94,9 +100,15 @@ class LatencyMetrics(BaseModel):
     """Latency distribution metrics in milliseconds."""
 
     count: int = Field(default=0, ge=0, description="Number of measured inferences")
-    median_ms: float = Field(default=0.0, ge=0.0, description="50th percentile latency in ms")
-    p90_ms: float = Field(default=0.0, ge=0.0, description="90th percentile latency in ms")
-    mean_ms: float = Field(default=0.0, ge=0.0, description="Arithmetic mean latency in ms")
+    median_ms: float = Field(
+        default=0.0, ge=0.0, description="50th percentile latency in ms"
+    )
+    p90_ms: float = Field(
+        default=0.0, ge=0.0, description="90th percentile latency in ms"
+    )
+    mean_ms: float = Field(
+        default=0.0, ge=0.0, description="Arithmetic mean latency in ms"
+    )
     min_ms: float = Field(default=0.0, ge=0.0, description="Minimum latency in ms")
     max_ms: float = Field(default=0.0, ge=0.0, description="Maximum latency in ms")
 
@@ -153,10 +165,16 @@ class ScoringReport(BaseModel):
 
     # Task D: Counterfactual Paired Scenes (Joint Correctness)
     pair_accuracy: MetricFraction = Field(default_factory=MetricFraction)
-    mirror_angle_flip_consistency: MetricFraction = Field(default_factory=MetricFraction)
+    mirror_angle_flip_consistency: MetricFraction = Field(
+        default_factory=MetricFraction
+    )
     cosmetic_invariance: MetricFraction = Field(default_factory=MetricFraction)
-    obstacle_insertion_consistency: MetricFraction = Field(default_factory=MetricFraction)
-    irrelevant_obstacle_consistency: MetricFraction = Field(default_factory=MetricFraction)
+    obstacle_insertion_consistency: MetricFraction = Field(
+        default_factory=MetricFraction
+    )
+    irrelevant_obstacle_consistency: MetricFraction = Field(
+        default_factory=MetricFraction
+    )
 
     # Formatting & API Compliance
     invalid_response_rate: MetricFraction = Field(default_factory=MetricFraction)
@@ -190,27 +208,83 @@ class ScoringReport(BaseModel):
         """Export high-level metric table to CSV string."""
         out = io.StringIO()
         writer = csv.writer(out)
-        writer.writerow(["Metric Category", "Metric Name", "Correct / Count", "Total / Denominator", "Rate", "Percentage"])
+        writer.writerow(
+            [
+                "Metric Category",
+                "Metric Name",
+                "Correct / Count",
+                "Total / Denominator",
+                "Rate",
+                "Percentage",
+            ]
+        )
 
         def _row(cat: str, name: str, frac: MetricFraction) -> None:
-            writer.writerow([cat, name, frac.correct, frac.total, f"{frac.rate:.6f}", f"{frac.percentage:.2f}%"])
+            writer.writerow(
+                [
+                    cat,
+                    name,
+                    frac.correct,
+                    frac.total,
+                    f"{frac.rate:.6f}",
+                    f"{frac.percentage:.2f}%",
+                ]
+            )
 
         _row("Headline", "Overall Accuracy", self.overall_accuracy)
-        _row("Task A: Visibility", "Binary Visibility Accuracy", self.visibility_accuracy)
-        _row("Task A: Visibility", "Reason Code Accuracy", self.visibility_reason_accuracy)
+        _row(
+            "Task A: Visibility", "Binary Visibility Accuracy", self.visibility_accuracy
+        )
+        _row(
+            "Task A: Visibility",
+            "Reason Code Accuracy",
+            self.visibility_reason_accuracy,
+        )
 
-        _row("Task B: Obstruction", "Blocked Status Accuracy", self.obstruction_accuracy.blocked_status)
-        _row("Task B: Obstruction", "Blocker ID Accuracy", self.obstruction_accuracy.blocker_id)
-        _row("Task B: Obstruction", "Blocked Leg Accuracy", self.obstruction_accuracy.blocked_leg)
-        _row("Task B: Obstruction", "Joint Obstruction Accuracy", self.obstruction_accuracy.joint)
+        _row(
+            "Task B: Obstruction",
+            "Blocked Status Accuracy",
+            self.obstruction_accuracy.blocked_status,
+        )
+        _row(
+            "Task B: Obstruction",
+            "Blocker ID Accuracy",
+            self.obstruction_accuracy.blocker_id,
+        )
+        _row(
+            "Task B: Obstruction",
+            "Blocked Leg Accuracy",
+            self.obstruction_accuracy.blocked_leg,
+        )
+        _row(
+            "Task B: Obstruction",
+            "Joint Obstruction Accuracy",
+            self.obstruction_accuracy.joint,
+        )
 
-        _row("Task C: Repair", "Mirror Repair Accuracy (Unique Setting)", self.repair_accuracy)
+        _row(
+            "Task C: Repair",
+            "Mirror Repair Accuracy (Unique Setting)",
+            self.repair_accuracy,
+        )
 
         _row("Task D: Pairs", "Overall Pair Accuracy (Joint)", self.pair_accuracy)
-        _row("Task D: Pairs", "Mirror-Angle Flip Consistency", self.mirror_angle_flip_consistency)
+        _row(
+            "Task D: Pairs",
+            "Mirror-Angle Flip Consistency",
+            self.mirror_angle_flip_consistency,
+        )
         _row("Task D: Pairs", "Cosmetic Invariance Rate", self.cosmetic_invariance)
-        _row("Task D: Pairs", "Obstacle Insertion Consistency", self.obstacle_insertion_consistency)
-        _row("Task D: Pairs", "Irrelevant Obstacle Consistency", self.irrelevant_obstacle_consistency)
+        _row(
+            "Task D: Pairs",
+            "Obstacle Insertion Consistency",
+            self.obstacle_insertion_consistency,
+        )
+        _row(
+            "Task D: Pairs",
+            "Irrelevant Obstacle Consistency",
+            self.irrelevant_obstacle_consistency,
+        )
 
         _row("Compliance", "Invalid Response Rate", self.invalid_response_rate)
 
@@ -223,9 +297,22 @@ class ScoringReport(BaseModel):
             _row("Optical Reason Code", f"Reason: {r_k}", r_frac)
 
         # Latency Summary rows
-        writer.writerow(["Latency", "Median Latency (ms)", "", "", f"{self.latency.median_ms:.2f}", ""])
-        writer.writerow(["Latency", "P90 Latency (ms)", "", "", f"{self.latency.p90_ms:.2f}", ""])
-        writer.writerow(["Latency", "Mean Latency (ms)", "", "", f"{self.latency.mean_ms:.2f}", ""])
+        writer.writerow(
+            [
+                "Latency",
+                "Median Latency (ms)",
+                "",
+                "",
+                f"{self.latency.median_ms:.2f}",
+                "",
+            ]
+        )
+        writer.writerow(
+            ["Latency", "P90 Latency (ms)", "", "", f"{self.latency.p90_ms:.2f}", ""]
+        )
+        writer.writerow(
+            ["Latency", "Mean Latency (ms)", "", "", f"{self.latency.mean_ms:.2f}", ""]
+        )
 
         return out.getvalue()
 
@@ -233,29 +320,33 @@ class ScoringReport(BaseModel):
         """Export granular sample-level evaluation results to CSV string."""
         out = io.StringIO()
         writer = csv.writer(out)
-        writer.writerow([
-            "Task ID",
-            "Task Type",
-            "Difficulty Tier",
-            "Reason Code",
-            "Format Valid",
-            "API Error",
-            "Is Correct",
-            "Latency (ms)",
-            "Details",
-        ])
+        writer.writerow(
+            [
+                "Task ID",
+                "Task Type",
+                "Difficulty Tier",
+                "Reason Code",
+                "Format Valid",
+                "API Error",
+                "Is Correct",
+                "Latency (ms)",
+                "Details",
+            ]
+        )
         for s in self.per_sample_evaluations:
-            writer.writerow([
-                s.task_id,
-                s.task_type,
-                s.difficulty_tier,
-                s.ground_truth_reason,
-                s.is_valid_format,
-                s.is_api_error,
-                s.is_correct,
-                f"{s.latency_ms:.2f}",
-                json.dumps(s.details),
-            ])
+            writer.writerow(
+                [
+                    s.task_id,
+                    s.task_type,
+                    s.difficulty_tier,
+                    s.ground_truth_reason,
+                    s.is_valid_format,
+                    s.is_api_error,
+                    s.is_correct,
+                    f"{s.latency_ms:.2f}",
+                    json.dumps(s.details),
+                ]
+            )
         return out.getvalue()
 
     def export_csv(
@@ -386,10 +477,14 @@ class ScoringEngine:
                 invalid_format_count += 1
 
             # Stratification labels
-            diff_tier = str(gt.get("difficulty_tier") or rec.get("difficulty_tier") or "STANDARD").upper()
+            diff_tier = str(
+                gt.get("difficulty_tier") or rec.get("difficulty_tier") or "STANDARD"
+            ).upper()
             diff_counts[diff_tier] = diff_counts.get(diff_tier, 0) + 1
 
-            gt_reason = str(gt.get("reason_code") or gt.get("ground_truth_reason") or "CLEAR").upper()
+            gt_reason = str(
+                gt.get("reason_code") or gt.get("ground_truth_reason") or "CLEAR"
+            ).upper()
             reason_counts[gt_reason] = reason_counts.get(gt_reason, 0) + 1
 
             # Evaluate Task Item
@@ -400,7 +495,11 @@ class ScoringEngine:
                 # Immediate fail: zero credit for invalid format or API faults
                 is_sample_correct = False
                 item_details["error"] = rec.get("error") or "FORMAT_INVALID"
-            elif ttype in ("TASK_A_VISIBILITY", "VISIBILITY_PREDICTION", "TASK_D_COUNTERFACTUAL"):
+            elif ttype in (
+                "TASK_A_VISIBILITY",
+                "VISIBILITY_PREDICTION",
+                "TASK_D_COUNTERFACTUAL",
+            ):
                 vis_total += 1
 
                 # Normalize ground-truth and prediction boolean / string
@@ -418,7 +517,7 @@ class ScoringEngine:
                 if p_r and p_r == gt_r:
                     vis_reason_correct += 1
                 item_details["visibility_match"] = ans_match
-                item_details["reason_match"] = (p_r == gt_r)
+                item_details["reason_match"] = p_r == gt_r
 
             elif ttype in ("TASK_B_OBSTRUCTION", "OBSTRUCTION_REASONING"):
                 obs_total += 1
@@ -426,25 +525,39 @@ class ScoringEngine:
                 # 1. Blocked status
                 gt_is_blocked = cls._extract_bool_blocked(gt)
                 p_is_blocked = cls._extract_bool_blocked(pred)
-                status_ok = (gt_is_blocked is not None) and (gt_is_blocked == p_is_blocked)
+                status_ok = (gt_is_blocked is not None) and (
+                    gt_is_blocked == p_is_blocked
+                )
                 if status_ok:
                     obs_blocked_correct += 1
 
                 # 2. Blocker ID
                 gt_blocker = cls._normalize_str(
-                    gt.get("blocking_obstacle_label") or gt.get("blocker_label") or gt.get("obstacle_id") or "NONE"
+                    gt.get("blocking_obstacle_label")
+                    or gt.get("blocker_label")
+                    or gt.get("obstacle_id")
+                    or "NONE"
                 )
                 p_blocker = cls._normalize_str(
-                    pred.get("blocker_label") or pred.get("blocking_obstacle_label") or pred.get("obstacle_id") or "NONE"
+                    pred.get("blocker_label")
+                    or pred.get("blocking_obstacle_label")
+                    or pred.get("obstacle_id")
+                    or "NONE"
                 )
-                blocker_ok = (p_blocker == gt_blocker)
+                blocker_ok = p_blocker == gt_blocker
                 if blocker_ok:
                     obs_blocker_id_correct += 1
 
                 # 3. Blocked Leg
-                gt_leg = cls._normalize_leg(gt.get("blocked_segment") or gt.get("blocked_path_leg") or "NONE")
-                p_leg = cls._normalize_leg(pred.get("blocked_segment") or pred.get("blocked_path_leg") or "NONE")
-                leg_ok = (p_leg == gt_leg)
+                gt_leg = cls._normalize_leg(
+                    gt.get("blocked_segment") or gt.get("blocked_path_leg") or "NONE"
+                )
+                p_leg = cls._normalize_leg(
+                    pred.get("blocked_segment")
+                    or pred.get("blocked_path_leg")
+                    or "NONE"
+                )
+                leg_ok = p_leg == gt_leg
                 if leg_ok:
                     obs_leg_correct += 1
 
@@ -463,11 +576,25 @@ class ScoringEngine:
                 repair_total += 1
 
                 # Exact unique candidate setting (e.g. "A", "B", or "C")
-                gt_cand = cls._normalize_candidate(gt.get("correct_candidate") or gt.get("selected_candidate") or gt.get("answer"))
-                p_cand = cls._normalize_candidate(pred.get("selected_candidate") or pred.get("setting") or pred.get("prediction") or pred.get("answer"))
+                gt_cand = cls._normalize_candidate(
+                    gt.get("correct_candidate")
+                    or gt.get("selected_candidate")
+                    or gt.get("answer")
+                )
+                p_cand = cls._normalize_candidate(
+                    pred.get("selected_candidate")
+                    or pred.get("setting")
+                    or pred.get("prediction")
+                    or pred.get("answer")
+                )
 
                 # Strict requirement: candidate must be valid ("A", "B", "C") and exactly match
-                cand_ok = bool(gt_cand and p_cand and (p_cand == gt_cand) and p_cand in ("A", "B", "C"))
+                cand_ok = bool(
+                    gt_cand
+                    and p_cand
+                    and (p_cand == gt_cand)
+                    and p_cand in ("A", "B", "C")
+                )
                 if cand_ok:
                     repair_correct += 1
                     is_sample_correct = True
@@ -525,7 +652,10 @@ class ScoringEngine:
                     cosm_total += 1
                 elif ptype in ("OBSTACLE_INSERTION", "PAIR_TYPE_3_OBSTACLE_INSERTION"):
                     obs_ins_total += 1
-                elif ptype in ("IRRELEVANT_OBSTACLE", "PAIR_TYPE_4_IRRELEVANT_OBSTACLE"):
+                elif ptype in (
+                    "IRRELEVANT_OBSTACLE",
+                    "PAIR_TYPE_4_IRRELEVANT_OBSTACLE",
+                ):
                     irrel_obs_total += 1
 
                 if len(child_ids) >= 2:
@@ -552,17 +682,26 @@ class ScoringEngine:
                             # Cosmetic Invariance: both must be correct AND predictions identical
                             pred_a_ans = cls._extract_pred_raw(rec_a)
                             pred_b_ans = cls._extract_pred_raw(rec_b)
-                            if is_joint_pair_correct and (pred_a_ans is not None) and (pred_a_ans == pred_b_ans):
+                            if (
+                                is_joint_pair_correct
+                                and (pred_a_ans is not None)
+                                and (pred_a_ans == pred_b_ans)
+                            ):
                                 cosm_invariant += 1
 
                         elif (
-                            ptype in ("OBSTACLE_INSERTION", "PAIR_TYPE_3_OBSTACLE_INSERTION")
+                            ptype
+                            in ("OBSTACLE_INSERTION", "PAIR_TYPE_3_OBSTACLE_INSERTION")
                             and is_joint_pair_correct
                         ):
                             obs_ins_correct += 1
 
                         elif (
-                            ptype in ("IRRELEVANT_OBSTACLE", "PAIR_TYPE_4_IRRELEVANT_OBSTACLE")
+                            ptype
+                            in (
+                                "IRRELEVANT_OBSTACLE",
+                                "PAIR_TYPE_4_IRRELEVANT_OBSTACLE",
+                            )
                             and is_joint_pair_correct
                         ):
                             irrel_obs_correct += 1
@@ -642,7 +781,11 @@ class ScoringEngine:
 
         ttype = str(rec.get("task_type", "TASK_A_VISIBILITY")).upper()
 
-        if ttype in ("TASK_A_VISIBILITY", "VISIBILITY_PREDICTION", "TASK_D_COUNTERFACTUAL"):
+        if ttype in (
+            "TASK_A_VISIBILITY",
+            "VISIBILITY_PREDICTION",
+            "TASK_D_COUNTERFACTUAL",
+        ):
             gt_b = cls._extract_bool_visibility(gt)
             p_b = cls._extract_bool_visibility(pred)
             return (gt_b is not None) and (gt_b == p_b)
@@ -653,19 +796,40 @@ class ScoringEngine:
             if gt_bl != p_bl:
                 return False
 
-            gt_id = cls._normalize_str(gt.get("blocking_obstacle_label") or gt.get("blocker_label") or "NONE")
-            p_id = cls._normalize_str(pred.get("blocker_label") or pred.get("blocking_obstacle_label") or "NONE")
+            gt_id = cls._normalize_str(
+                gt.get("blocking_obstacle_label") or gt.get("blocker_label") or "NONE"
+            )
+            p_id = cls._normalize_str(
+                pred.get("blocker_label")
+                or pred.get("blocking_obstacle_label")
+                or "NONE"
+            )
             if gt_id != p_id:
                 return False
 
-            gt_leg = cls._normalize_leg(gt.get("blocked_segment") or gt.get("blocked_path_leg") or "NONE")
-            p_leg = cls._normalize_leg(pred.get("blocked_segment") or pred.get("blocked_path_leg") or "NONE")
+            gt_leg = cls._normalize_leg(
+                gt.get("blocked_segment") or gt.get("blocked_path_leg") or "NONE"
+            )
+            p_leg = cls._normalize_leg(
+                pred.get("blocked_segment") or pred.get("blocked_path_leg") or "NONE"
+            )
             return gt_leg == p_leg
 
         elif ttype in ("TASK_C_REPAIR", "MIRROR_REPAIR"):
-            gt_cand = cls._normalize_candidate(gt.get("correct_candidate") or gt.get("selected_candidate") or gt.get("answer"))
-            p_cand = cls._normalize_candidate(pred.get("selected_candidate") or pred.get("setting") or pred.get("prediction") or pred.get("answer"))
-            return bool(gt_cand and p_cand and gt_cand == p_cand and p_cand in ("A", "B", "C"))
+            gt_cand = cls._normalize_candidate(
+                gt.get("correct_candidate")
+                or gt.get("selected_candidate")
+                or gt.get("answer")
+            )
+            p_cand = cls._normalize_candidate(
+                pred.get("selected_candidate")
+                or pred.get("setting")
+                or pred.get("prediction")
+                or pred.get("answer")
+            )
+            return bool(
+                gt_cand and p_cand and gt_cand == p_cand and p_cand in ("A", "B", "C")
+            )
 
         return False
 
@@ -709,7 +873,12 @@ class ScoringEngine:
         pred = rec.get("parsed_answer") or rec.get("prediction") or {}
         if not isinstance(pred, dict):
             return str(pred).strip().upper()
-        ans = pred.get("answer") or pred.get("prediction") or pred.get("selected_candidate") or pred.get("setting")
+        ans = (
+            pred.get("answer")
+            or pred.get("prediction")
+            or pred.get("selected_candidate")
+            or pred.get("setting")
+        )
         if ans is not None:
             return str(ans).strip().upper()
         if "visible" in pred:

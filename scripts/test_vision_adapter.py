@@ -118,7 +118,9 @@ def main() -> int:
     if use_mock and not args.mock:
         print("[INFO] No GEMINI_API_KEY found in environment or .env.")
         print("[INFO] Falling back to MockVisionAdapter (Offline Oracle Simulation).")
-        print("[TIP] To test live Google Gemini API, set GEMINI_API_KEY in your .env file.\n")
+        print(
+            "[TIP] To test live Google Gemini API, set GEMINI_API_KEY in your .env file.\n"
+        )
         adapter = MockVisionAdapter(
             strategy=MockStrategy.NOISY_WRAPPER,
             model_name=args.model,

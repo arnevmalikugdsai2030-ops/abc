@@ -16,12 +16,7 @@ def main():
     print("MIRRORLAB BENCHMARK DATASET AUDITOR & SPLIT ENGINE")
     print("=================================================================")
 
-    # 1. Run Comprehensive Audit
-    auditor = DatasetAuditor(data_root="data")
-    print("\nAuditing benchmark datasets (Task A, Task B, Task C, Task D)...")
-    report = auditor.audit_all()
-
-    # 2. Partition into Dev, Val, Test Splits
+    # 1. Partition into Dev, Val, Test Splits
     print("\nGenerating stratified benchmark splits (dev: 20%, val: 20%, test: 60%)...")
     splitter = DatasetSplitter(
         data_root="data",
@@ -32,6 +27,11 @@ def main():
         seed=42,
     )
     split_summary = splitter.create_splits()
+
+    # 2. Run Comprehensive Audit
+    auditor = DatasetAuditor(data_root="data")
+    print("\nAuditing benchmark datasets (Task A, Task B, Task C, Task D)...")
+    report = auditor.audit_all()
     report.split_summary = split_summary
 
     # 3. Export Markdown Audit Report
@@ -55,13 +55,17 @@ def main():
     print("\nChecklist:")
     for idx, c in enumerate(report.checks, 1):
         status_str = "[PASS]" if c.passed else "[FAIL]"
-        print(f"  {idx:2d}. {status_str} {c.name:<45} ({c.items_checked:3d} items): {c.details}")
+        print(
+            f"  {idx:2d}. {status_str} {c.name:<45} ({c.items_checked:3d} items): {c.details}"
+        )
 
     print("\nSplit Partition Counts:")
     counts = split_summary.get("split_counts", {})
     total_s = sum(counts.values()) or 1
     for s_name, cnt in counts.items():
-        print(f"  - {s_name.upper():<5}: {cnt:3d} items ({(cnt/total_s)*100:5.1f}%)")
+        print(
+            f"  - {s_name.upper():<5}: {cnt:3d} items ({(cnt / total_s) * 100:5.1f}%)"
+        )
 
     print(f"\nTest Isolation Verified: {split_summary.get('isolation_verified')}")
     print("=================================================================\n")

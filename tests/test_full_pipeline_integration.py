@@ -68,7 +68,11 @@ def fresh_data_pipeline(tmp_path: Path) -> Path:
     task_a_factory = VisibilityTaskFactory()
     for idx in range(3):
         task_id = f"task_vis_100{idx}"
-        cat = SceneCategory.VALID_VISIBLE if idx % 2 == 0 else SceneCategory.BLOCKED_INCIDENT
+        cat = (
+            SceneCategory.VALID_VISIBLE
+            if idx % 2 == 0
+            else SceneCategory.BLOCKED_INCIDENT
+        )
         task_a_factory.create_task(
             seed=100 + idx,
             task_id=task_id,
@@ -80,7 +84,13 @@ def fresh_data_pipeline(tmp_path: Path) -> Path:
     # 2. Task B: Obstruction Tasks
     task_b_dir = data_dir / "obstruction_tasks"
     task_b_factory = ObstructionTaskFactory()
-    for idx, seg in enumerate([BlockedSegment.CAMERA_TO_MIRROR, BlockedSegment.MIRROR_TO_TARGET, BlockedSegment.CAMERA_TO_MIRROR]):
+    for idx, seg in enumerate(
+        [
+            BlockedSegment.CAMERA_TO_MIRROR,
+            BlockedSegment.MIRROR_TO_TARGET,
+            BlockedSegment.CAMERA_TO_MIRROR,
+        ]
+    ):
         task_id = f"task_obs_200{idx}"
         task_b_factory.create_task(
             seed=200 + idx,
@@ -104,12 +114,24 @@ def fresh_data_pipeline(tmp_path: Path) -> Path:
     # 4. Task D: Counterfactual Pairs (6 pairs so dev, val, test all get pairs)
     task_d_dir = data_dir / "counterfactual_pairs"
     pair_factory = CounterfactualFactory()
-    pair_factory.create_mirror_angle_flip_pair(seed=401, pair_id="pair_test_000", output_dir=task_d_dir)
-    pair_factory.create_cosmetic_control_pair(seed=402, pair_id="pair_test_001", output_dir=task_d_dir)
-    pair_factory.create_obstacle_insertion_pair(seed=403, pair_id="pair_test_002", output_dir=task_d_dir)
-    pair_factory.create_irrelevant_obstacle_pair(seed=404, pair_id="pair_test_003", output_dir=task_d_dir)
-    pair_factory.create_mirror_angle_flip_pair(seed=405, pair_id="pair_test_004", output_dir=task_d_dir)
-    pair_factory.create_cosmetic_control_pair(seed=406, pair_id="pair_test_005", output_dir=task_d_dir)
+    pair_factory.create_mirror_angle_flip_pair(
+        seed=401, pair_id="pair_test_000", output_dir=task_d_dir
+    )
+    pair_factory.create_cosmetic_control_pair(
+        seed=402, pair_id="pair_test_001", output_dir=task_d_dir
+    )
+    pair_factory.create_obstacle_insertion_pair(
+        seed=403, pair_id="pair_test_002", output_dir=task_d_dir
+    )
+    pair_factory.create_irrelevant_obstacle_pair(
+        seed=404, pair_id="pair_test_003", output_dir=task_d_dir
+    )
+    pair_factory.create_mirror_angle_flip_pair(
+        seed=405, pair_id="pair_test_004", output_dir=task_d_dir
+    )
+    pair_factory.create_cosmetic_control_pair(
+        seed=406, pair_id="pair_test_005", output_dir=task_d_dir
+    )
 
     # 5. Task E: OOD Tasks (6 tasks)
     ood_gen = OODTaskGenerator(
@@ -243,7 +265,11 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_counterfactual_pair_integrity()
         assert res.passed is False
-        assert any(f"child id '{deleted_tid}' missing from private ground_truth.jsonl" in f.lower() for f in res.failures)
+        assert any(
+            f"child id '{deleted_tid}' missing from private ground_truth.jsonl"
+            in f.lower()
+            for f in res.failures
+        )
 
     def test_corruption_3_change_one_pair_child_id(self):
         """(3) Auditor must fail if a pair's child ID is changed to a nonexistent ID."""
@@ -257,7 +283,11 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_counterfactual_pair_integrity()
         assert res.passed is False
-        assert any("missing from public tasks.jsonl" in f.lower() or "missing from private ground_truth.jsonl" in f.lower() for f in res.failures)
+        assert any(
+            "missing from public tasks.jsonl" in f.lower()
+            or "missing from private ground_truth.jsonl" in f.lower()
+            for f in res.failures
+        )
 
     def test_corruption_4_duplicate_child_id_across_pairs(self):
         """(4) Auditor must fail if a counterfactual child ID is duplicated across pairs."""
@@ -282,21 +312,30 @@ class TestPipelineCorruptionDetection:
         with open(p_file, encoding="utf-8") as f:
             recs = [json.loads(line) for line in f if line.strip()]
 
-        flip_rec = next(r for r in recs if r["expected_relationship"] in {"FLIP", "FLIPPED_OUTCOME"})
+        flip_rec = next(
+            r for r in recs if r["expected_relationship"] in {"FLIP", "FLIPPED_OUTCOME"}
+        )
         flip_rec["expected_relationship"] = "INVARIANT_OUTCOME"
         with open(p_file, "w", encoding="utf-8") as f:
             f.writelines(json.dumps(r) + "\n" for r in recs)
 
         res = self.auditor.check_counterfactual_pair_integrity()
         assert res.passed is False
-        assert any("expected invariant relationship but child outcomes differ" in f.lower() for f in res.failures)
+        assert any(
+            "expected invariant relationship but child outcomes differ" in f.lower()
+            for f in res.failures
+        )
 
     def test_corruption_6_change_invariant_to_flip_without_outcome_change(self):
         """(6) Auditor must fail if an INVARIANT pair is labeled FLIP without outcome change."""
         inv_rec = None
         target_p_file = None
         for sname in ["dev", "val", "test"]:
-            pf = self.splits_root / sname / "private" / "pairs.jsonl" if sname == "test" else self.splits_root / sname / "pairs.jsonl"
+            pf = (
+                self.splits_root / sname / "private" / "pairs.jsonl"
+                if sname == "test"
+                else self.splits_root / sname / "pairs.jsonl"
+            )
             if pf.is_file():
                 with open(pf, encoding="utf-8") as f:
                     recs = [json.loads(line) for line in f if line.strip()]
@@ -315,7 +354,10 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_counterfactual_pair_integrity()
         assert res.passed is False
-        assert any("expected flip relationship but child outcomes are identical" in f.lower() for f in res.failures)
+        assert any(
+            "expected flip relationship but child outcomes are identical" in f.lower()
+            for f in res.failures
+        )
 
     def test_corruption_7_answer_in_public_task_id(self):
         """(7) Auditor must fail if a public task ID contains an answer-revealing category token."""
@@ -329,7 +371,11 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_dataset_split_isolation()
         assert res.passed is False
-        assert any("semantic answer pattern" in f.lower() or "delimited outcome token" in f.lower() for f in res.failures)
+        assert any(
+            "semantic answer pattern" in f.lower()
+            or "delimited outcome token" in f.lower()
+            for f in res.failures
+        )
 
     def test_corruption_8_answer_in_image_filename(self):
         """(8) Auditor must fail if a public image filename contains an outcome token."""
@@ -363,7 +409,9 @@ class TestPipelineCorruptionDetection:
             "Obstacle O2 is the blocker.",
         ]
         for leak_text in leak_cases:
-            ok_leak, msg = self.auditor.check_prompt_neutrality(leak_text, legit_q, "YES")
+            ok_leak, msg = self.auditor.check_prompt_neutrality(
+                leak_text, legit_q, "YES"
+            )
             assert ok_leak is False, f"Failed to catch leak: '{leak_text}'"
             assert "leaked" in msg.lower()
 
@@ -389,7 +437,9 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_dataset_split_isolation()
         assert res.passed is False
-        assert any("public image file does not exist" in f.lower() for f in res.failures)
+        assert any(
+            "public image file does not exist" in f.lower() for f in res.failures
+        )
 
     def test_corruption_12_duplicate_public_task_id(self):
         """(12) Auditor must fail if a public task ID is duplicated within a split."""
@@ -404,7 +454,9 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_dataset_split_isolation()
         assert res.passed is False
-        assert any("duplicate task id in test_public" in f.lower() for f in res.failures)
+        assert any(
+            "duplicate task id in test_public" in f.lower() for f in res.failures
+        )
 
     def test_corruption_13_public_task_referencing_other_split_gt(self):
         """(13) Auditor must fail if a public task references another split's ground-truth ID."""
@@ -418,7 +470,9 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_dataset_split_isolation()
         assert res.passed is False
-        assert any("unaligned ids" in f.lower() or "overlap" in f.lower() for f in res.failures)
+        assert any(
+            "unaligned ids" in f.lower() or "overlap" in f.lower() for f in res.failures
+        )
 
     def test_corruption_14_manifest_count_tampering(self):
         """(14) Auditor must fail if manifest.json counts are tampered with."""
@@ -432,7 +486,11 @@ class TestPipelineCorruptionDetection:
 
         res = self.auditor.check_dataset_split_isolation()
         assert res.passed is False
-        assert any("manifest count mismatch" in f.lower() or "manifest accounting mismatch" in f.lower() for f in res.failures)
+        assert any(
+            "manifest count mismatch" in f.lower()
+            or "manifest accounting mismatch" in f.lower()
+            for f in res.failures
+        )
 
     def test_catches_badge_color_leakage_in_blind_image(self):
         """Auditor must detect answer badges injected into blind images."""
@@ -450,7 +508,9 @@ class TestPipelineCorruptionDetection:
                 pixels[x, y] = (46, 204, 113)  # Bright green
         img.save(blind_img_path)
 
-        ok, leak = self.auditor.check_image_leakage(blind_img_path, t_a_dir / "diagram_overlay.png")
+        ok, leak = self.auditor.check_image_leakage(
+            blind_img_path, t_a_dir / "diagram_overlay.png"
+        )
         assert ok is False
         assert "Answer badge colors detected" in leak
 
@@ -524,29 +584,47 @@ class TestDeterminismAndReproducibility:
         # Tier 1: Semantic Determinism
         vis_fact1 = VisibilityTaskFactory()
         vis_fact2 = VisibilityTaskFactory()
-        t_a = vis_fact1.create_task(seed=888, task_id="same_id", output_dir=tmp_path / "a")
-        t_b = vis_fact2.create_task(seed=888, task_id="same_id", output_dir=tmp_path / "b")
+        t_a = vis_fact1.create_task(
+            seed=888, task_id="same_id", output_dir=tmp_path / "a"
+        )
+        t_b = vis_fact2.create_task(
+            seed=888, task_id="same_id", output_dir=tmp_path / "b"
+        )
         assert t_a.ground_truth.can_see == t_b.ground_truth.can_see
         assert t_a.ground_truth.reason_code == t_b.ground_truth.reason_code
 
         # Tier 2: Geometric Determinism (coordinates match exactly)
-        coords_a = np.array([
-            t_a.scene.camera.position.x, t_a.scene.camera.position.y,
-            t_a.scene.mirror.endpoint_a.x, t_a.scene.mirror.endpoint_a.y,
-            t_a.scene.target.center.x, t_a.scene.target.center.y,
-        ])
-        coords_b = np.array([
-            t_b.scene.camera.position.x, t_b.scene.camera.position.y,
-            t_b.scene.mirror.endpoint_a.x, t_b.scene.mirror.endpoint_a.y,
-            t_b.scene.target.center.x, t_b.scene.target.center.y,
-        ])
+        coords_a = np.array(
+            [
+                t_a.scene.camera.position.x,
+                t_a.scene.camera.position.y,
+                t_a.scene.mirror.endpoint_a.x,
+                t_a.scene.mirror.endpoint_a.y,
+                t_a.scene.target.center.x,
+                t_a.scene.target.center.y,
+            ]
+        )
+        coords_b = np.array(
+            [
+                t_b.scene.camera.position.x,
+                t_b.scene.camera.position.y,
+                t_b.scene.mirror.endpoint_a.x,
+                t_b.scene.mirror.endpoint_a.y,
+                t_b.scene.target.center.x,
+                t_b.scene.target.center.y,
+            ]
+        )
         np.testing.assert_allclose(coords_a, coords_b, atol=1e-9)
 
         # Tier 3: Pixel-Level Determinism (rendering same scene with same renderer yields zero diff)
-        renderer = PillowDiagramRenderer(theme=RenderTheme.DARK_NAVY, image_width=512, image_height=512)
+        renderer = PillowDiagramRenderer(
+            theme=RenderTheme.DARK_NAVY, image_width=512, image_height=512
+        )
         img1 = renderer.render(t_a.scene, mode=RenderMode.BLIND)
         img2 = renderer.render(t_b.scene, mode=RenderMode.BLIND)
 
         arr1 = np.asarray(img1.convert("RGB"))
         arr2 = np.asarray(img2.convert("RGB"))
-        assert np.array_equal(arr1, arr2), "Pillow rasterization must produce identical pixels for identical geometry"
+        assert np.array_equal(arr1, arr2), (
+            "Pillow rasterization must produce identical pixels for identical geometry"
+        )

@@ -39,7 +39,9 @@ from mirrorlab.ui.scene_lab import _recalculate_scene_oracle, build_task_package
 @pytest.fixture
 def base_lab_scene() -> InspectionScene:
     """Fixture providing a standard, clear inspection scene in Scene Lab."""
-    cam = CameraSpec(position=Point2D(x=150.0, y=200.0), heading_deg=35.0, fov_degrees=60.0)
+    cam = CameraSpec(
+        position=Point2D(x=150.0, y=200.0), heading_deg=35.0, fov_degrees=60.0
+    )
     mir = MirrorSpec(
         endpoint_a=Point2D(x=300.0, y=800.0),
         endpoint_b=Point2D(x=700.0, y=800.0),
@@ -85,7 +87,9 @@ def test_recalculate_scene_oracle(base_lab_scene: InspectionScene) -> None:
     assert len(updated_scene.optical_path) == 3
 
 
-def test_oracle_recalculation_upon_obstacle_blocking(base_lab_scene: InspectionScene) -> None:
+def test_oracle_recalculation_upon_obstacle_blocking(
+    base_lab_scene: InspectionScene,
+) -> None:
     """Verify oracle detects ray collision when an obstacle is moved into the incident leg."""
     # Place obstacle directly between Camera (150, 200) and Reflection Point (~500, 800)
     blocking_obs = ObstacleSpec(

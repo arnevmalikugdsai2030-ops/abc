@@ -72,7 +72,10 @@ class TestPreflightIntegrity:
 
     def test_clean_tasks_confirmed(self):
         clean_tasks = [
-            {"task_id": "task_1", "prompt": "Is the defect scratch visible in the mirror reflection?"},
+            {
+                "task_id": "task_1",
+                "prompt": "Is the defect scratch visible in the mirror reflection?",
+            },
         ]
         res = preflight_confirm_answer_separation(clean_tasks)
         assert res["separation_confirmed"] is True
@@ -85,7 +88,10 @@ class TestDualProviderExecution:
     def test_provider_pricing_table(self):
         assert "gemini-2.5-flash" in PROVIDER_PRICING
         assert "gpt-4o" in PROVIDER_PRICING
-        assert PROVIDER_PRICING["gemini-2.5-flash"]["input_price_per_m"] < PROVIDER_PRICING["gpt-4o"]["input_price_per_m"]
+        assert (
+            PROVIDER_PRICING["gemini-2.5-flash"]["input_price_per_m"]
+            < PROVIDER_PRICING["gpt-4o"]["input_price_per_m"]
+        )
 
     def test_single_provider_evaluation_run(self, tmp_path: Path):
         from PIL import Image

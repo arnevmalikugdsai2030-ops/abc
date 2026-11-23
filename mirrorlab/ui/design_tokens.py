@@ -68,17 +68,16 @@ COLOR_STATUS_PURPLE = "#A855F7"  # FOV cone exceedance
 # ---------------------------------------------------------------------------
 # Typography Stacks
 # ---------------------------------------------------------------------------
-FONT_INTERFACE = (
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif'
-)
-FONT_MONOSPACE = (
-    '"JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
-)
+FONT_INTERFACE = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif'
+FONT_MONOSPACE = '"JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace'
+
 
 # ---------------------------------------------------------------------------
 # Plotly Engineering CAD Theme Configuration
 # ---------------------------------------------------------------------------
-def get_plotly_layout_dict(height: int | None = None, width: int | None = None, **kwargs: Any) -> dict[str, Any]:
+def get_plotly_layout_dict(
+    height: int | None = None, width: int | None = None, **kwargs: Any
+) -> dict[str, Any]:
     """Returns standardized Plotly layout dictionary for deep navy CAD viewport."""
     layout: dict[str, Any] = {
         "paper_bgcolor": COLOR_BG_BASE,
@@ -94,7 +93,13 @@ def get_plotly_layout_dict(height: int | None = None, width: int | None = None, 
             "zerolinecolor": "#1E293B",
             "zerolinewidth": 1.5,
             "tickfont": {"family": FONT_MONOSPACE, "size": 10, "color": COLOR_TEXT_DIM},
-            "title": {"font": {"family": FONT_INTERFACE, "size": 11, "color": COLOR_TEXT_MUTED}},
+            "title": {
+                "font": {
+                    "family": FONT_INTERFACE,
+                    "size": 11,
+                    "color": COLOR_TEXT_MUTED,
+                }
+            },
             "showgrid": True,
             "gridwidth": 1,
         },
@@ -103,7 +108,13 @@ def get_plotly_layout_dict(height: int | None = None, width: int | None = None, 
             "zerolinecolor": "#1E293B",
             "zerolinewidth": 1.5,
             "tickfont": {"family": FONT_MONOSPACE, "size": 10, "color": COLOR_TEXT_DIM},
-            "title": {"font": {"family": FONT_INTERFACE, "size": 11, "color": COLOR_TEXT_MUTED}},
+            "title": {
+                "font": {
+                    "family": FONT_INTERFACE,
+                    "size": 11,
+                    "color": COLOR_TEXT_MUTED,
+                }
+            },
             "showgrid": True,
             "gridwidth": 1,
             "scaleanchor": "x",
@@ -113,7 +124,11 @@ def get_plotly_layout_dict(height: int | None = None, width: int | None = None, 
             "bgcolor": "rgba(15, 23, 42, 0.85)",
             "bordercolor": COLOR_BORDER_SUBTLE,
             "borderwidth": 1,
-            "font": {"family": FONT_INTERFACE, "size": 11, "color": COLOR_TEXT_SECONDARY},
+            "font": {
+                "family": FONT_INTERFACE,
+                "size": 11,
+                "color": COLOR_TEXT_SECONDARY,
+            },
             "orientation": "h",
             "yanchor": "bottom",
             "y": 1.02,

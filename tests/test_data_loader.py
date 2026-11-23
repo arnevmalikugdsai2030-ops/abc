@@ -84,11 +84,11 @@ class TestRealBackendDataLoaders:
             assert "ground_truth_reason" in f
             assert "diagnostic_explanation" in f
 
-    def test_get_dataset_validation_status_10_points(self):
+    def test_get_dataset_validation_status_11_points(self):
         status = get_dataset_validation_status(data_root="data")
         assert status["all_passed"] is True
-        assert status["total_checks"] == 10
-        assert len(status["checks"]) == 10
+        assert status["total_checks"] == 11
+        assert len(status["checks"]) == 11
         assert status["isolation_verified"] is True
 
     def test_empty_state_handling_missing_dir(self, tmp_path: Path):
@@ -96,7 +96,10 @@ class TestRealBackendDataLoaders:
         empty_dir.mkdir()
         stats = get_dataset_statistics(data_root=empty_dir)
         assert stats["has_data"] is False
-        assert stats["total_tasks"] == 0 or stats["total_tasks"] == stats["total_split_tasks"]
+        assert (
+            stats["total_tasks"] == 0
+            or stats["total_tasks"] == stats["total_split_tasks"]
+        )
 
         runs = get_recent_evaluation_runs(logs_root=empty_dir)
         assert runs == []

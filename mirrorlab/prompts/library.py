@@ -57,9 +57,7 @@ class PromptRegistry:
             return self._registry[key]
 
         # Find latest version for this task type
-        matching = [
-            t for (t_type, _), t in self._registry.items() if t_type == tt
-        ]
+        matching = [t for (t_type, _), t in self._registry.items() if t_type == tt]
         if not matching:
             raise KeyError(f"No prompt template found for task '{tt.value}'.")
 
@@ -105,16 +103,12 @@ class PromptRegistry:
 PROMPT_REGISTRY = PromptRegistry()
 
 
-def get_prompt(
-    task_type: TaskType | str, version: str | None = None
-) -> PromptTemplate:
+def get_prompt(task_type: TaskType | str, version: str | None = None) -> PromptTemplate:
     """Convenience function to get a prompt template."""
     return PROMPT_REGISTRY.get(task_type, version)
 
 
-def render_prompt(
-    task_type: TaskType | str, version: str | None = None
-) -> str:
+def render_prompt(task_type: TaskType | str, version: str | None = None) -> str:
     """Convenience function to render prompt text."""
     return PROMPT_REGISTRY.get(task_type, version).render()
 

@@ -101,7 +101,14 @@ class TestDifficultyTiers:
     """Verify difficulty presets generate corresponding geometry scales."""
 
     @pytest.mark.parametrize(
-        "diff", [DifficultyLevel.EASY, DifficultyLevel.STANDARD, DifficultyLevel.MEDIUM, DifficultyLevel.HARD, DifficultyLevel.BOUNDARY]
+        "diff",
+        [
+            DifficultyLevel.EASY,
+            DifficultyLevel.STANDARD,
+            DifficultyLevel.MEDIUM,
+            DifficultyLevel.HARD,
+            DifficultyLevel.BOUNDARY,
+        ],
     )
     def test_difficulty_tier_generation(self, diff):
         gen = SceneGenerator()
@@ -126,7 +133,9 @@ class TestDifficultyTiers:
     def test_anti_duplicate_geometry_enforcement(self):
         """Verify generator tracks fingerprints and rejects duplicate geometry."""
         gen = SceneGenerator()
-        scenes = gen.generate_batch(count=30, start_seed=12000, difficulty=DifficultyLevel.STANDARD)
+        scenes = gen.generate_batch(
+            count=30, start_seed=12000, difficulty=DifficultyLevel.STANDARD
+        )
         assert len(scenes) == 30
         assert len(gen.seen_fingerprints) == 30  # All 30 are geometrically unique
 
@@ -164,8 +173,15 @@ class TestDatasetStatisticsAndCoverageReporting:
 
         gen = SceneGenerator()
         scenes = []
-        for d in [DifficultyLevel.EASY, DifficultyLevel.STANDARD, DifficultyLevel.HARD, DifficultyLevel.BOUNDARY]:
-            batch = gen.generate_batch(count=12, start_seed=20000 + hash(d.value) % 1000, difficulty=d)
+        for d in [
+            DifficultyLevel.EASY,
+            DifficultyLevel.STANDARD,
+            DifficultyLevel.HARD,
+            DifficultyLevel.BOUNDARY,
+        ]:
+            batch = gen.generate_batch(
+                count=12, start_seed=20000 + hash(d.value) % 1000, difficulty=d
+            )
             scenes.extend(batch)
 
         report = compute_dataset_statistics(scenes)
@@ -196,4 +212,3 @@ class TestDatasetStatisticsAndCoverageReporting:
         assert "# MIRRORLAB Dataset Distribution & Coverage Report" in md
         assert "Headline Benchmark" in md
         assert "Boundary Stress Test" in md
-
