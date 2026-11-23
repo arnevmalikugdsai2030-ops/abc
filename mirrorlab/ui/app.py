@@ -34,6 +34,7 @@ from mirrorlab.ui.design_tokens import (
     COLOR_TEXT_PRIMARY,
     get_theme_css,
 )
+from mirrorlab.ui.judge_walkthrough import render_judge_walkthrough
 from mirrorlab.ui.scene_lab import render_scene_laboratory
 
 # ---------------------------------------------------------------------------
@@ -61,6 +62,7 @@ def main() -> None:
     platform_mode = st.sidebar.radio(
         "Workspace View:",
         [
+            "🎯 Judge Demo Walkthrough",
             "🔬 Scene Laboratory",
             "⚔️ Model Arena",
             "📊 Scientific Analytics",
@@ -96,6 +98,10 @@ def main() -> None:
         subtitle="Industrial Specular Reflection Computer Vision Benchmark",
         engine_status=engine_status,
     )
+
+    if platform_mode == "🎯 Judge Demo Walkthrough":
+        render_judge_walkthrough()
+        return
 
     if platform_mode == "🔬 Scene Laboratory":
         render_scene_laboratory()
