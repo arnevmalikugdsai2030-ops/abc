@@ -1,8 +1,11 @@
 {
-  "timestamp": "2026-11-23T04:44:09.398194+00:00",
-  "model_name": "mock-realistic_gpt4o_baseline",
+  "timestamp": "2026-11-23T06:21:53.925173+00:00",
+  "model_name": "mock-realistic-gpt4o-simulation",
   "split_name": "dev",
   "sample_count": 70,
+  "is_simulated": true,
+  "evaluation_type": "mock",
+  "provenance_status": "CALIBRATED_SIMULATION",
   "conditions": {
     "image_plus_question": {
       "condition": "image_plus_question",
@@ -19,33 +22,33 @@
       "condition": "question_only",
       "description": "Language blind (Blank canvas + query)",
       "total_evaluated": 70,
-      "correct_count": 39,
-      "accuracy": 0.5571,
-      "ci_lower": 0.4408,
-      "ci_upper": 0.6675,
-      "delta_vs_multimodal": -0.2,
+      "correct_count": 27,
+      "accuracy": 0.3857,
+      "ci_lower": 0.2805,
+      "ci_upper": 0.5028,
+      "delta_vs_multimodal": -0.3714,
       "interpretation": "Measures blind language priors (target: ~50% random guessing)"
     },
     "metadata_only": {
       "condition": "metadata_only",
       "description": "Abstract prompt structure without pixels",
       "total_evaluated": 70,
-      "correct_count": 22,
-      "accuracy": 0.3143,
-      "ci_lower": 0.2176,
-      "ci_upper": 0.4303,
-      "delta_vs_multimodal": -0.4429,
+      "correct_count": 33,
+      "accuracy": 0.4714,
+      "ci_lower": 0.359,
+      "ci_upper": 0.5868,
+      "delta_vs_multimodal": -0.2857,
       "interpretation": "Verifies prompt metadata contains no statistical leak"
     },
     "filename_only": {
       "condition": "filename_only",
       "description": "Neutral image filename / task ID prompt",
       "total_evaluated": 70,
-      "correct_count": 30,
-      "accuracy": 0.4286,
-      "ci_lower": 0.3194,
-      "ci_upper": 0.5452,
-      "delta_vs_multimodal": -0.3286,
+      "correct_count": 35,
+      "accuracy": 0.5,
+      "ci_lower": 0.386,
+      "ci_upper": 0.614,
+      "delta_vs_multimodal": -0.2571,
       "interpretation": "Verifies filenames and public IDs leak zero ground truth"
     },
     "critical_geometry_ablated": {
@@ -74,11 +77,11 @@
       "condition": "altered_geometry",
       "description": "180-degree rotation destroying ray alignment",
       "total_evaluated": 70,
-      "correct_count": 29,
-      "accuracy": 0.4143,
-      "ci_lower": 0.3063,
-      "ci_upper": 0.5312,
-      "delta_vs_multimodal": -0.3429,
+      "correct_count": 31,
+      "accuracy": 0.4429,
+      "ci_lower": 0.3325,
+      "ci_upper": 0.5592,
+      "delta_vs_multimodal": -0.3143,
       "interpretation": "Tests sensitivity to angular and spatial ray misalignment"
     },
     "randomized_background": {
@@ -93,10 +96,10 @@
       "interpretation": "Confirms model is not distracted by grid/ruler noise"
     }
   },
-  "visual_necessity_ratio": 0.2,
-  "language_prior_bias": 0.0571,
+  "visual_necessity_ratio": 0.3714,
+  "language_prior_bias": -0.1143,
   "cosmetic_invariance_score": 1.0,
-  "geometric_sensitivity": 0.3428,
+  "geometric_sensitivity": 0.3142,
   "filename_leakage_detected": false,
   "metadata_leakage_detected": false,
   "is_genuinely_vision_necessary": true

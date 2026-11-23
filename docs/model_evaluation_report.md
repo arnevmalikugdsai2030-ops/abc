@@ -32,14 +32,22 @@ All evaluations adhered to strict scientific controls:
 
 ## 3. Comparative Performance Across Models & Baselines
 
-| Model / Baseline | Provider | Overall Accuracy (k/N) | Task A: Visibility | Task B: Obstruction | Task C: Repair | Task D: Joint Pair Acc | Flip Consistency |
+> [!WARNING]
+> **SCIENTIFIC PROVENANCE NOTICE:**
+> The model rows labeled `*(calibrated)*` below represent **offline simulated behavioral baselines** produced by `MockVisionAdapter` running calibrated heuristics to model spatial optics failure modes. They are **NOT** live API responses. 
+> To execute live evaluations against actual provider APIs, configure your API keys in `.env` (see `.env.example`) and run:
+> ```bash
+> python scripts/evaluate_models.py --split dev --provider gemini --model gemini-2.5-flash
+> ```
+
+| Model / Baseline | Type & Provenance | Overall Accuracy (k/N) | Task A: Visibility | Task B: Obstruction | Task C: Repair | Task D: Joint Pair Acc | Flip Consistency |
 |---|---|---|---|---|---|---|---|
-| **Analytical Oracle** | MIRRORLAB | **100.0%** (70/70) | 100.0% | 100.0% | 100.0% | **100.0%** | 100.0% |
-| **OpenAI GPT-4o** *(calibrated)* | OpenAI | **75.7%** (53/70) | 78.6% | 71.4% | 75.0% | **45.8%** (11/24) | 58.3% |
-| **Google Gemini 2.5 Flash** *(calibrated)* | Google | **71.4%** (50/70) | 75.0% | 64.3% | 70.0% | **41.7%** (10/24) | 50.0% |
-| **Anthropic Claude 3.7** *(calibrated)* | Anthropic | **74.3%** (52/70) | 76.8% | 70.0% | 72.5% | **44.4%** (11/24) | 54.2% |
-| **Majority Class Guessing** | Baseline | **52.9%** (37/70) | 50.0% | 50.0% | 33.3% | **0.0%** (0/24) | 0.0% |
-| **Random Uniform Guesser** | Baseline | **44.3%** (31/70) | 50.0% | 33.3% | 33.3% | **20.8%** (5/24) | 25.0% |
+| **Analytical Oracle** | Synthetic Baseline | **100.0%** (70/70) | 100.0% | 100.0% | 100.0% | **100.0%** | 100.0% |
+| **OpenAI GPT-4o** *(calibrated)* | Calibrated Simulation | **75.7%** (53/70) | 78.6% | 71.4% | 75.0% | **45.8%** (11/24) | 58.3% |
+| **Google Gemini 2.5 Flash** *(calibrated)* | Calibrated Simulation | **71.4%** (50/70) | 75.0% | 64.3% | 70.0% | **41.7%** (10/24) | 50.0% |
+| **Anthropic Claude 3.7** *(calibrated)* | Calibrated Simulation | **74.3%** (52/70) | 76.8% | 70.0% | 72.5% | **44.4%** (11/24) | 54.2% |
+| **Majority Class Guessing** | Statistical Baseline | **52.9%** (37/70) | 50.0% | 50.0% | 33.3% | **0.0%** (0/24) | 0.0% |
+| **Random Uniform Guesser** | Statistical Baseline | **44.3%** (31/70) | 50.0% | 33.3% | 33.3% | **20.8%** (5/24) | 25.0% |
 
 > [!IMPORTANT]
 > **Why Joint Pair Accuracy Matters:**

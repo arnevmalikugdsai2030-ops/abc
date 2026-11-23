@@ -36,7 +36,6 @@ from pydantic import BaseModel, Field
 
 from mirrorlab.evaluation.model_adapter import (
     BaseVisionAdapter,
-    MockVLMAdapter,
 )
 from mirrorlab.evaluation.structured_parser import StructuredParser
 
@@ -95,6 +94,18 @@ class VisualNecessityReport(BaseModel):
     model_name: str
     split_name: str
     sample_count: int
+    is_simulated: bool = Field(
+        default=True,
+        description="True if evaluation was performed by a simulated baseline rather than live API",
+    )
+    evaluation_type: str = Field(
+        default="mock",
+        description="Provenance category: 'mock', 'live_api', 'human', 'synthetic_baseline'",
+    )
+    provenance_status: str = Field(
+        default="CALIBRATED_SIMULATION",
+        description="Clear provenance: 'VERIFIED_LIVE_API', 'CALIBRATED_SIMULATION', 'SYNTHETIC_ORACLE'",
+    )
     conditions: dict[str, ConditionMetrics]
     visual_necessity_ratio: float = Field(
         ...,
@@ -278,121 +289,14 @@ class ShortcutEvaluator:
                     adapter.set_ground_truth(gt=gt, task_id=task_id)
 
                 try:
-                    # In unimodal / ablated conditions with mock adapters, simulate the condition realistically
-                    if isinstance(adapter, MockVLMAdapter):
-                        if cond in (
-                            AblationCondition.QUESTION_ONLY,
-                            AblationCondition.FILENAME_ONLY,
-                            AblationCondition.METADATA_ONLY,
-                        ):
-                            # Language-blind: pseudo-random chance
-                            pred_val = bool((hash(f"{task_id}_{cond.value}") % 2) == 0)
-                            if task_family == "TASK_C_REPAIR":
-                                cand_choice = ["A", "B", "C"][
-                                    hash(f"{task_id}_{cond.value}") % 3
-                                ]
-                                raw_text = json.dumps(
-                                    {
-                                        "selected_candidate": cand_choice,
-                                        "answer": cand_choice,
-                                    }
-                                )
-                            elif task_family == "TASK_B_OBSTRUCTION":
-                                raw_text = json.dumps(
-                                    {
-                                        "is_blocked": pred_val,
-                                        "answer": "YES" if pred_val else "NO",
-                                        "blocking_obstacle": "O1"
-                                        if pred_val
-                                        else "NONE",
-                                        "blocked_segment": "CAMERA_TO_MIRROR"
-                                        if pred_val
-                                        else "NONE",
-                                    }
-                                )
-                            else:
-                                raw_text = json.dumps(
-                                    {
-                                        "can_see": pred_val,
-                                        "answer": "YES" if pred_val else "NO",
-                                    }
-                                )
-                        elif cond == AblationCondition.CRITICAL_GEOMETRY_ABLATED:
-                            # With mirror masked out, target cannot be seen through mirror
-                            if task_family == "TASK_C_REPAIR":
-                                raw_text = json.dumps(
-                                    {
-                                        "selected_candidate": "A",
-                                        "answer": "A",
-                                        "explanation": "Blind guess",
-                                    }
-                                )
-                            elif task_family == "TASK_B_OBSTRUCTION":
-                                raw_text = json.dumps(
-                                    {
-                                        "is_blocked": True,
-                                        "answer": "YES",
-                                        "blocking_obstacle": "NONE",
-                                        "blocked_segment": "NONE",
-                                    }
-                                )
-                            else:
-                                raw_text = json.dumps(
-                                    {
-                                        "can_see": False,
-                                        "answer": "NO",
-                                        "reason": "MIRROR_ABLATED",
-                                    }
-                                )
-                        elif cond == AblationCondition.ALTERED_GEOMETRY:
-                            # Spatial scramble: pseudo-random chance
-                            pred_val = bool((hash(f"{task_id}_scramble") % 2) == 0)
-                            if task_family == "TASK_C_REPAIR":
-                                cand_choice = ["A", "B", "C"][
-                                    hash(f"{task_id}_scramble") % 3
-                                ]
-                                raw_text = json.dumps(
-                                    {
-                                        "selected_candidate": cand_choice,
-                                        "answer": cand_choice,
-                                    }
-                                )
-                            elif task_family == "TASK_B_OBSTRUCTION":
-                                raw_text = json.dumps(
-                                    {
-                                        "is_blocked": pred_val,
-                                        "answer": "YES" if pred_val else "NO",
-                                        "blocking_obstacle": "O1"
-                                        if pred_val
-                                        else "NONE",
-                                        "blocked_segment": "CAMERA_TO_MIRROR"
-                                        if pred_val
-                                        else "NONE",
-                                    }
-                                )
-                            else:
-                                raw_text = json.dumps(
-                                    {
-                                        "can_see": pred_val,
-                                        "answer": "YES" if pred_val else "NO",
-                                    }
-                                )
-                        else:
-                            resp = adapter.ask(
-                                ablated_img,
-                                prompt,
-                                task_id=task_id,
-                                task_type=task_family,
-                            )
-                            raw_text = resp.raw_text
-                    else:
-                        resp = adapter.ask(
-                            ablated_img,
-                            prompt,
-                            task_id=task_id,
-                            task_type=task_family,
-                        )
-                        raw_text = resp.raw_text
+                    resp = adapter.ask(
+                        ablated_img,
+                        prompt,
+                        task_id=task_id,
+                        task_type=task_family,
+                        condition=cond.value,
+                    )
+                    raw_text = resp.raw_text
                 except (ValueError, KeyError, TypeError, OSError, RuntimeError):
                     raw_text = '{"can_see": false, "reason": "ERROR"}'
 
@@ -490,10 +394,25 @@ class ShortcutEvaluator:
         metadata_leak = bool(meta_ci_low > 0.50)
         vision_necessary = bool(vnr >= 0.15 and not filename_leak and not metadata_leak)
 
+        is_sim = getattr(adapter, "is_mock", False) or (
+            "mock" in adapter.model_name.lower()
+        )
+        eval_type = getattr(
+            adapter, "evaluation_type", "mock" if is_sim else "live_api"
+        )
+        prov_status = getattr(
+            adapter,
+            "provenance_status",
+            "CALIBRATED_SIMULATION" if is_sim else "VERIFIED_LIVE_API",
+        )
+
         report = VisualNecessityReport(
             model_name=adapter.model_name,
             split_name=split_name,
             sample_count=n_samples,
+            is_simulated=is_sim,
+            evaluation_type=eval_type,
+            provenance_status=prov_status,
             conditions=condition_metrics,
             visual_necessity_ratio=round(vnr, 4),
             language_prior_bias=round(lpb, 4),
@@ -514,11 +433,23 @@ class ShortcutEvaluator:
 
     def render_markdown_report(self, report: VisualNecessityReport) -> str:
         """Renders comprehensive Markdown audit report for hackathon judges."""
+        prov_banner = (
+            "> [!WARNING]\n"
+            "> **EVALUATION PROVENANCE:** This audit was performed using an offline **CALIBRATED SIMULATION BASELINE (MOCK RUNNER)**. "
+            "The metrics represent simulated behavioral baselines and are **NOT** live API responses from frontier models.\n"
+            if report.is_simulated
+            else "> [!NOTE]\n"
+            "> **EVALUATION PROVENANCE:** This audit was performed using **VERIFIED LIVE MULTIMODAL API INFERENCE**.\n"
+        )
+
         lines = [
             "# MIRRORLAB: Visual Necessity & Shortcut-Resistance Audit Report",
             f"**Evaluation Date:** {report.timestamp}  ",
             f"**Evaluated Model / Strategy:** `{report.model_name}`  ",
+            f"**Provenance:** `{report.provenance_status}` ({report.evaluation_type})  ",
             f"**Split:** `{report.split_name}` (N = {report.sample_count} tasks)  ",
+            "",
+            prov_banner,
             "",
             "## 1. Executive Summary & Verification Verdict",
             "",

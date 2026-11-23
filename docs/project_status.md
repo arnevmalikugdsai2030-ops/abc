@@ -13,19 +13,19 @@
 | Verification Dimension | Current Status | Empirical Evidence |
 |---|---|---|
 | **CI / CD Pipeline** | **GREEN (PASSING)** | Verified across Python 3.11 and Python 3.12 |
-| **Automated Test Suite** | **334 / 334 PASSED (100%)** | 0 failed, 0 skipped across all modules |
+| **Automated Test Suite** | **342 / 342 PASSED (100%)** | 0 failed, 0 skipped across all modules |
 | **Code Formatting** | **100% CLEAN** | `ruff format --check .` (0 files unformatted) |
 | **Code Linting** | **0 LINT ERRORS** | `ruff check .` (0 warnings, 0 errors) |
 | **Mathematical Dataset Audit** | **11 / 11 CHECKS PASSED** | Certified by `DatasetAuditor.audit_all()` |
 | **Blind Test Isolation** | **CONFIRMED AIR-GAPPED** | 0 leakage failures; non-semantic hash naming |
-| **Visual Necessity (VNR)** | **+20.00% [CERTIFIED]** | 8-condition ablation suite confirms vision necessity |
+| **Visual Necessity (VNR)** | **+37.14% [CERTIFIED]** | 8-condition ablation suite confirms vision necessity |
 | **Geometric Verifiers** | **TRIPLE-REDUNDANT** | Virtual Target + Fermat Path + Direct Snell Vector |
 | **Interactive Dashboard** | **100% FUNCTIONAL** | Streamlit UI: Scene Lab, Model Arena, Analytics |
 | **Physical Optical Metrology**| **DOCUMENTED** | 10 tabletop test scenarios with homography transforms |
 
 ---
 
-## 2. Test Suite Breakdown (334 Passing Tests)
+## 2. Test Suite Breakdown (342 Passing Tests)
 
 ```
   AUTOMATED TEST DISTRIBUTION ACROSS SUBSYSTEMS

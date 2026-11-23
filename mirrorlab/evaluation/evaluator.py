@@ -29,6 +29,9 @@ class RunConfig(BaseModel):
     temperature: float = 0.0
     limit: int | None = None
     is_mock: bool = False
+    evaluation_type: str = "mock"
+    provenance_status: str = "CALIBRATED_SIMULATION"
+    dataset_manifest_hash: str | None = None
 
 
 class BenchmarkEvaluator:
@@ -56,6 +59,18 @@ class BenchmarkEvaluator:
         self.run_id = f"{safe_model}_{self.split_name}_{self.timestamp}"
         self.run_dir = self.output_root / self.run_id
         self.run_dir.mkdir(parents=True, exist_ok=True)
+
+        self.is_mock = getattr(adapter, "is_mock", False) or (
+            "mock" in adapter.model_name.lower()
+        )
+        self.evaluation_type = getattr(
+            adapter, "evaluation_type", "mock" if self.is_mock else "live_api"
+        )
+        self.provenance_status = getattr(
+            adapter,
+            "provenance_status",
+            "CALIBRATED_SIMULATION" if self.is_mock else "VERIFIED_LIVE_API",
+        )
 
     def run(self) -> tuple[EvaluationMetrics, Path]:
         """
@@ -128,6 +143,8 @@ class BenchmarkEvaluator:
                     "raw_text": response.raw_text,
                     "error": response.error,
                     "is_mock": response.is_mock,
+                    "evaluation_type": response.evaluation_type,
+                    "provenance_status": response.provenance_status,
                     "timestamp": response.timestamp,
                 }
                 f_raw.write(json.dumps(raw_record) + "\n")

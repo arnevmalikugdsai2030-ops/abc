@@ -74,6 +74,14 @@ class ModelResponse(BaseModel):
     timestamp: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
     error: str | None = None
     is_mock: bool = False
+    evaluation_type: str = Field(
+        default="mock",
+        description="One of: 'mock', 'live_api', 'human', 'synthetic_baseline'",
+    )
+    provenance_status: str = Field(
+        default="SIMULATED",
+        description="Clear provenance: 'VERIFIED_LIVE_API', 'CALIBRATED_SIMULATION', 'SYNTHETIC_ORACLE'",
+    )
     raw_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -144,6 +152,21 @@ class BaseVisionAdapter(ABC):
     @property
     def temperature(self) -> float:
         return self.settings.temperature
+
+    @property
+    def is_mock(self) -> bool:
+        """Indicates whether this adapter runs simulated/mock responses."""
+        return False
+
+    @property
+    def evaluation_type(self) -> str:
+        """One of 'mock', 'live_api', 'human', 'synthetic_baseline'."""
+        return "live_api"
+
+    @property
+    def provenance_status(self) -> str:
+        """Detailed provenance status string."""
+        return "VERIFIED_LIVE_API"
 
     def validate_image(self, image_path: Path | str) -> Path:
         """Validates that the image file exists and is a readable file."""
@@ -661,6 +684,22 @@ class MockVisionAdapter(BaseVisionAdapter):
         self.seed = seed
         self._counter = 0
 
+    @property
+    def is_mock(self) -> bool:
+        return True
+
+    @property
+    def evaluation_type(self) -> str:
+        if self.strategy == MockStrategy.ORACLE:
+            return "synthetic_baseline"
+        return "mock"
+
+    @property
+    def provenance_status(self) -> str:
+        if self.strategy == MockStrategy.ORACLE:
+            return "SYNTHETIC_ORACLE"
+        return "CALIBRATED_SIMULATION"
+
     def set_ground_truth(
         self,
         gt: dict[str, Any] | None = None,
@@ -692,7 +731,38 @@ class MockVisionAdapter(BaseVisionAdapter):
             else str(task_type_raw)
         )
 
-        if self.strategy == MockStrategy.ORACLE:
+        condition = kwargs.get("condition")
+
+        if condition in ("question_only", "filename_only", "metadata_only"):
+            # Unimodal / text-only ablation: mock cannot see image, falls back to random prior
+            text = self._generate_random(task_type)
+        elif condition == "critical_geometry_ablated":
+            # Mirror aperture occluded: target cannot be seen through mirror
+            if task_type == "TASK_C_REPAIR":
+                text = json.dumps(
+                    {
+                        "selected_candidate": "A",
+                        "answer": "A",
+                        "explanation": "Blind guess",
+                    }
+                )
+            elif task_type == "TASK_B_OBSTRUCTION":
+                text = json.dumps(
+                    {
+                        "is_blocked": True,
+                        "answer": "YES",
+                        "blocking_obstacle": "NONE",
+                        "blocked_segment": "NONE",
+                    }
+                )
+            else:
+                text = json.dumps(
+                    {"can_see": False, "answer": "NO", "reason": "MIRROR_ABLATED"}
+                )
+        elif condition == "altered_geometry":
+            # Inverted / scrambled geometry breaks optical ray alignment
+            text = self._generate_random(task_type)
+        elif self.strategy == MockStrategy.ORACLE:
             if not task_id:
                 raise ValueError(
                     "task_id is required when querying MockVisionAdapter with ORACLE strategy."
@@ -915,6 +985,42 @@ class MockVisionAdapter(BaseVisionAdapter):
             }
         else:
             data = {"answer": "NO"}
+        return json.dumps(data, indent=2)
+
+    def _generate_random(self, task_type: str) -> str:
+        """Deterministic pseudo-random guesser based on seed and internal counter."""
+        self._counter += 1
+        h = hash(f"{self.seed}_{self._counter}_{task_type}")
+        if task_type == "TASK_C_REPAIR":
+            cand = ["A", "B", "C"][h % 3]
+            data = {
+                "selected_candidate": cand,
+                "answer": cand,
+                "explanation": "Random candidate choice.",
+            }
+        elif task_type == "TASK_B_OBSTRUCTION":
+            is_blocked = (h % 2) == 0
+            blocker = ["O1", "O2", "NONE"][h % 3] if is_blocked else "NONE"
+            segment = (
+                ["CAMERA_TO_MIRROR", "MIRROR_TO_TARGET", "NONE"][h % 3]
+                if is_blocked
+                else "NONE"
+            )
+            data = {
+                "is_blocked": is_blocked,
+                "answer": "YES" if is_blocked else "NO",
+                "blocking_obstacle": blocker,
+                "blocked_segment": segment,
+                "explanation": "Random obstruction guess.",
+            }
+        else:
+            can_see = (h % 2) == 0
+            data = {
+                "can_see": can_see,
+                "answer": "YES" if can_see else "NO",
+                "reason": "CLEAR" if can_see else "WRONG_SIDE",
+                "explanation": "Random visibility guess.",
+            }
         return json.dumps(data, indent=2)
 
     def _generate_realistic_vlm(

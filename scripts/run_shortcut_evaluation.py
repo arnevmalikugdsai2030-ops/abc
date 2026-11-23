@@ -18,7 +18,10 @@ def main() -> None:
         cache_dir="data/ablation_cache",
     )
     # Using calibrated realistic GPT-4o simulation baseline for offline benchmarking
-    adapter = MockVLMAdapter(strategy=MockStrategy.REALISTIC_GPT4O_BASELINE)
+    adapter = MockVLMAdapter(
+        strategy=MockStrategy.REALISTIC_GPT4O_BASELINE,
+        model_name="mock-realistic-gpt4o-simulation",
+    )
 
     json_path = Path("data/shortcut_eval_results.json")
     report = evaluator.run_evaluation(

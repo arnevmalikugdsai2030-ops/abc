@@ -52,19 +52,26 @@ class TestRealBackendDataLoaders:
         assert subtypes["OBSTACLE_INSERTION"] >= 30
         assert subtypes["IRRELEVANT_OBSTACLE"] >= 30
 
-    def test_get_recent_evaluation_runs_discovers_disk_runs(self):
-        runs = get_recent_evaluation_runs(logs_root="eval_logs")
+    def test_get_recent_evaluation_runs_discovers_disk_runs(
+        self, mock_eval_logs_dir: Path
+    ):
+        runs = get_recent_evaluation_runs(logs_root=mock_eval_logs_dir)
         assert len(runs) > 0
         run_ids = [r["run_id"] for r in runs]
-        # Verify our actual dual-provider and single-model runs appear
+        # Verify both dual-provider comparison and single-model runs appear
         assert any("comparison_" in rid for rid in run_ids)
+        assert any("mock-vlm" in rid for rid in run_ids)
 
-    def test_load_evaluation_run_details_dual_comparison(self):
-        runs = get_recent_evaluation_runs(logs_root="eval_logs")
+    def test_load_evaluation_run_details_dual_comparison(
+        self, mock_eval_logs_dir: Path
+    ):
+        runs = get_recent_evaluation_runs(logs_root=mock_eval_logs_dir)
         comp_run = next((r for r in runs if r["is_comparison"]), None)
         assert comp_run is not None
 
-        details = load_evaluation_run_details(comp_run["run_id"], logs_root="eval_logs")
+        details = load_evaluation_run_details(
+            comp_run["run_id"], logs_root=mock_eval_logs_dir
+        )
         assert details is not None
         assert details["is_comparison"] is True
         assert "comparison_data" in details
@@ -72,10 +79,12 @@ class TestRealBackendDataLoaders:
         assert "headline_metrics" in comp
         assert "overall_accuracy" in comp["headline_metrics"]
 
-    def test_get_failure_analysis_extracts_failures(self):
-        runs = get_recent_evaluation_runs(logs_root="eval_logs")
+    def test_get_failure_analysis_extracts_failures(self, mock_eval_logs_dir: Path):
+        runs = get_recent_evaluation_runs(logs_root=mock_eval_logs_dir)
         comp_run = next((r for r in runs if r["is_comparison"]), None)
-        details = load_evaluation_run_details(comp_run["run_id"], logs_root="eval_logs")
+        details = load_evaluation_run_details(
+            comp_run["run_id"], logs_root=mock_eval_logs_dir
+        )
 
         failures = get_failure_analysis(details)
         assert isinstance(failures, list)
