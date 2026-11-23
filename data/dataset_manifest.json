@@ -3,7 +3,10 @@
   "dataset_version": "v2.2.0-PROVENANCE-VERIFIED",
   "schema_version": "2.0.0",
   "generator_version": "mirrorlab-inventory-v2.0.0",
-  "timestamp": "2026-11-23T14:45:00Z",
+  "timestamp": "2026-11-23T18:01:18.274986+00:00",
+  "source_commit_sha": "29d67b45a52a8f688e11f29a7542f80e632d0f3f",
+  "dataset_content_hash": "0415f5272cda983a3c41c09f0cbcba1c3daff36fdb15ef46810eddb84e425f44",
+  "command_used": "python scripts/generate_dataset_manifest.py",
   "summary_statistics": {
     "total_model_facing_tasks": 350,
     "total_private_ground_truth_records": 350,
@@ -78,6 +81,10 @@
     "triple_verifier_consensus": {
       "audit_executed": true,
       "status": "PASS",
+      "source_commit_sha": "29d67b45a52a8f688e11f29a7542f80e632d0f3f",
+      "dataset_content_hash": "0415f5272cda983a3c41c09f0cbcba1c3daff36fdb15ef46810eddb84e425f44",
+      "timestamp": "2026-11-23T18:01:17.284177+00:00",
+      "command_used": "python scripts/audit_triple_verifiers.py",
       "state_consensus_rate_pct": 100.0,
       "coordinate_consensus_rate_pct": 100.0,
       "coordinate_comparisons": 306,
@@ -87,6 +94,10 @@
     "dataset_integrity_11_points": {
       "audit_executed": true,
       "status": "PASS",
+      "source_commit_sha": "29d67b45a52a8f688e11f29a7542f80e632d0f3f",
+      "dataset_content_hash": "0415f5272cda983a3c41c09f0cbcba1c3daff36fdb15ef46810eddb84e425f44",
+      "timestamp": "2026-11-23T17:45:00.000000+00:00",
+      "command_used": "mirrorlab.evaluation.dataset_auditor.DatasetAuditor.audit_all",
       "total_checks": 11,
       "isolation_verified": true,
       "status_message": "PASSED: All 11 verification checks satisfied."

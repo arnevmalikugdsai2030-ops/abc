@@ -85,8 +85,7 @@ class TestTaskExplorerRegimesAndAccounting:
             OcclusionRegime.GRAZING_CLEARANCE,
         ]
 
-        regime_configs: dict[str, list[int]] = {}
-        for occ in regimes:
+        for idx, occ in enumerate(regimes):
             cond = TaskCondition(
                 condition_id=f"occ_{occ.value}",
                 geometry=GeometryRegime.SINGLE_PLANAR,
@@ -94,31 +93,91 @@ class TestTaskExplorerRegimesAndAccounting:
                 clutter=ClutterRegime.CLEAN,
                 sample_size=3,
             )
-            manifest = explorer.run_condition_experiment(
-                cond, base_seed=500 + len(regime_configs) * 50
-            )
+            manifest = explorer.run_condition_experiment(cond, base_seed=500 + idx * 50)
 
             # Reconcile counts
             assert (
                 manifest.total_attempted
                 == manifest.total_valid + manifest.total_rejected
             )
-            # Record obstacle counts of valid scenes
-            counts = []
+
+            # Invariant: Any rejected task must record an explicit documented rejection reason
             for t in manifest.tasks:
-                if t.is_valid and t.scene_data is not None:
-                    counts.append(len(t.scene_data.get("obstacles", [])))
-            regime_configs[occ.value] = counts
+                if not t.is_valid:
+                    assert (
+                        t.rejection_reason is not None and len(t.rejection_reason) > 0
+                    )
 
-        # Verify NONE produces 0 obstacles
-        if regime_configs[OcclusionRegime.NONE.value]:
-            assert all(c == 0 for c in regime_configs[OcclusionRegime.NONE.value])
-
-        # Verify MULTIPLE_OBSTACLES produces >= 2 obstacles when valid
-        if regime_configs[OcclusionRegime.MULTIPLE_OBSTACLES.value]:
-            assert all(
-                c >= 2 for c in regime_configs[OcclusionRegime.MULTIPLE_OBSTACLES.value]
+            valid_tasks = [
+                t for t in manifest.tasks if t.is_valid and t.scene_data is not None
+            ]
+            assert len(valid_tasks) > 0, (
+                f"Regime {occ.value} generated 0 valid scenes; explicit rejection assertion required."
             )
+
+            for t in valid_tasks:
+                sc = InspectionScene.model_validate(t.scene_data)
+                obs_list = sc.obstacles
+
+                if occ == OcclusionRegime.NONE:
+                    # Invariant 1: NONE has zero blockers
+                    assert len(obs_list) == 0, (
+                        f"NONE regime must have 0 obstacles, found {len(obs_list)}"
+                    )
+
+                elif occ == OcclusionRegime.CORRIDOR_PARTITION:
+                    # Invariant 2: CORRIDOR_PARTITION blocker intersects the direct sightline corridor
+                    assert len(obs_list) == 1
+                    b = obs_list[0]
+                    c_pt = sc.camera.position
+                    t_pt = sc.target.center
+                    mid_x = (c_pt.x + t_pt.x) / 2.0
+                    mid_y = (c_pt.y + t_pt.y) / 2.0
+                    assert (
+                        abs(b.center.x - mid_x) < 10.0
+                        and abs(b.center.y - mid_y) < 10.0
+                    ), (
+                        "CORRIDOR_PARTITION blocker must intersect direct sightline corridor"
+                    )
+
+                elif occ == OcclusionRegime.NEAR_MIRROR_BLOCKER:
+                    # Invariant 3: NEAR_MIRROR_BLOCKER has obstacle near mirror-side optical leg
+                    assert len(obs_list) >= 1
+                    near_mirror = [
+                        o
+                        for o in obs_list
+                        if abs(o.center.y - sc.mirror.endpoint_a.y) < 150.0
+                    ]
+                    assert len(near_mirror) >= 1, (
+                        "NEAR_MIRROR_BLOCKER must contain an obstacle near the mirror segment"
+                    )
+
+                elif occ == OcclusionRegime.NEAR_TARGET_BLOCKER:
+                    # Invariant 4: NEAR_TARGET_BLOCKER has obstacle near target-side optical leg
+                    assert len(obs_list) >= 1
+                    t_pt = sc.target.center
+                    near_target = [
+                        o
+                        for o in obs_list
+                        if math.hypot(o.center.x - t_pt.x, o.center.y - t_pt.y) < 100.0
+                    ]
+                    assert len(near_target) >= 1, (
+                        "NEAR_TARGET_BLOCKER must contain an obstacle near the target"
+                    )
+
+                elif occ == OcclusionRegime.MULTIPLE_OBSTACLES:
+                    # Invariant 5: MULTIPLE_OBSTACLES has at least two distinct blockers
+                    assert len(obs_list) >= 2, (
+                        f"MULTIPLE_OBSTACLES must have >= 2 blockers, found {len(obs_list)}"
+                    )
+
+                elif occ == OcclusionRegime.GRAZING_CLEARANCE:
+                    # Invariant 6: GRAZING_CLEARANCE satisfies intended clearance / unambiguous boundary
+                    assert len(obs_list) >= 1
+                    amb_report = AmbiguityValidator.validate_scene(sc)
+                    assert amb_report.is_unambiguous is True, (
+                        f"GRAZING_CLEARANCE failed ambiguity bounds: {amb_report.rejection_reasons}"
+                    )
 
     def test_high_distractors_checked_against_both_optical_legs(self, tmp_path: Path):
         """Verifies distractors in HIGH_DISTRACTORS maintain strict clearance against C->R AND R->T."""
@@ -286,7 +345,9 @@ class TestTaskExplorerRegimesAndAccounting:
         )
 
     def test_every_accepted_scene_passes_ambiguity_and_rendering(self, tmp_path: Path):
-        """Verifies that every accepted scene independently passes ambiguity validation."""
+        """Verifies that every accepted scene independently passes ambiguity validation and disk rendering verification."""
+        from PIL import Image
+
         explorer = TaskExplorer(output_dir=tmp_path)
         cond = TaskCondition(
             condition_id="accepted_scenes_audit",
@@ -297,14 +358,42 @@ class TestTaskExplorerRegimesAndAccounting:
         )
         manifest = explorer.run_condition_experiment(cond, base_seed=3333)
 
+        assert manifest.total_valid > 0
         for task in manifest.tasks:
             if task.is_valid:
                 assert task.rejection_reason is None
                 assert task.scene_data is not None
                 sc = InspectionScene.model_validate(task.scene_data)
+
+                # 1. Independent ambiguity validation
                 amb_report = AmbiguityValidator.validate_scene(sc)
                 assert amb_report.is_unambiguous is True, (
                     f"Accepted task {task.task_id} failed independent ambiguity validation: {amb_report.rejection_reasons}"
+                )
+
+                # 2. Locate generated image on disk
+                assert task.image_path is not None, (
+                    f"Accepted task {task.task_id} missing image_path"
+                )
+                img_file = Path(task.image_path)
+                assert img_file.is_file(), (
+                    f"Rendered image file missing on disk: {img_file}"
+                )
+
+                # 3. Reopen actual image from disk
+                disk_img = Image.open(img_file)
+
+                # 4. Run RenderingConsistencyValidator on that image
+                rend_report = RenderingConsistencyValidator.validate_image(
+                    scene=sc,
+                    pil_image=disk_img,
+                    image_name=img_file.name,
+                    is_blind_image=True,
+                )
+
+                # 5. Verify its result is passing
+                assert rend_report.all_passed is True, (
+                    f"Reopened image {img_file} failed rendering consistency validation: {rend_report.failure_reasons}"
                 )
 
     def test_every_rejected_scene_has_recorded_reason(self, tmp_path: Path):

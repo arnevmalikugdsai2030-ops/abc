@@ -74,3 +74,50 @@ jobs:
       - name: Run Pytest Test Suite
         run: |
           pytest -v --cov=mirrorlab tests/
+
+  scientific-audit:
+    name: Scientific Integrity, Consensus & Dataset Audits
+    needs: test-and-verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+            python-version: "3.12"
+            cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: 1. Dataset Manifest Validation
+        run: |
+          echo "Validating authoritative dataset manifest..."
+          python scripts/generate_dataset_manifest.py
+
+      - name: 2. Triple-Verifier Mathematical Consensus Audit
+        run: |
+          echo "Auditing triple-verifier consensus across all 350 scenes..."
+          python scripts/audit_triple_verifiers.py
+
+      - name: 3. Dataset Integrity 11-Point Audit
+        run: |
+          echo "Executing comprehensive 11-point dataset integrity audit..."
+          python -c "
+          from mirrorlab.evaluation.dataset_auditor import DatasetAuditor
+          auditor = DatasetAuditor(data_root='data')
+          report = auditor.audit_all()
+          print(report.summary())
+          assert report.all_passed, f'Dataset integrity audit failed with violations: {report.failures}'
+          print('[SUCCESS] All 11 dataset integrity checks satisfied.')
+          "
+
+      - name: 4. Counterfactual Pair Integrity Audit
+        run: |
+          echo "Auditing counterfactual pair consistency and partition integrity..."
+          python scripts/audit_counterfactual_integrity.py

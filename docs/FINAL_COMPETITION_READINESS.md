@@ -31,7 +31,7 @@
 | **15** | **Downstream RL Utility** | Interactive environment for agentic alignment | **FULL IMPLEMENTATION** — Gymnasium-compatible `MirrorLabEnv` with observation spaces, discrete actions, and reward signals. | [`mirrorlab/rl/gym_env.py`](../mirrorlab/rl/gym_env.py), [`tests/test_gym_env.py`](../tests/test_gym_env.py) |
 | **16** | **Interactive Observability Platform** | High-density dashboard for inspection and evaluation | **FULL IMPLEMENTATION** — 6 Streamlit views (Judge Walkthrough, Scene Lab, Arena, Analytics, Dashboard, Rig Guide). | [`mirrorlab/ui/app.py`](../mirrorlab/ui/app.py), [`tests/test_app_views.py`](../tests/test_app_views.py) |
 | **17** | **Physical Rig Metrology Protocol** | Real-world hardware inspection alignment specification | **DOCUMENTED PROTOCOL** — Complete 4-step hardware protocol, BOM, and physical optical limitation boundary. | [`docs/JUDGE_DEMO_SCRIPT.md`](JUDGE_DEMO_SCRIPT.md), [`mirrorlab/ui/app.py`](../mirrorlab/ui/app.py) |
-| **18** | **Software Quality & Multi-Python CI** | Modern Python typing, linting, packaging, and CI matrix | **FULL IMPLEMENTATION** — Python 3.11 & 3.12 support, Ruff formatting/linting, 100% passing test suite (402 tests). | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), [`pyproject.toml`](../pyproject.toml) |
+| **18** | **Software Quality & Multi-Python CI** | Modern Python typing, linting, packaging, and CI matrix | **FULL IMPLEMENTATION** — Python 3.11 & 3.12 support, Ruff formatting/linting, 100% passing test suite (411 tests). | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), [`pyproject.toml`](../pyproject.toml) |
 
 ---
 
@@ -81,7 +81,7 @@ cd abc
 # 2. Install dependencies (Python 3.11 or 3.12)
 pip install -e ".[dev]"
 
-# 3. Run complete test suite (402 unit and integration tests)
+# 3. Run complete test suite (411 unit, integration, and adversarial tests)
 pytest -v
 
 # 4. Verify triple-verifier mathematical consensus

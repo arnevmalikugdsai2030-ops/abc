@@ -105,6 +105,7 @@ class TaskGenerationResult(BaseModel):
     task_id: str
     condition_id: str
     is_valid: bool
+    image_path: str | None = None
     rejection_reason: str | None = None
     difficulty: DifficultyMetrics | None = None
     scene_data: dict[str, Any] | None = None
@@ -257,11 +258,15 @@ class TaskExplorer:
             )
             difficulty_dist[diff.calibrated_tier.value] += 1
 
+            img_path = self.output_dir / f"{tid}_blind.png"
+            rendered_img.save(img_path)
+
             results.append(
                 TaskGenerationResult(
                     task_id=tid,
                     condition_id=condition.condition_id,
                     is_valid=True,
+                    image_path=str(img_path),
                     difficulty=diff,
                     scene_data=scene.model_dump(mode="json"),
                     ground_truth={

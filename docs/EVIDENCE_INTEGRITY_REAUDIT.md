@@ -3,20 +3,22 @@
 
 **Project:** MIRRORLAB — The Missing Scratch  
 **Track:** Innodata Frontier AI Hackathon 2026 — Track 2: Visual Task Factory  
-**Audit Baseline Commit:** `d4cbcb90695e785ee4a788f9357d487561de1958`  
-**Execution Environment:** Python 3.12 (CPython 3.12.16) / Python 3.11  
+**Dataset Baseline Commit:** `d4cbcb90695e785ee4a788f9357d487561de1958`  
+**Audit Implementation Commit:** `29d67b45a52a8f688e11f29a7542f80e632d0f3f`  
+**Dataset Content Hash (SHA-256):** `0415f5272cda983a3c41c09f0cbcba1c3daff36fdb15ef46810eddb84e425f44`  
+**Execution Environment:** Python 3.12 (CPython 3.12.16) / Python 3.11 (CPython 3.11.18)  
 **Audit Date:** 2026-11-23  
-**Status:** **100% PROVENANCE VERIFIED & REPRODUCIBLE**
+**Status:** **PROVENANCE VERIFIED & REPRODUCIBLE**
 
 ---
 
 ## 1. Executive Summary
 
-This report establishes the single authoritative, empirically verified baseline for all scientific, dataset, mathematical, and evaluation claims across the MIRRORLAB repository. 
+This report establishes an empirically audited baseline for the scientific, dataset, mathematical, and evaluation components across the MIRRORLAB repository.
 
-Prior independent audits identified subtle discrepancies between documentation claims and execution outputs—such as verifiers auditing subsets rather than the full 350-task suite, hardcoded audit summaries in manifest generators, conflated single-inference and counterfactual denominators in evaluation reports, and untested task explorer branches.
+Prior independent audits identified discrepancies between documentation claims and execution outputs—such as verifiers auditing subsets rather than the full 350-task suite, hardcoded audit summaries in manifest generators, conflated single-inference and counterfactual denominators in evaluation reports, and untested task explorer branches.
 
-Through this P0 Evidence Integrity Remediation, **every single claim in the MIRRORLAB repository is now directly backed by committed, executable code, live test runs, and deterministic artifacts**. Zero numbers are estimated, fabricated, or hardcoded.
+Through this P0/P1 Evidence Integrity Remediation pass, the headline claims in the MIRRORLAB repository have been audited against committed code, executable test suites, and cryptographic dataset hashes. Hardcoded audit summaries have been replaced by dynamic validators with fail-closed invariants, stale-cache invalidation, and CI enforcement.
 
 ---
 
@@ -193,14 +195,24 @@ Earlier drafts of the evaluation report mixed a 20-task single-inference pilot r
 ```bash
 pytest
 ```
-**Results:** **402 passed, 0 failures, 0 errors** across the full unit, integration, and UI test suites.
+**Results:** **411 passed, 0 failures, 0 errors** across the full unit, integration, UI, and adversarial test suites.
+- 9 dedicated adversarial tests in `tests/test_audit_triple_verifiers.py` enforcing fail-closed invariants:
+  * Non-finite coordinates
+  * VISIBLE state lacking coordinates
+  * Points outside mirror segment bounds
+  * Points off the mirror affine line
+  * Backside normal approach violations
+  * Optical law of reflection asymmetry ($|\cos \theta_i - \cos \theta_r| > 10^{-3}$)
+  * Contradictory MISSED_MIRROR states
+  * Solver reflection availability disagreements
+  * Comparison coverage shortfalls
 
 ### Code Style & Formatting Verification:
 ```bash
 ruff check .
 ruff format --check .
 ```
-**Results:** 0 lint violations, 0 formatting discrepancies.
+**Results:** 0 lint violations, 0 formatting discrepancies across all 167 Python files.
 
 ---
 
@@ -212,12 +224,13 @@ ruff format --check .
 | **Triple-Verifier Coordinate Consensus** | Skewed by including 44 non-reflection scenes as 0.0 | **100.0% (306 / 306 scenes)**; 44 non-reflection scenes correctly recorded as `null` |
 | **Maximum Spatial Residual** | $2.66 \times 10^{-5}\text{ mm}$ (partial dataset) | **$3.143 \times 10^{-5}\text{ mm}$** ($0.031\ \mu\text{m}$, fully audited) |
 | **Mean Spatial Residual** | $4.12 \times 10^{-6}\text{ mm}$ (partial dataset) | **$9.560 \times 10^{-6}\text{ mm}$** ($0.010\ \mu\text{m}$, fully audited) |
-| **Dataset Manifest Generation** | Static hardcoded booleans; keyword matching | **Fully dynamic filesystem scan**; authoritative schema 2.0.0 |
-| **Dataset Integrity 11-Point Gate** | Outdated cache file | **Executed live (87.31s); 11 / 11 checks passed** |
-| **Task Explorer Verification** | 3 superficial tests; unverified regimes | **9 property tests**; explicit distractor and rendering checks |
+| **Dataset Manifest Generation** | Static hardcoded booleans; keyword matching | **Fully dynamic filesystem scan**; authoritative schema 2.0.0; runtime timestamp |
+| **Dataset Integrity 11-Point Gate** | Outdated cache file | **Executed live (87.31s); 11 / 11 checks passed; bound to dataset hash** |
+| **Task Explorer Verification** | 3 superficial tests; unverified regimes | **9 property tests**; explicit distractor, 6-regime invariants, and disk rendering checks |
 | **Evaluation Denominators** | Conflated $N=20$ and $N=48$ | **Strictly separated**: $N=20$ single-inference, $N=24$ pairs ($48$ tasks) counterfactual |
 | **Evaluation Provenance** | Ambiguous API vs mock claims | **100% `SIMULATED` baseline; $0 tokens, $0.00 cost disclosed** |
-| **Total Passing Tests** | Variable / failing exploratory tests | **402 passing tests** across Python 3.11 & 3.12 |
+| **Total Passing Tests** | 402 tests | **411 passing tests** across Python 3.11 & 3.12 |
+| **CI Automation** | Unit tests and lint only | **Dedicated scientific-audit job**: manifest, triple-verifier, dataset integrity, and counterfactual integrity |
 
 ---
 

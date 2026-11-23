@@ -7,9 +7,12 @@ benchmark splits, and audit manifests.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import math
+import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -714,6 +717,52 @@ def get_failure_analysis(run_details: dict[str, Any] | None) -> list[dict[str, A
 _VALIDATION_CACHE: dict[str, dict[str, Any]] = {}
 
 
+def get_git_commit_sha(repo_root: Path) -> str:
+    """Returns current git commit SHA or UNKNOWN."""
+    try:
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return res.stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        head_file = repo_root / ".git" / "HEAD"
+        if head_file.is_file():
+            try:
+                ref = head_file.read_text(encoding="utf-8").strip()
+                if ref.startswith("ref: "):
+                    ref_path = repo_root / ".git" / ref[5:]
+                    if ref_path.is_file():
+                        return ref_path.read_text(encoding="utf-8").strip()
+                return ref
+            except OSError:
+                pass
+        return "UNKNOWN"
+
+
+def compute_dataset_content_hash(data_root: Path) -> str:
+    """Computes combined SHA-256 hash across benchmark split tasks and ground-truth files."""
+    splits_dir = data_root / "benchmark_splits"
+    target_files = [
+        splits_dir / "dev" / "tasks.jsonl",
+        splits_dir / "dev" / "ground_truth.jsonl",
+        splits_dir / "val" / "tasks.jsonl",
+        splits_dir / "val" / "ground_truth.jsonl",
+        splits_dir / "test" / "public" / "tasks.jsonl",
+        splits_dir / "test" / "private" / "ground_truth.jsonl",
+    ]
+    h = hashlib.sha256()
+    for f in target_files:
+        if f.is_file():
+            with open(f, "rb") as fp:
+                while chunk := fp.read(65536):
+                    h.update(chunk)
+    return h.hexdigest()
+
+
 def get_dataset_validation_status(
     data_root: Path | str = "data",
     force_refresh: bool = False,
@@ -734,6 +783,23 @@ def get_dataset_validation_status(
         try:
             with open(disk_cache_file, encoding="utf-8") as fp:
                 cached_res = json.load(fp)
+
+            cur_hash = compute_dataset_content_hash(root)
+            cur_commit = get_git_commit_sha(root.parent)
+            cached_hash = cached_res.get("dataset_content_hash")
+            cached_commit = cached_res.get("source_commit_sha")
+
+            if cached_hash != cur_hash or (
+                cached_commit != "UNKNOWN"
+                and cur_commit != "UNKNOWN"
+                and cached_commit != cur_commit
+            ):
+                cached_res["status"] = "STALE"
+                cached_res["is_stale"] = True
+                cached_res["all_passed"] = False
+                cached_res["status_message"] = (
+                    "STALE: Dataset content hash or source commit has changed since audit was cached."
+                )
             _VALIDATION_CACHE[cache_key] = cached_res
             return cached_res
         except (OSError, json.JSONDecodeError) as err:
@@ -827,8 +893,18 @@ def get_dataset_validation_status(
             }
         )
 
+    cur_hash = compute_dataset_content_hash(root)
+    cur_commit = get_git_commit_sha(root.parent)
     result = {
+        "audit_version": "2.1.0-STRICT-FAIL-CLOSED",
+        "timestamp": datetime.now(UTC).isoformat(),
+        "source_commit_sha": cur_commit,
+        "dataset_content_hash": cur_hash,
+        "command_used": "mirrorlab.evaluation.dataset_auditor.DatasetAuditor.audit_all",
+        "expected_item_count": total_tasks,
+        "actual_item_count": report.total_tasks_checked,
         "all_passed": report.all_passed,
+        "status": "PASS" if report.all_passed else "FAIL",
         "total_checks": len(formatted_checks),
         "checks": formatted_checks,
         "isolation_verified": report.all_passed,

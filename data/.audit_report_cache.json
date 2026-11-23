@@ -1,4 +1,10 @@
 {
+  "audit_version": "2.1.0-STRICT-FAIL-CLOSED",
+  "timestamp": "2026-11-23T17:45:00.000000+00:00",
+  "source_commit_sha": "29d67b45a52a8f688e11f29a7542f80e632d0f3f",
+  "dataset_content_hash": "0415f5272cda983a3c41c09f0cbcba1c3daff36fdb15ef46810eddb84e425f44",
+  "command_used": "mirrorlab.evaluation.dataset_auditor.DatasetAuditor.audit_all",
+  "status": "PASS",
   "all_passed": true,
   "total_checks": 11,
   "checks": [

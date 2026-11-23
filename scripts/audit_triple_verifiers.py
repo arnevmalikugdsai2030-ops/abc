@@ -9,19 +9,30 @@ Solvers evaluated:
 2. Fermat's Principle of Least Time (variational continuous path minimization)
 3. Snell's Law / Law of Reflection (Brent numerical root-finding)
 
-Zero-fabrication audit:
-- Never reports coordinate residual = 0 when coordinates were not actually compared.
-- Uses null (None) for unavailable coordinate residuals.
-- Separates state consensus (binary visibility) from coordinate consensus (spatial reflection point).
-- Enforces physical mirror segment bounds and normal half-space validity.
-- Exits with code 1 if any required scene is missing or any verification fails.
+Strict Fail-Closed Invariants:
+- VISIBLE must have a finite reflection coordinate.
+- NOT_VISIBLE must have a physically consistent reason and output.
+- A claimed reflection point must lie on the finite mirror segment.
+- The point must satisfy the optical reflection geometry (angle balance & normal orientation).
+- A solver must never pass merely because another solver returned a missing coordinate.
+- Coordinate comparison must run whenever a physical reflection exists.
+- The audit explicitly fails if:
+  * Any VISIBLE solver result lacks coordinates.
+  * Any coordinate is non-finite.
+  * A reflection point lies outside the segment.
+  * The three solvers disagree on reflection availability.
+  * Expected coordinate comparison coverage is not achieved.
+  * Coordinate consensus count differs from comparison count.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
+import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -36,12 +47,56 @@ from mirrorlab.geometry.ray_march_verifier import DirectSnellRayVerifier
 from mirrorlab.schema.scene import InspectionScene
 
 
+def get_git_commit_sha(repo_root: Path) -> str:
+    """Returns the current Git HEAD commit SHA, or UNKNOWN if unavailable."""
+    try:
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return res.stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        head_file = repo_root / ".git" / "HEAD"
+        if head_file.is_file():
+            try:
+                ref = head_file.read_text(encoding="utf-8").strip()
+                if ref.startswith("ref: "):
+                    ref_path = repo_root / ".git" / ref[5:]
+                    if ref_path.is_file():
+                        return ref_path.read_text(encoding="utf-8").strip()
+                return ref
+            except OSError:
+                pass
+        return "UNKNOWN"
+
+
+def compute_dataset_content_hash(data_root: Path) -> str:
+    """Computes combined SHA-256 hash across all benchmark split tasks and ground-truth files."""
+    splits_dir = data_root / "benchmark_splits"
+    target_files = [
+        splits_dir / "dev" / "tasks.jsonl",
+        splits_dir / "dev" / "ground_truth.jsonl",
+        splits_dir / "val" / "tasks.jsonl",
+        splits_dir / "val" / "ground_truth.jsonl",
+        splits_dir / "test" / "public" / "tasks.jsonl",
+        splits_dir / "test" / "private" / "ground_truth.jsonl",
+    ]
+    h = hashlib.sha256()
+    for f in target_files:
+        if f.is_file():
+            with open(f, "rb") as fp:
+                while chunk := fp.read(65536):
+                    h.update(chunk)
+    return h.hexdigest()
+
+
 def resolve_scene_path(
     data_root: Path, split: str, task_id: str, gt_info: dict[str, Any]
 ) -> Path | None:
-    """
-    Deterministically resolves the filesystem path to scene.json for any task in a split.
-    """
+    """Deterministically resolves the filesystem path to scene.json for any task in a split."""
     int_id = gt_info.get("internal_task_id", task_id)
     splits_dir = data_root / "benchmark_splits"
 
@@ -90,43 +145,119 @@ def validate_solver_output(
     scene: InspectionScene,
     is_reflection_on_mirror: bool,
     tolerance_mm: float = 0.1,
+    reason_str: str | None = None,
 ) -> tuple[bool, str | None]:
-    """
-    Validates physical plausibility of a solver's output.
-    """
+    """Validates physical plausibility and strict invariants of a solver's output."""
     if state_str not in ("VISIBLE", "NOT_VISIBLE"):
         return False, f"{solver_name} output invalid state string: '{state_str}'"
 
+    # Invariant: VISIBLE must have a finite reflection coordinate
+    if state_str == "VISIBLE":
+        if pt is None:
+            return (
+                False,
+                f"{solver_name}: state is VISIBLE but reflection_point is None",
+            )
+        if not (math.isfinite(pt[0]) and math.isfinite(pt[1])):
+            return False, f"{solver_name}: produced non-finite coordinates: {pt}"
+
+    # Invariant: Any coordinates returned must be finite
     if pt is not None:
         x, y = pt
         if not (math.isfinite(x) and math.isfinite(y)):
             return False, f"{solver_name} produced non-finite coordinates: ({x}, {y})"
 
-        # If a reflection on the mirror is claimed, check segment bounds & distance
-        if is_reflection_on_mirror:
-            ma = scene.mirror.endpoint_a
-            mb = scene.mirror.endpoint_b
-            vx = mb.x - ma.x
-            vy = mb.y - ma.y
-            l2 = vx * vx + vy * vy
-            if l2 <= 1e-9:
-                return False, f"{solver_name}: mirror has degenerate zero length"
+    # Invariant: If a physical reflection on the mirror segment exists, coordinate must lie on segment
+    if is_reflection_on_mirror:
+        if pt is None:
+            return (
+                False,
+                f"{solver_name}: physical reflection exists on mirror, but {solver_name} returned None",
+            )
+        x, y = pt
+        ma = scene.mirror.endpoint_a
+        mb = scene.mirror.endpoint_b
+        vx = mb.x - ma.x
+        vy = mb.y - ma.y
+        l2 = vx * vx + vy * vy
+        if l2 <= 1e-9:
+            return False, f"{solver_name}: mirror has degenerate zero length"
 
-            u = ((x - ma.x) * vx + (y - ma.y) * vy) / l2
-            # Allow slight numerical margin of 1e-3
-            if not (-1e-3 <= u <= 1.0 + 1e-3):
+        u = ((x - ma.x) * vx + (y - ma.y) * vy) / l2
+        # Strict segment bounds with numerical margin of 1e-3
+        if not (-1e-3 <= u <= 1.0 + 1e-3):
+            return (
+                False,
+                f"{solver_name} reflection point lies outside mirror segment (u={u:.6f})",
+            )
+
+        px = ma.x + u * vx
+        py = ma.y + u * vy
+        dist_to_mirror_line = math.hypot(x - px, y - py)
+        if dist_to_mirror_line > tolerance_mm:
+            return False, (
+                f"{solver_name} reflection point off mirror line by "
+                f"{dist_to_mirror_line:.6f} mm (tolerance {tolerance_mm} mm)"
+            )
+
+        # Normal orientation: camera and target must be on reflective front side
+        c = scene.camera.position
+        t = scene.target.center
+        n = scene.mirror.reflective_normal
+        dot_c = (c.x - x) * n.dx + (c.y - y) * n.dy
+        dot_t = (t.x - x) * n.dx + (t.y - y) * n.dy
+        if dot_c <= 0:
+            return (
+                False,
+                f"{solver_name}: ray approaches from non-reflective mirror backside (dot_c={dot_c:.6f})",
+            )
+        if dot_t <= 0:
+            return (
+                False,
+                f"{solver_name}: target is behind non-reflective mirror backside (dot_t={dot_t:.6f})",
+            )
+
+        # Optical reflection geometry: Law of reflection angle balance
+        dist_c = math.hypot(x - c.x, y - c.y)
+        dist_t = math.hypot(t.x - x, t.y - y)
+        if dist_c <= 1e-6 or dist_t <= 1e-6:
+            return False, f"{solver_name}: degenerate zero ray length"
+
+        di_x, di_y = (x - c.x) / dist_c, (y - c.y) / dist_c
+        dr_x, dr_y = (t.x - x) / dist_t, (t.y - y) / dist_t
+        cos_i = -(di_x * n.dx + di_y * n.dy)
+        cos_r = dr_x * n.dx + dr_y * n.dy
+        if abs(cos_i - cos_r) > 1e-3:
+            return (
+                False,
+                f"{solver_name}: violates optical reflection geometry (|cos_i - cos_r| = {abs(cos_i - cos_r):.6e} > 1e-3)",
+            )
+
+    elif (
+        state_str == "NOT_VISIBLE"
+        and reason_str
+        in (
+            "MISSED_MIRROR",
+            "BACK_OF_MIRROR",
+            "missed_mirror",
+            "back_of_mirror",
+        )
+        and pt is not None
+    ):
+        ma = scene.mirror.endpoint_a
+        mb = scene.mirror.endpoint_b
+        vx = mb.x - ma.x
+        vy = mb.y - ma.y
+        l2 = vx * vx + vy * vy
+        if l2 > 1e-9:
+            u = ((pt[0] - ma.x) * vx + (pt[1] - ma.y) * vy) / l2
+            if 0.0 <= u <= 1.0 and reason_str in (
+                "MISSED_MIRROR",
+                "missed_mirror",
+            ):
                 return (
                     False,
-                    f"{solver_name} reflection point lies outside mirror segment (u={u:.6f})",
-                )
-
-            px = ma.x + u * vx
-            py = ma.y + u * vy
-            dist_to_mirror_line = math.hypot(x - px, y - py)
-            if dist_to_mirror_line > tolerance_mm:
-                return False, (
-                    f"{solver_name} reflection point off mirror line by "
-                    f"{dist_to_mirror_line:.6f} mm (tolerance {tolerance_mm} mm)"
+                    f"{solver_name}: reason is MISSED_MIRROR but coordinate lies inside segment (u={u:.4f})",
                 )
 
     return True, None
@@ -135,10 +266,13 @@ def validate_solver_output(
 def audit_all_benchmark_scenes(
     data_root_path: str | Path = "data",
     tolerance_mm: float = 0.1,
+    expected_total_tasks: int = 350,
+    expected_coord_comparisons: int = 306,
+    save_artifact: bool = True,
 ) -> dict[str, Any]:
     """
     Executes the comprehensive triple-verifier consensus audit.
-    Returns complete dictionary of results and per-scene records.
+    Returns complete dictionary of results, provenance metadata, and per-scene records.
     """
     print("=" * 75)
     print("MIRRORLAB TRIPLE-VERIFIER CONSENSUS AUDIT (SCIENTIFIC RE-AUDIT)")
@@ -148,22 +282,21 @@ def audit_all_benchmark_scenes(
     print("=" * 75)
 
     data_root = Path(data_root_path).resolve()
+    repo_root = data_root.parent
     splits_dir = data_root / "benchmark_splits"
 
-    # Expected count verification from split manifest if present
-    split_manifest_path = splits_dir / "manifest.json"
-    expected_total_tasks = 350
-    if split_manifest_path.is_file():
-        try:
-            with open(split_manifest_path, encoding="utf-8") as smf:
-                s_manifest = json.load(smf)
-                expected_total_tasks = (
-                    s_manifest.get("accounting", {})
-                    .get("model_facing_tasks", {})
-                    .get("total", 350)
-                )
-        except (OSError, json.JSONDecodeError):
-            pass
+    source_commit_sha = get_git_commit_sha(repo_root)
+    dataset_content_hash = compute_dataset_content_hash(data_root)
+    execution_timestamp = datetime.now(UTC).isoformat()
+
+    manifest_file = data_root / "dataset_manifest.json"
+    manifest_sha256 = "NOT_FOUND"
+    if manifest_file.is_file():
+        h = hashlib.sha256()
+        with open(manifest_file, "rb") as mf:
+            while chunk := mf.read(65536):
+                h.update(chunk)
+        manifest_sha256 = h.hexdigest()
 
     records: list[dict[str, Any]] = []
     missing_scenes: list[dict[str, str]] = []
@@ -189,6 +322,13 @@ def audit_all_benchmark_scenes(
 
         if not tasks_file.is_file():
             print(f"[ERROR] Tasks file missing for split '{split}': {tasks_file}")
+            missing_scenes.append(
+                {
+                    "task_id": f"split_{split}_all",
+                    "split": split,
+                    "reason": f"Tasks file missing: {tasks_file}",
+                }
+            )
             continue
 
         with open(tasks_file, encoding="utf-8") as tf:
@@ -275,20 +415,45 @@ def audit_all_benchmark_scenes(
             )
             pt_snell = extract_point_xy(snell_dict.get("reflection_point"))
 
-            # Determine if a physical reflection on the mirror segment exists
             oracle_reason = (
                 verdict_oracle.reason.value
                 if hasattr(verdict_oracle.reason, "value")
                 else str(verdict_oracle.reason)
             )
-            has_reflection_on_mirror = pt_fermat is not None and oracle_reason not in (
-                "missed_mirror",
-                "back_of_mirror",
-                "MISSED_MIRROR",
-                "BACK_OF_MIRROR",
+            fermat_reason = getattr(verdict_fermat, "reason", None)
+            f_reason_val = (
+                fermat_reason.value
+                if hasattr(fermat_reason, "value")
+                else str(fermat_reason)
+            )
+            snell_reason = snell_dict.get("reason")
+            s_reason_val = (
+                snell_reason.value
+                if hasattr(snell_reason, "value")
+                else str(snell_reason)
             )
 
-            # Validate solver outputs
+            # Check reflection availability per solver
+            o_has_refl = pt_oracle is not None and oracle_reason.lower() not in (
+                "missed_mirror",
+                "back_of_mirror",
+            )
+            f_has_refl = pt_fermat is not None and f_reason_val.lower() not in (
+                "missed_mirror",
+                "back_of_mirror",
+            )
+            s_has_refl = pt_snell is not None and s_reason_val.lower() not in (
+                "missed_mirror",
+                "back_of_mirror",
+            )
+
+            # Invariant: Disagreement on reflection availability fails scene
+            refl_avail_agree = o_has_refl == f_has_refl == s_has_refl
+            has_reflection_on_mirror = (
+                refl_avail_agree and o_has_refl and f_has_refl and s_has_refl
+            )
+
+            # Validate solver outputs independently
             valid_o, err_o = validate_solver_output(
                 "oracle",
                 s_oracle_val,
@@ -296,6 +461,7 @@ def audit_all_benchmark_scenes(
                 scene,
                 has_reflection_on_mirror,
                 tolerance_mm,
+                oracle_reason,
             )
             valid_f, err_f = validate_solver_output(
                 "fermat",
@@ -304,6 +470,7 @@ def audit_all_benchmark_scenes(
                 scene,
                 has_reflection_on_mirror,
                 tolerance_mm,
+                f_reason_val,
             )
             valid_s, err_s = validate_solver_output(
                 "snell",
@@ -312,6 +479,7 @@ def audit_all_benchmark_scenes(
                 scene,
                 has_reflection_on_mirror,
                 tolerance_mm,
+                s_reason_val,
             )
 
             # Coordinate comparison
@@ -323,45 +491,49 @@ def audit_all_benchmark_scenes(
             coord_agree = False
 
             if has_reflection_on_mirror:
-                if (
-                    pt_oracle is not None
-                    and pt_fermat is not None
-                    and pt_snell is not None
-                ):
-                    coord_available = True
-                    coord_comparison_count += 1
-                    ox, oy = pt_oracle
-                    fx, fy = pt_fermat
-                    sx, sy = pt_snell
+                coord_available = True
+                coord_comparison_count += 1
+                ox, oy = pt_oracle  # type: ignore[misc]
+                fx, fy = pt_fermat  # type: ignore[misc]
+                sx, sy = pt_snell  # type: ignore[misc]
 
-                    d_of = math.hypot(ox - fx, oy - fy)
-                    d_os = math.hypot(ox - sx, oy - sy)
-                    d_fs = math.hypot(fx - sx, fy - sy)
-                    max_r = max(d_of, d_os, d_fs)
+                d_of = math.hypot(ox - fx, oy - fy)
+                d_os = math.hypot(ox - sx, oy - sy)
+                d_fs = math.hypot(fx - sx, fy - sy)
+                max_r = max(d_of, d_os, d_fs)
 
-                    r_res_of = round(d_of, 8)
-                    r_res_os = round(d_os, 8)
-                    r_res_fs = round(d_fs, 8)
-                    max_res = round(max_r, 8)
-                    measured_residuals.append(max_r)
+                r_res_of = round(d_of, 8)
+                r_res_os = round(d_os, 8)
+                r_res_fs = round(d_fs, 8)
+                max_res = round(max_r, 8)
+                measured_residuals.append(max_r)
 
-                    coord_agree = max_r <= tolerance_mm
-                    if coord_agree:
-                        coord_consensus_count += 1
+                coord_agree = max_r <= tolerance_mm
+                if coord_agree:
+                    coord_consensus_count += 1
+            elif not refl_avail_agree:
+                coord_available = False
+                coord_agree = False
             else:
                 # No physical reflection point exists on the mirror segment
-                # All solvers must agree on state NOT_VISIBLE
+                # All solvers unanimously agree reflection does not exist
                 coord_available = False
-                coord_agree = True  # Not applicable, no coordinate disagreement
+                coord_agree = True  # Consistently absent across all 3, residuals null
 
             # Scene pass/fail determination
             solver_plausible = valid_o and valid_f and valid_s
-            scene_passed = state_agree and solver_plausible and coord_agree
+            scene_passed = (
+                state_agree and refl_avail_agree and solver_plausible and coord_agree
+            )
 
             failure_reasons = []
             if not state_agree:
                 failure_reasons.append(
                     f"State mismatch: O={s_oracle_val}, F={s_fermat_val}, S={s_snell_val}"
+                )
+            if not refl_avail_agree:
+                failure_reasons.append(
+                    f"Reflection availability disagreement: O={o_has_refl}, F={f_has_refl}, S={s_has_refl}"
                 )
             if not solver_plausible:
                 failure_reasons.extend(
@@ -403,6 +575,7 @@ def audit_all_benchmark_scenes(
                     },
                 },
                 "state_agreement": state_agree,
+                "reflection_availability_agreement": refl_avail_agree,
                 "coordinate_available": coord_available,
                 "pairwise_residuals_mm": {
                     "oracle_vs_fermat": r_res_of,
@@ -436,16 +609,23 @@ def audit_all_benchmark_scenes(
         else None,
     }
 
+    # Strict Fail-Closed Global Invariants
     all_passed = (
         len(missing_scenes) == 0
         and len(failed_scene_ids) == 0
         and total_scenes_resolved == expected_total_tasks
         and state_consensus_count == total_scenes_resolved
+        and coord_comparison_count == expected_coord_comparisons
+        and coord_consensus_count == coord_comparison_count
     )
 
     audit_summary = {
-        "audit_version": "2.0.0-PROVENANCE-VERIFIED",
-        "timestamp": "2026-11-23T14:45:00Z",
+        "audit_version": "2.1.0-STRICT-FAIL-CLOSED",
+        "timestamp": execution_timestamp,
+        "source_commit_sha": source_commit_sha,
+        "dataset_manifest_sha256": manifest_sha256,
+        "dataset_content_hash": dataset_content_hash,
+        "command_used": "python scripts/audit_triple_verifiers.py",
         "expected_scenes": expected_total_tasks,
         "resolved_scenes": total_scenes_resolved,
         "missing_scenes_count": len(missing_scenes),
@@ -457,6 +637,7 @@ def audit_all_benchmark_scenes(
             else 0.0,
             4,
         ),
+        "expected_coordinate_comparisons": expected_coord_comparisons,
         "coordinate_comparison_count": coord_comparison_count,
         "coordinate_consensus_count": coord_consensus_count,
         "coordinate_consensus_rate_pct": round(
@@ -474,34 +655,37 @@ def audit_all_benchmark_scenes(
 
     # Print summary
     print("\nAUDIT SUMMARY REPORT:")
+    print(f"  Source Commit SHA:           {source_commit_sha}")
+    print(f"  Dataset Content Hash:        {dataset_content_hash[:16]}...")
     print(f"  Expected Tasks:              {expected_total_tasks}")
-    print(f"  Resolved Scenes:              {total_scenes_resolved}")
-    print(f"  Missing Scenes:               {len(missing_scenes)}")
+    print(f"  Resolved Scenes:             {total_scenes_resolved}")
+    print(f"  Missing Scenes:              {len(missing_scenes)}")
     print(
-        f"  State Consensus:              {state_consensus_count}/{total_scenes_resolved} "
+        f"  State Consensus:             {state_consensus_count}/{total_scenes_resolved} "
         f"({audit_summary['state_consensus_rate_pct']}%)"
     )
     print(
-        f"  Coordinate Comparisons:       {coord_comparison_count}/{total_scenes_resolved}"
+        f"  Coordinate Comparisons:      {coord_comparison_count}/{expected_coord_comparisons}"
     )
     print(
-        f"  Coordinate Consensus:         {coord_consensus_count}/{coord_comparison_count} "
+        f"  Coordinate Consensus:        {coord_consensus_count}/{coord_comparison_count} "
         f"({audit_summary['coordinate_consensus_rate_pct']}%)"
     )
     if stats["max"] is not None:
-        print(f"  Maximum Residual:             {stats['max']:.6e} mm")
-        print(f"  Mean Residual:                {stats['mean']:.6e} mm")
-        print(f"  Median Residual (P50):        {stats['median']:.6e} mm")
-        print(f"  95th Percentile Residual:     {stats['p95']:.6e} mm")
-        print(f"  99th Percentile Residual:     {stats['p99']:.6e} mm")
-    print(f"  Audit Result:                 {'PASS' if all_passed else 'FAIL'}")
+        print(f"  Maximum Residual:            {stats['max']:.6e} mm")
+        print(f"  Mean Residual:               {stats['mean']:.6e} mm")
+        print(f"  Median Residual (P50):       {stats['median']:.6e} mm")
+        print(f"  95th Percentile Residual:    {stats['p95']:.6e} mm")
+        print(f"  99th Percentile Residual:    {stats['p99']:.6e} mm")
+    print(f"  Audit Result:                {'PASS' if all_passed else 'FAIL'}")
     print("=" * 75)
 
-    out_path = data_root.parent / "experiments" / "triple_verifier_consensus_audit.json"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(audit_summary, f, indent=2)
-    print(f"Full audit report archived to: {out_path.resolve()}")
+    if save_artifact:
+        out_path = repo_root / "experiments" / "triple_verifier_consensus_audit.json"
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(audit_summary, f, indent=2)
+        print(f"Full audit report archived to: {out_path.resolve()}")
 
     return audit_summary
 

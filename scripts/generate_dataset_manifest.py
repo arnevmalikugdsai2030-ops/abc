@@ -18,9 +18,57 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+
+def get_git_commit_sha(repo_root: Path) -> str:
+    """Returns current git commit SHA or UNKNOWN."""
+    try:
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return res.stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        head_file = repo_root / ".git" / "HEAD"
+        if head_file.is_file():
+            try:
+                ref = head_file.read_text(encoding="utf-8").strip()
+                if ref.startswith("ref: "):
+                    ref_path = repo_root / ".git" / ref[5:]
+                    if ref_path.is_file():
+                        return ref_path.read_text(encoding="utf-8").strip()
+                return ref
+            except OSError:
+                pass
+        return "UNKNOWN"
+
+
+def compute_dataset_content_hash(data_root: Path) -> str:
+    """Computes combined SHA-256 hash across benchmark split tasks and ground-truth files."""
+    splits_dir = data_root / "benchmark_splits"
+    target_files = [
+        splits_dir / "dev" / "tasks.jsonl",
+        splits_dir / "dev" / "ground_truth.jsonl",
+        splits_dir / "val" / "tasks.jsonl",
+        splits_dir / "val" / "ground_truth.jsonl",
+        splits_dir / "test" / "public" / "tasks.jsonl",
+        splits_dir / "test" / "private" / "ground_truth.jsonl",
+    ]
+    h = hashlib.sha256()
+    for f in target_files:
+        if f.is_file():
+            with open(f, "rb") as fp:
+                while chunk := fp.read(65536):
+                    h.update(chunk)
+    return h.hexdigest()
 
 
 def compute_file_sha256(filepath: Path) -> str:
@@ -214,6 +262,10 @@ def scan_dataset(data_root: Path | str = "data") -> dict[str, Any]:
         "zero_missing_split_artifacts": len(missing_split_artifacts) == 0,
     }
 
+    dataset_content_hash = compute_dataset_content_hash(root)
+    source_commit_sha = get_git_commit_sha(root.parent)
+    execution_timestamp = datetime.now(UTC).isoformat()
+
     # 4. Read real validation & audit status from actual executed audit artifacts
     triple_audit_file = (
         root.parent / "experiments" / "triple_verifier_consensus_audit.json"
@@ -226,9 +278,20 @@ def scan_dataset(data_root: Path | str = "data") -> dict[str, Any]:
         try:
             with open(triple_audit_file, encoding="utf-8") as taf:
                 t_data = json.load(taf)
+            t_hash = t_data.get("dataset_content_hash")
+            is_stale = t_hash != dataset_content_hash
+            status = (
+                "STALE"
+                if is_stale
+                else ("PASS" if t_data.get("all_passed") else "FAIL")
+            )
             triple_audit_status = {
                 "audit_executed": True,
-                "status": "PASS" if t_data.get("all_passed") else "FAIL",
+                "status": status,
+                "source_commit_sha": t_data.get("source_commit_sha"),
+                "dataset_content_hash": t_hash,
+                "timestamp": t_data.get("timestamp"),
+                "command_used": t_data.get("command_used"),
                 "state_consensus_rate_pct": t_data.get("state_consensus_rate_pct"),
                 "coordinate_consensus_rate_pct": t_data.get(
                     "coordinate_consensus_rate_pct"
@@ -239,6 +302,10 @@ def scan_dataset(data_root: Path | str = "data") -> dict[str, Any]:
                 ),
                 "tolerance_mm": t_data.get("tolerance_mm"),
             }
+            if is_stale:
+                triple_audit_status["stale_reason"] = (
+                    "Dataset content hash does not match current dataset."
+                )
         except (OSError, json.JSONDecodeError) as exc:
             triple_audit_status["error"] = str(exc)
 
@@ -251,13 +318,28 @@ def scan_dataset(data_root: Path | str = "data") -> dict[str, Any]:
         try:
             with open(dataset_audit_cache_file, encoding="utf-8") as daf:
                 d_data = json.load(daf)
+            d_hash = d_data.get("dataset_content_hash")
+            is_stale = d_hash != dataset_content_hash
+            status = (
+                "STALE"
+                if is_stale
+                else ("PASS" if d_data.get("all_passed") else "FAIL")
+            )
             dataset_audit_status = {
                 "audit_executed": True,
-                "status": "PASS" if d_data.get("all_passed") else "FAIL",
+                "status": status,
+                "source_commit_sha": d_data.get("source_commit_sha"),
+                "dataset_content_hash": d_hash,
+                "timestamp": d_data.get("timestamp"),
+                "command_used": d_data.get("command_used"),
                 "total_checks": d_data.get("total_checks"),
                 "isolation_verified": d_data.get("isolation_verified"),
                 "status_message": d_data.get("status_message"),
             }
+            if is_stale:
+                dataset_audit_status["stale_reason"] = (
+                    "Dataset content hash does not match current dataset."
+                )
         except (OSError, json.JSONDecodeError) as exc:
             dataset_audit_status["error"] = str(exc)
 
@@ -266,7 +348,10 @@ def scan_dataset(data_root: Path | str = "data") -> dict[str, Any]:
         "dataset_version": "v2.2.0-PROVENANCE-VERIFIED",
         "schema_version": "2.0.0",
         "generator_version": "mirrorlab-inventory-v2.0.0",
-        "timestamp": "2026-11-23T14:45:00Z",
+        "timestamp": execution_timestamp,
+        "source_commit_sha": source_commit_sha,
+        "dataset_content_hash": dataset_content_hash,
+        "command_used": "python scripts/generate_dataset_manifest.py",
         "summary_statistics": {
             "total_model_facing_tasks": total_split_tasks,
             "total_private_ground_truth_records": total_split_gt,
