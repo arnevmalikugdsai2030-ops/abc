@@ -33,6 +33,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
+          python -m pip install pytest-github-actions-annotate-failures
 
       - name: Security Guard - Detect committed secrets & .env files
         run: |
@@ -73,7 +74,7 @@ jobs:
 
       - name: Run Pytest Test Suite
         run: |
-          pytest -v --cov=mirrorlab tests/
+          pytest -v --cov=mirrorlab --tb=short tests/
 
   scientific-audit:
     name: Scientific Integrity, Consensus & Dataset Audits
