@@ -112,8 +112,10 @@ jobs:
           from mirrorlab.evaluation.dataset_auditor import DatasetAuditor
           auditor = DatasetAuditor(data_root='data')
           report = auditor.audit_all()
-          print(report.summary())
-          assert report.all_passed, f'Dataset integrity audit failed with violations: {report.failures}'
+          for c in report.checks:
+              status_str = '[PASS]' if c.passed else '[FAIL]'
+              print(f'  {status_str} {c.name:<45}: {c.details}')
+          assert report.all_passed, f'Dataset integrity audit failed with {len(report.checks)} checks'
           print('[SUCCESS] All 11 dataset integrity checks satisfied.')
           "
 

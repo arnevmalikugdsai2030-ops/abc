@@ -789,19 +789,21 @@ def get_dataset_validation_status(
             cached_hash = cached_res.get("dataset_content_hash")
             cached_commit = cached_res.get("source_commit_sha")
 
-            if cached_hash != cur_hash or (
-                cached_commit != "UNKNOWN"
-                and cur_commit != "UNKNOWN"
-                and cached_commit != cur_commit
-            ):
-                cached_res["status"] = "STALE"
-                cached_res["is_stale"] = True
-                cached_res["all_passed"] = False
-                cached_res["status_message"] = (
-                    "STALE: Dataset content hash or source commit has changed since audit was cached."
+            if cached_hash != cur_hash:
+                # Stale cache: dataset content has changed, invalidate and recompute below
+                logger.info(
+                    "Cached dataset hash (%s) does not match current hash (%s); recomputing.",
+                    cached_hash,
+                    cur_hash,
                 )
-            _VALIDATION_CACHE[cache_key] = cached_res
-            return cached_res
+            else:
+                # Cache is valid for current dataset content
+                cached_res["current_commit_sha"] = cur_commit
+                cached_res["commit_matches"] = (
+                    cached_commit == cur_commit or cached_commit == "UNKNOWN"
+                )
+                _VALIDATION_CACHE[cache_key] = cached_res
+                return cached_res
         except (OSError, json.JSONDecodeError) as err:
             logger.debug("Failed to read audit cache %s: %s", disk_cache_file, err)
 

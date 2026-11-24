@@ -1,8 +1,8 @@
 {
   "audit_version": "2.1.0-STRICT-FAIL-CLOSED",
-  "timestamp": "2026-11-23T18:01:17.284177+00:00",
-  "source_commit_sha": "29d67b45a52a8f688e11f29a7542f80e632d0f3f",
-  "dataset_manifest_sha256": "d38d5f5ddb3da9266602b8dc0be55d68436a1f208620a9e5ac40c73153c3a993",
+  "timestamp": "2026-11-23T18:28:07.352294+00:00",
+  "source_commit_sha": "c32e54ea21bfe2bf46e47199342cca1124ef24eb",
+  "dataset_manifest_sha256": "6890b4ebb3f166f0f7b4d024cdfbe42007bfb4bfb3f3c465aaff7e1eccd061fd",
   "dataset_content_hash": "0415f5272cda983a3c41c09f0cbcba1c3daff36fdb15ef46810eddb84e425f44",
   "command_used": "python scripts/audit_triple_verifiers.py",
   "expected_scenes": 350,

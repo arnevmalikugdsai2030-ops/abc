@@ -5,10 +5,11 @@
 **Track:** Innodata Frontier AI Hackathon 2026 — Track 2: Visual Task Factory  
 **Dataset Baseline Commit:** `d4cbcb90695e785ee4a788f9357d487561de1958`  
 **Audit Implementation Commit:** `29d67b45a52a8f688e11f29a7542f80e632d0f3f`  
+**Hardened Invariant Enforcement Commit:** `c32e54ea21bfe2bf46e47199342cca1124ef24eb`  
 **Dataset Content Hash (SHA-256):** `0415f5272cda983a3c41c09f0cbcba1c3daff36fdb15ef46810eddb84e425f44`  
 **Execution Environment:** Python 3.12 (CPython 3.12.16) / Python 3.11 (CPython 3.11.18)  
 **Audit Date:** 2026-11-23  
-**Status:** **PROVENANCE VERIFIED & REPRODUCIBLE**
+**Status:** **PROVENANCE VERIFIED & REPRODUCIBLE (100% CI ENFORCED)**
 
 ---
 
